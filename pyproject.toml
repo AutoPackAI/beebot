@@ -1,0 +1,23 @@
+[tool.poetry]
+name = "beebot"
+version = "0.1.0"
+description = "A friendly AI agent that works"
+authors = ["Erik Peterson <e@eriklp.com>"]
+license = "MIT"
+readme = "README.md"
+packages = [{ include = "beebot" }]
+
+[tool.poetry.dependencies]
+python = "^3.10"
+autopack-tools = "^0.2.4"
+langchain = ">=0.0.215"
+openai = "^0.27.8"
+python-dotenv = "^1.0.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.3.0"
+ruff = "^0.0.276"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
