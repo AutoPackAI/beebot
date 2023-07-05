@@ -1,7 +1,7 @@
 # each test runs on cwd to its temp dir
 import sys
 
-import pytest as pytest
+import pytest
 from dotenv import load_dotenv
 
 

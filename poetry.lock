@@ -153,19 +153,19 @@ tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pyte
 
 [[package]]
 name = "autopack-tools"
-version = "0.2.4"
+version = "0.2.6"
 description = "Package Manager for AI Agent tools"
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "autopack_tools-0.2.4-py3-none-any.whl", hash = "sha256:f4022ff9f70b750cb531347ee5a2fa086747e9d16312637997a97cf9322e26ed"},
-    {file = "autopack_tools-0.2.4.tar.gz", hash = "sha256:d1b9071127786e232a6d090c6b62983820a61d6b37be21675b7d28126653fa96"},
+    {file = "autopack_tools-0.2.6-py3-none-any.whl", hash = "sha256:daed101f0591a94dac0985dee8fae3a427c5b39c63edef6d75836ffb78701cb1"},
+    {file = "autopack_tools-0.2.6.tar.gz", hash = "sha256:a8ab53b3ae5e2e11ce805a7585385a2fc50a84fb0f0aea7ea002aa2196c86d5a"},
 ]
 
 [package.dependencies]
 dataclasses-json = ">=0.5.8,<0.6.0"
 gitpython = ">=3.1.31,<4.0.0"
-langchain = ">=0.0.222"
+langchain = ">=0.0.215"
 requests = ">=2.31.0,<3.0.0"
 urllib3 = ">=1.26.16,<2.0.0"
 
@@ -210,6 +210,7 @@ packaging = ">=22.0"
 pathspec = ">=0.9.0"
 platformdirs = ">=2"
 tomli = {version = ">=1.1.0", markers = "python_version < \"3.11\""}
+typing-extensions = {version = ">=3.10.0.0", markers = "python_version < \"3.10\""}
 
 [package.extras]
 colorama = ["colorama (>=0.4.3)"]
@@ -355,6 +356,20 @@ typing-inspect = ">=0.4.0"
 
 [package.extras]
 dev = ["flake8", "hypothesis", "ipython", "mypy (>=0.710)", "portray", "pytest (>=7.2.0)", "setuptools", "simplejson", "twine", "types-dataclasses", "wheel"]
+
+[[package]]
+name = "exceptiongroup"
+version = "1.1.2"
+description = "Backport of PEP 654 (exception groups)"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "exceptiongroup-1.1.2-py3-none-any.whl", hash = "sha256:e346e69d186172ca7cf029c8c1d16235aa0e04035e5750b4b95039e65204328f"},
+    {file = "exceptiongroup-1.1.2.tar.gz", hash = "sha256:12c3e887d6485d16943a309616de20ae5582633e0a2eda17f4e10fd61c1e8af5"},
+]
+
+[package.extras]
+test = ["pytest (>=6)"]
 
 [[package]]
 name = "frozenlist"
@@ -549,6 +564,17 @@ python-versions = ">=3.5"
 files = [
     {file = "idna-3.4-py3-none-any.whl", hash = "sha256:90b77e79eaa3eba6de819a0c442c0b4ceefc341a7a2ab77d7562bf49f425c5c2"},
     {file = "idna-3.4.tar.gz", hash = "sha256:814f528e8dead7d329833b91c5faa87d60bf71824cd12a7530b5526063d02cb4"},
+]
+
+[[package]]
+name = "iniconfig"
+version = "2.0.0"
+description = "brain-dead simple config-ini parsing"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "iniconfig-2.0.0-py3-none-any.whl", hash = "sha256:b6a85871a79d2e3b22d2d1b94ac2824226a63c6b741c88f7ae975f18b6778374"},
+    {file = "iniconfig-2.0.0.tar.gz", hash = "sha256:2d91e135bf72d31a410b17c16da610a82cb55f6b0477d1a902134b24a455b8b3"},
 ]
 
 [[package]]
@@ -884,6 +910,21 @@ docs = ["furo (>=2023.5.20)", "proselint (>=0.13)", "sphinx (>=7.0.1)", "sphinx-
 test = ["appdirs (==1.4.4)", "covdefaults (>=2.3)", "pytest (>=7.3.1)", "pytest-cov (>=4.1)", "pytest-mock (>=3.10)"]
 
 [[package]]
+name = "pluggy"
+version = "1.2.0"
+description = "plugin and hook calling mechanisms for python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pluggy-1.2.0-py3-none-any.whl", hash = "sha256:c2fd55a7d7a3863cba1a013e4e2414658b1d07b6bc57b3919e0c63c9abb99849"},
+    {file = "pluggy-1.2.0.tar.gz", hash = "sha256:d12f0c4b579b15f5e054301bb226ee85eeeba08ffec228092f8defbaa3a4c4b3"},
+]
+
+[package.extras]
+dev = ["pre-commit", "tox"]
+testing = ["pytest", "pytest-benchmark"]
+
+[[package]]
 name = "pydantic"
 version = "1.10.10"
 description = "Data validation and settings management using python type hints"
@@ -936,6 +977,28 @@ dotenv = ["python-dotenv (>=0.10.4)"]
 email = ["email-validator (>=1.0.3)"]
 
 [[package]]
+name = "pytest"
+version = "7.4.0"
+description = "pytest: simple powerful testing with Python"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "pytest-7.4.0-py3-none-any.whl", hash = "sha256:78bf16451a2eb8c7a2ea98e32dc119fd2aa758f1d5d66dbf0a59d69a3969df32"},
+    {file = "pytest-7.4.0.tar.gz", hash = "sha256:b4bf8c45bd59934ed84001ad51e11b4ee40d40a1229d2c79f9c592b0a3f6bd8a"},
+]
+
+[package.dependencies]
+colorama = {version = "*", markers = "sys_platform == \"win32\""}
+exceptiongroup = {version = ">=1.0.0rc8", markers = "python_version < \"3.11\""}
+iniconfig = "*"
+packaging = "*"
+pluggy = ">=0.12,<2.0"
+tomli = {version = ">=1.0.0", markers = "python_version < \"3.11\""}
+
+[package.extras]
+testing = ["argcomplete", "attrs (>=19.2.0)", "hypothesis (>=3.56)", "mock", "nose", "pygments (>=2.7.2)", "requests", "setuptools", "xmlschema"]
+
+[[package]]
 name = "python-dotenv"
 version = "1.0.0"
 description = "Read key-value pairs from a .env file and set them as environment variables"
@@ -948,6 +1011,17 @@ files = [
 
 [package.extras]
 cli = ["click (>=5.0)"]
+
+[[package]]
+name = "python-statemachine"
+version = "2.1.0"
+description = "Python Finite State Machines made easy."
+optional = false
+python-versions = ">=3.7,<3.12"
+files = [
+    {file = "python_statemachine-2.1.0-py3-none-any.whl", hash = "sha256:195d8a1059ea22e94effce35d5fd9352362391e07ed248e04e27fadb49b41726"},
+    {file = "python_statemachine-2.1.0.tar.gz", hash = "sha256:aded5878526f5249465ce5aec3fb8babc9e08261bba4a4e0d147403e73335c34"},
+]
 
 [[package]]
 name = "pyyaml"
@@ -1310,5 +1384,5 @@ multidict = ">=4.0"
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.10"
-content-hash = "dbf05073013c547b240e3bb60a59132dd43b640b678584313eb76fb432b8f102"
+python-versions = ">=3.9,<3.12"
+content-hash = "889f8f7acbf4a649e5aa7b5d04994526fe7f11f2d5ca7e946e0d647faabbccf5"
