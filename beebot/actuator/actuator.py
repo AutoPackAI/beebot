@@ -3,10 +3,6 @@ from dataclasses import dataclass
 from json import JSONDecodeError
 from typing import Any, TYPE_CHECKING
 
-from langchain.schema import FunctionMessage
-
-from beebot.tool_filters import filter_output
-
 if TYPE_CHECKING:
     from beebot.autosphere import Autosphere
 
@@ -16,6 +12,21 @@ class ActuatorOutput:
     response: any = ""
     error_reason: str = ""
     success: bool = True
+
+    def compressed(self) -> str:
+        """Return this output as a str that is smaller so that it uses fewer tokens"""
+        result = self.response
+        # Make dicts more readable
+        if type(result) == dict:
+            if self.success:
+                return ", ".join([f"{k}: {v}" for (k, v) in result.items()])
+            else:
+                return "Error: " + ", ".join([f"{k}: {v}" for (k, v) in result.items()])
+        else:
+            if self.success:
+                return result
+            else:
+                return f"Error: {result}"
 
 
 class Actuator:
@@ -35,14 +46,6 @@ class Actuator:
             )
 
         result = pack.run(tool_input=tool_args)
-        filtered_output = filter_output(tool_name, result)
-        self.sphere.memory.chat_memory.add_message(
-            FunctionMessage(
-                name=tool_name,
-                content=filtered_output,
-                additional_kwargs=tool_args,
-            )
-        )
 
         try:
             return ActuatorOutput(response=json.loads(result))

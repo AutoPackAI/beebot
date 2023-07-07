@@ -30,6 +30,7 @@ def main():
 
     sphere = Autosphere.init(task)
     while output := sphere.cycle():
+        print("=== Cycle Output ===")
         print(output)
 
 

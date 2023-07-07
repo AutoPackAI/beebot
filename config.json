@@ -1,0 +1,6 @@
+{
+  "workspace": "workspace",
+  "entry_path": "beebot/initiator/benchmark_entrypoint.py",
+  "home_path": "",
+  "cutoff": 60
+}

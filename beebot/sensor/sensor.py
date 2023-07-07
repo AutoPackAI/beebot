@@ -1,18 +1,18 @@
 import json
 from dataclasses import dataclass, field
 from json import JSONDecodeError
-from typing import TYPE_CHECKING, Union, Any
+from typing import TYPE_CHECKING, Union
 
-from autopack.pack import Pack
-from langchain.schema import AIMessage, BaseMessage, FunctionMessage
+from langchain.schema import AIMessage, BaseMessage
 
-from beebot.prompting.sensor import (
-    starting_prompt,
-    FINISHED_MARKER,
-    planning_prompt,
-    remaining_prompt,
+from beebot.packs.utils import (
+    format_packs_to_openai_functions,
 )
-from beebot.prompting.summarization import summarization_prompt
+from beebot.prompting.sensing import (
+    FINISHED_MARKER,
+    execution_prompt,
+    initiating_prompt,
+)
 
 if TYPE_CHECKING:
     from beebot.autosphere import Autosphere
@@ -24,6 +24,10 @@ class SensoryOutput:
     tool: str = "none"
     tool_args: dict = field(default_factory=dict)
     finished: bool = False
+
+    def compressed_dict(self):
+        """Return this output as a dict that is smaller so that it uses fewer tokens"""
+        return {"tool": self.tool, "args": self.tool_args}
 
 
 class Sensor:
@@ -37,75 +41,59 @@ class Sensor:
     def __init__(self, sphere: "Autosphere"):
         self.sphere = sphere
 
-    def start(self):
-        message = starting_prompt().format(task=self.sphere.task)
-        response = self.call_llm(message)
-
-        return self.generate_sensory_output(response)
-
     def sense(self) -> Union[SensoryOutput, None]:
-        history, next_action_number = self.compile_history()
-        planning_message = planning_prompt().format(
-            history=history,
-            task=self.sphere.task,
-        )
-        response = self.call_llm(planning_message)
+        history = self.compile_history()
 
-        # The AI will sometimes include a function call in the planning step, sometimes not. Force it to call a function
-        if (
-            response
-            and response.additional_kwargs
-            and response.additional_kwargs.get("function_call")
-        ):
-            return self.generate_sensory_output(response)
-
-        message = remaining_prompt().format(
-            history=history,
-            task=self.sphere.task,
-            next_action_number=next_action_number,
-        )
-        response = self.call_llm(message)
-
-        return self.generate_sensory_output(response)
-
-    def call_llm(self, message: BaseMessage, retry=False) -> BaseMessage:
-        formatted_tools = [
-            format_pack_to_openai_function(pack) for pack in self.sphere.packs
-        ]
-        response = self.sphere.llm(messages=[message], functions=formatted_tools)
-        self.sphere.memory.chat_memory.add_message(response)
-        return response
-
-    def compile_history(self) -> tuple[str, int]:
-        history = ""
-        cycle_number = 1
-        messages = self.sphere.memory.chat_memory.messages
-
-        for message in self.sphere.memory.chat_memory.messages:
-            if type(message) == AIMessage:
-                thoughts = message.content
-                if function_call := message.additional_kwargs.get("function_call"):
-                    function_call_output = json.dumps(
-                        {
-                            "name": function_call.get("name"),
-                            "args": json.loads(function_call.get("arguments")),
-                        }
-                    )
-                    history += f"--- Action #{cycle_number}\nPlan: {thoughts}\nAction taken: {function_call_output}\n"
-                    cycle_number += 1
-            elif type(message) == FunctionMessage:
-                history += f"Result of action: {message.content}\n"
-
-        if len(messages) > 3:
-            message = summarization_prompt().format(
+        functions_summary = ", ".join([f"{pack.name}()" for pack in self.sphere.packs])
+        if history:
+            execution_message = execution_prompt().format(
+                functions=functions_summary,
                 history=history,
                 task=self.sphere.task,
             )
-            response = self.call_llm(message)
-            self.sphere.memory.chat_memory.messages = [response]
-            history = response.content
+        else:
+            execution_message = initiating_prompt().format(
+                functions=functions_summary,
+                task=self.sphere.task,
+            )
 
-        return history, cycle_number
+        self.sphere.logger.info("=== Sent to LLM ===")
+        for response_line in execution_message.content.split("\n"):
+            self.sphere.logger.info(response_line)
+        self.sphere.logger.info("")
+        self.sphere.logger.info(
+            f"Functions provided: {json.dumps(format_packs_to_openai_functions(self.sphere.packs))}"
+        )
+
+        # For iterative control / command authorization:
+        # import pdb
+
+        # pdb.set_trace()
+        response = self.call_llm(execution_message)
+
+        self.sphere.logger.info("=== Received from LLM ===")
+        for response_line in response.content.replace("\n\n", "\n").split("\n"):
+            self.sphere.logger.info(response_line)
+        self.sphere.logger.info(
+            f"Function call: {json.dumps(response.additional_kwargs)}"
+        )
+        return self.generate_sensory_output(response)
+
+    def call_llm(self, message: BaseMessage, retry=False) -> BaseMessage:
+        response = self.sphere.llm(
+            messages=[message],
+            functions=format_packs_to_openai_functions(self.sphere.packs),
+        )
+        return response
+
+    def compile_history(self) -> str:
+        if not self.sphere.memory.chat_memory.messages:
+            return ""
+
+        memory_content = [
+            message.content for message in self.sphere.memory.chat_memory.messages
+        ]
+        return "\n".join(memory_content)
 
     def generate_sensory_output(self, response: AIMessage) -> SensoryOutput:
         if FINISHED_MARKER in response.content:
@@ -128,17 +116,3 @@ class Sensor:
                 tool=tool_name,
                 tool_args={"output": function_call.get("arguments")},
             )
-
-
-def format_pack_to_openai_function(pack: Pack) -> dict[str, Any]:
-    # Change this if/when other LLMs support functions
-    run_args = pack.run_args
-    for arg_name, arg in run_args.items():
-        arg.pop("required", "")
-        run_args[arg_name] = arg
-
-    return {
-        "name": pack.name,
-        "description": pack.description,
-        "parameters": {"type": "object", "properties": run_args},
-    }
