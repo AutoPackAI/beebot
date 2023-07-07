@@ -5,6 +5,8 @@ from typing import Any, TYPE_CHECKING
 
 from langchain.schema import FunctionMessage
 
+from beebot.tool_filters import filter_output
+
 if TYPE_CHECKING:
     from beebot.autosphere import Autosphere
 
@@ -33,13 +35,16 @@ class Actuator:
             )
 
         result = pack.run(tool_input=tool_args)
+        filtered_output = filter_output(tool_name, result)
         self.sphere.memory.chat_memory.add_message(
-            FunctionMessage(name=tool_name, content=result, additional_kwargs=tool_args)
+            FunctionMessage(
+                name=tool_name,
+                content=filtered_output,
+                additional_kwargs=tool_args,
+            )
         )
 
         try:
             return ActuatorOutput(response=json.loads(result))
         except JSONDecodeError:
-            print("JSON decode failed")
-
-        return ActuatorOutput(response={"output": result})
+            return ActuatorOutput(response=result)

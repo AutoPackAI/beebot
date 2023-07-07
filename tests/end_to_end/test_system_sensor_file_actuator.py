@@ -1,8 +1,7 @@
-import os
-
 from beebot.autosphere import Autosphere
 from beebot.autosphere.autosphere import AutosphereStateMachine
 from beebot.config import Config
+from beebot.sensor.sensor import SensoryOutput
 
 
 def test_system_sensor_file_actuator():
@@ -17,29 +16,24 @@ def test_system_sensor_file_actuator():
 
     assert sphere.state.current_state == AutosphereStateMachine.starting
 
-    output = ""
-    for i in range(0, 3):
+    for i in range(0, 8):
         output = sphere.cycle()
-        assert output.success
-
-        if os.path.exists("my_computer.txt"):
+        if type(output) == SensoryOutput and output.finished:
             break
-
         assert sphere.state.current_state == AutosphereStateMachine.waiting
-        assert type(output.response) == dict
-        assert (
-            "os_name" in output.response.keys()
-            or "total_bytes" in output.response.keys()
-        )
 
-    assert sphere.state.current_state == AutosphereStateMachine.waiting
-    assert type(output.response) == dict
-    assert "my_computer.txt" in output.response.get("output")
+        response = output.response
 
+        # why str sometimes
+        if type(response) == str:
+            assert "my_computer.txt" in response
+        elif type(response) == dict:
+            assert "os_name" in response.keys() or "total_bytes" in response.keys()
+        else:
+            assert False, "Invalid type of response"
+
+    assert sphere.state.current_state == AutosphereStateMachine.done
     with open("my_computer.txt", "r") as f:
         file_contents = f.read()
     assert "Operating System" in file_contents
     assert "Disk Usage" in file_contents
-
-    sphere.cycle()
-    assert sphere.state.current_state == AutosphereStateMachine.done

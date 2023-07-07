@@ -1,6 +1,9 @@
+import json
+import os
 import traceback
+from json import JSONDecodeError
 from logging import Logger
-from typing import Any
+from typing import Any, Union
 
 import langchain
 from autopack.get_pack import try_get_pack
@@ -11,6 +14,8 @@ from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.memory import ConversationBufferMemory
 from langchain.memory.chat_memory import BaseChatMemory
+from langchain.requests import TextRequestsWrapper
+from playwright.sync_api import Playwright, PlaywrightContextManager
 from statemachine import StateMachine, State
 
 from beebot.actuator import Actuator
@@ -48,6 +53,7 @@ class Autosphere:
     packs: list[Pack]
     logger: Logger
     memory: BaseChatMemory
+    playwright: Playwright
 
     def __init__(self, initial_task: str):
         """Set only the initial task. The rest of the fields are set during `setup`. This is because we don't want to
@@ -64,6 +70,7 @@ class Autosphere:
         self.config = Config.from_env()
         self.logger = self.config.custom_logger(__name__)
         self.memory = ConversationBufferMemory(memory_key="chat_history")
+        self.playwright = PlaywrightContextManager().start()
         self.refine_task()
         self.gather_packs()
         self.sensor = Sensor(sphere=self)
@@ -72,11 +79,20 @@ class Autosphere:
         self.state.start()
 
     def gather_packs(self):
-        self.logger.info("Selecting packs")
-        pack_ids = select_packs(self.task, self.llm)
-        self.logger.info(f"Packs selected: {pack_ids}")
-        packs = []
+        cache_path = ".autopack/selection_cache.json"
+        pack_ids = []
+        if os.path.exists(cache_path):
+            with open(cache_path) as f:
+                cached_results = json.load(f)
+            if self.initial_task in cached_results:
+                pack_ids = cached_results.get(self.initial_task)
 
+        if not pack_ids:
+            self.logger.info("Selecting packs")
+            pack_ids = select_packs(self.task, self.llm)
+            self.logger.info(f"Packs selected: {pack_ids}")
+
+        packs = []
         for pack_id in pack_ids:
             pack = try_get_pack(pack_id, quiet=False)
 
@@ -92,7 +108,11 @@ class Autosphere:
                         force_dependencies=self.config.auto_install_dependencies,
                     )
                 except Exception as e:
+                    import pdb
+
+                    pdb.set_trace()
                     print(traceback.format_exception(e))
+                    raise e
 
                 if pack:
                     packs.append(pack)
@@ -105,13 +125,39 @@ class Autosphere:
                 continue
 
         for pack in packs:
-            # TODO init args
-            pack.init_tool()
+            try:
+                init_args = self.get_init_args(pack=pack)
+                pack.init_tool(init_args=init_args)
+            except:
+                import pdb
+
+                pdb.set_trace()
 
         self.packs = packs
         used_pack_ids = [pack.pack_id for pack in packs]
         self.logger.info(f"Packs used: {used_pack_ids}")
+
+        os.path.abspath(cache_path)
+        with open(cache_path, "w+") as f:
+            try:
+                existing_cache = json.load(f)
+            except JSONDecodeError:
+                existing_cache = {}
+
+            existing_cache[self.initial_task] = used_pack_ids
+            json.dump(existing_cache, f)
+
         return self.packs
+
+    def get_init_args(self, pack: Pack) -> dict[str, Any]:
+        init_args = {}
+        for arg_name, init_arg in pack.init_args.items():
+            if arg_name == "sync_browser":
+                init_args["sync_browser"] = self.playwright.chromium.launch()
+            if arg_name == "requests_wrapper":
+                init_args["requests_wrapper"] = TextRequestsWrapper()
+
+        return init_args
 
     def refine_task(self):
         refine_prompt = refine_task_prompt()
@@ -125,12 +171,8 @@ class Autosphere:
         self.task = content
         self.logger.info(self.task)
 
-    def cycle(self):
+    def cycle(self) -> Union[ActuatorOutput, SensoryOutput]:
         if self.state.current_state == AutosphereStateMachine.done:
-            import pdb
-
-            pdb.set_trace()
-
             return
 
         if self.state.current_state == AutosphereStateMachine.starting:
@@ -142,9 +184,9 @@ class Autosphere:
         else:
             sensory_output = self.sense()
 
-        if not sensory_output:
+        if not sensory_output or sensory_output.finished:
             self.state.finish()
-            return
+            return sensory_output
 
         return self.actuate(sensory_output.tool, sensory_output.tool_args)
 
