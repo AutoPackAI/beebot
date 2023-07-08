@@ -2,6 +2,7 @@ import json
 from logging import Logger
 from typing import Any, Union, TYPE_CHECKING
 
+from langchain import WikipediaAPIWrapper
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.memory import ConversationBufferMemory
@@ -87,6 +88,8 @@ class Autosphere:
                 init_args["sync_browser"] = self.playwright.chromium.launch()
             if arg_name == "requests_wrapper":
                 init_args["requests_wrapper"] = TextRequestsWrapper()
+            if arg_name == "api_wrapper" and pack.name == "Wikipedia":
+                init_args["api_wrapper"] = WikipediaAPIWrapper()
 
         return init_args
 

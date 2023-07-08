@@ -82,6 +82,11 @@ class Sensor:
 
         # pdb.set_trace()
         response = self.call_llm(execution_message)
+        function_call = response.additional_kwargs.get("function_call")
+        # Try to dissuade it from returning empty function calls
+        if not function_call:
+            execution_message.content += "\nNote you MUST include all of the required arguments in each function call."
+            response = self.call_llm(execution_message)
 
         self.sphere.logger.info("=== Received from LLM ===")
         for response_line in response.content.replace("\n\n", "\n").split("\n"):
