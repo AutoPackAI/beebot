@@ -56,7 +56,7 @@ def suggested_packs(
 
     if not pack_ids:
         sphere.logger.info("Selecting packs")
-        pack_ids = select_packs(task, sphere.llm)
+        pack_ids = select_packs(task, sphere.llm)[:3]
         sphere.logger.info(f"Packs selected: {pack_ids}")
 
     packs = get_packs_by_ids(sphere=sphere, pack_ids=pack_ids)
@@ -129,7 +129,7 @@ def format_pack_to_openai_function(pack: Pack) -> dict[str, Any]:
     required = []
     run_args = pack.run_args
     for arg_name, arg in run_args.items():
-        arg_required = arg.pop("required", "")
+        arg_required = arg.pop("required", [])
         if arg_required:
             required.append(arg_name)
         run_args[arg_name] = arg

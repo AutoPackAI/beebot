@@ -18,7 +18,7 @@ from beebot.config import Config
 from beebot.packs.utils import gather_packs, system_pack_classes
 from beebot.prompting import planning_prompt
 from beebot.sensor import Sensor
-from beebot.sensor.sensor import SensoryOutput
+from beebot.sensor.sensor import Sensation
 from beebot.tool_filters import filter_output
 
 if TYPE_CHECKING:
@@ -38,7 +38,7 @@ class AutosphereStateMachine(StateMachine):
     actuate = sensing.to(actuating) | waiting.to(actuating)
 
     wait = actuating.to(waiting) | sensing.to(waiting) | starting.to(waiting)
-    finish = waiting.to(done)
+    finish = waiting.to(done) | actuating.to(done)
 
 
 class Autosphere:
@@ -55,7 +55,7 @@ class Autosphere:
     memory: BaseChatMemory
     # This is definitely not the most efficient way, but I want to keep this for our own reference, so we don't go
     # digging through memory all the time, which should be reserved just for AI use.
-    cycle_memory: list[tuple[SensoryOutput, ActuatorOutput]]
+    cycle_memory: list[tuple[Sensation, ActuatorOutput]]
     playwright: Playwright
 
     def __init__(self, initial_task: str):
@@ -95,9 +95,12 @@ class Autosphere:
 
     def plan(self):
         formatted_prompt = planning_prompt().format(task=self.initial_task)
+        message_content = (
+            f"{formatted_prompt.content}. Finally, call the `task_complete` function."
+        )
 
         planned_prompt = self.llm(
-            messages=[SystemMessage(content=formatted_prompt.content)]
+            messages=[SystemMessage(content=message_content)]
         ).content
 
         self.task = planned_prompt
@@ -105,15 +108,11 @@ class Autosphere:
         self.logger.info(self.task)
 
     # FIXME? this should probably return both the sense and actuation
-    def cycle(self) -> Union[ActuatorOutput, SensoryOutput]:
+    def cycle(self) -> Union[ActuatorOutput, Sensation]:
         if self.state.current_state == AutosphereStateMachine.done:
             return
 
         sensory_output = self.sense()
-
-        if not sensory_output or sensory_output.finished:
-            self.state.finish()
-            return sensory_output
 
         actuation_result = self.actuate(sense=sensory_output)
         self.add_chat_memory()
@@ -138,7 +137,7 @@ class Autosphere:
         chat_memory_string = f"- {action_str}: {result_str}"
         self.memory.chat_memory.add_message(SystemMessage(content=chat_memory_string))
 
-    def actuate(self, sense: SensoryOutput) -> ActuatorOutput:
+    def actuate(self, sense: Sensation) -> ActuatorOutput:
         self.state.actuate()
         try:
             result = self.actuator.actuate(sense=sense)
@@ -147,7 +146,7 @@ class Autosphere:
         finally:
             self.state.wait()
 
-    def sense(self) -> SensoryOutput:
+    def sense(self) -> Sensation:
         self.state.sense()
 
         try:
@@ -157,11 +156,11 @@ class Autosphere:
         finally:
             self.state.wait()
 
-    def add_sense_memory(self, output: SensoryOutput):
+    def add_sense_memory(self, output: Sensation):
         # TODO: Error handling
         self.cycle_memory.append((output,))
 
-    def add_action_memory(self, sense: SensoryOutput, result: ActuatorOutput):
+    def add_action_memory(self, sense: Sensation, result: ActuatorOutput):
         filtered_output = filter_output(sphere=self, sense=sense, output=result)
         self.cycle_memory[-1] = (self.cycle_memory[-1][0], filtered_output)
 

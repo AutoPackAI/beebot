@@ -1,7 +1,6 @@
 from beebot.autosphere import Autosphere
 from beebot.autosphere.autosphere import AutosphereStateMachine
 from beebot.config import Config
-from beebot.sensor.sensor import SensoryOutput
 
 
 def test_system_sensor_file_actuator():
@@ -18,8 +17,6 @@ def test_system_sensor_file_actuator():
 
     for i in range(0, 8):
         output = sphere.cycle()
-        if type(output) == SensoryOutput and output.finished:
-            break
         assert sphere.state.current_state == AutosphereStateMachine.waiting
 
         response = output.response

@@ -13,30 +13,43 @@ PACK_NAME = "task_complete"
 
 
 class TaskCompleteArgs(BaseModel):
+    success: bool = Field(..., description="Success")
     conclusion: str = Field(
-        ..., description="Summary of your experience on completing the task."
+        description="Summary of your experience on completing the task.", default=""
     )
-    process_summary: str = Field(..., description="Summary of the task's efficiency.")
+    process_summary: str = Field(
+        description="Summary of the task's efficiency.", default=""
+    )
     function_summary: str = Field(
-        ...,
         description="Overview of function utilization and suggestions for improvements.",
+        default="",
     )
-    output: str = Field(description="Any output requested at the end of the task.")
 
 
 def run_task_complete(
-    conclusion: str, process_summary: str, function_summary: str, output: str
+    sphere: Autosphere,
+    success: str,
+    conclusion: str,
+    process_summary: str,
+    function_summary: str,
 ):
+    sphere.state.finish()
     # TODO: Save the output somehow
-    print("\n=== Task completed ===")
-    print(f"- Output: {output}")
+    if success:
+        print("\n=== Task completed ===")
+    else:
+        print("\n=== Task failed ===")
+
     print(f"- Conclusion: {conclusion}")
     print(f"- Process Summary: {process_summary}")
     print(f"- Function Summary: {function_summary}")
     exit()
 
 
-PACK_DESCRIPTION = "Marks the task as completed with reasons and summaries."
+PACK_DESCRIPTION = (
+    "Marks the task as completed. This exits the program and should not be used to perform any other "
+    "action."
+)
 
 
 class TaskCompleteTool(StructuredTool):
@@ -45,6 +58,9 @@ class TaskCompleteTool(StructuredTool):
     func: Callable = run_task_complete
     args_schema: Type[BaseModel] = Type[TaskCompleteArgs]
     sphere: Autosphere
+
+    def _run(self, *args, **kwargs):
+        return super()._run(*args, sphere=self.sphere, **kwargs)
 
 
 class TaskComplete(SystemBasePack):

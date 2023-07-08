@@ -21,7 +21,7 @@ class GetPacksArgs(BaseModel):
 def run_get_more_functions(sphere: Autosphere, function_request: str):
     from beebot.packs.utils import suggested_packs
 
-    new_packs = suggested_packs(sphere=sphere, task=function_request, cache=True)
+    new_packs = suggested_packs(sphere=sphere, task=function_request, cache=True)[:3]
     for pack in new_packs:
         try:
             pack.init_tool(init_args=sphere.get_init_args(pack=pack))

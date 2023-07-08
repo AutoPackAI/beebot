@@ -9,7 +9,6 @@ from beebot.packs.utils import (
     format_packs_to_openai_functions,
 )
 from beebot.prompting.sensing import (
-    FINISHED_MARKER,
     execution_prompt,
     initiating_prompt,
 )
@@ -19,11 +18,10 @@ if TYPE_CHECKING:
 
 
 @dataclass
-class SensoryOutput:
+class Sensation:
     reasoning: str
     tool_name: str = "none"
     tool_args: dict = field(default_factory=dict)
-    finished: bool = False
 
     def compressed_dict(self):
         """Return this output as a dict that is smaller so that it uses fewer tokens"""
@@ -41,19 +39,18 @@ class Sensor:
     def __init__(self, sphere: "Autosphere"):
         self.sphere = sphere
 
-    def sense(self) -> Union[SensoryOutput, None]:
+    def sense(self) -> Union[Sensation, None]:
         history = self.compile_history()
 
         # TODO: Put this in sphere class
         documents = ""
         if self.sphere.documents:
-            documents = (
-                "You have these documents available that you have requested before:"
-            )
+            documents = "The following sections are the return values according to the function calls above:"
             for name, document in self.sphere.documents.items():
-                documents += f"\n~~~ {name}~~~\n"
-                documents += document
-                documents += f"\n~~~ End {name}~~~\n"
+                documents += (
+                    f"\n==== Document Section '{name}' ====\n{document}\n"
+                    f"======================================"
+                )
 
         functions_summary = ", ".join([f"{pack.name}()" for pack in self.sphere.packs])
         if history:
@@ -112,10 +109,7 @@ class Sensor:
         ]
         return "\n".join(memory_content)
 
-    def generate_sensory_output(self, response: AIMessage) -> SensoryOutput:
-        if FINISHED_MARKER in response.content:
-            return SensoryOutput(reasoning=response.content, finished=True)
-
+    def generate_sensory_output(self, response: AIMessage) -> Sensation:
         function_call = response.additional_kwargs.get("function_call")
         if not function_call:
             # This is probably an error state?
@@ -124,13 +118,13 @@ class Sensor:
         tool_name = function_call.get("name")
         try:
             parsed_tool_args = json.loads(function_call.get("arguments"))
-            return SensoryOutput(
+            return Sensation(
                 reasoning=response.content,
                 tool_name=tool_name,
                 tool_args=parsed_tool_args,
             )
         except JSONDecodeError:
-            return SensoryOutput(
+            return Sensation(
                 reasoning=response.content,
                 tool_name=tool_name,
                 tool_args={"output": function_call.get("arguments")},
