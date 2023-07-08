@@ -13,27 +13,30 @@ PACK_NAME = "task_complete"
 
 
 class TaskCompleteArgs(BaseModel):
-    reason: str = Field(..., description="The reason the task is considered complete")
-    process_summary: str = Field(
-        ..., description="A summary of the success and efficiency of the task"
+    conclusion: str = Field(
+        ..., description="Summary of your experience on completing the task."
     )
+    process_summary: str = Field(..., description="Summary of the task's efficiency.")
     function_summary: str = Field(
         ...,
-        description="A summary of how the functions worked for you, and suggest generalizable functions that would "
-        "have made this task easier.",
+        description="Overview of function utilization and suggestions for improvements.",
     )
+    output: str = Field(description="Any output requested at the end of the task.")
 
 
-def run_task_complete(reason: str, process_summary: str, function_summary: str):
+def run_task_complete(
+    conclusion: str, process_summary: str, function_summary: str, output: str
+):
     # TODO: Save the output somehow
     print("\n=== Task completed ===")
-    print(f"- {reason}")
-    print(f"- {process_summary}")
-    print(f"- {function_summary}")
+    print(f"- Output: {output}")
+    print(f"- Conclusion: {conclusion}")
+    print(f"- Process Summary: {process_summary}")
+    print(f"- Function Summary: {function_summary}")
     exit()
 
 
-PACK_DESCRIPTION = "Call this function when you have completed all of your goals. No further actions are possible after this function is called."
+PACK_DESCRIPTION = "Marks the task as completed with reasons and summaries."
 
 
 class TaskCompleteTool(StructuredTool):

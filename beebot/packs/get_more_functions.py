@@ -8,13 +8,13 @@ from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import get_module_path
 
 PACK_NAME = "get_more_functions"
-PACK_DESCRIPTION = "Request a function you need to complete your task. Use this function when you identify a missing capability that is necessary to fulfill your task."
+PACK_DESCRIPTION = "Requests a function necessary for task fulfillment."
 
 
 class GetPacksArgs(BaseModel):
     function_request: str = Field(
         ...,
-        description="A plain english description of the function you need",
+        description="Plain English description of the needed function.",
     )
 
 

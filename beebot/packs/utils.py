@@ -126,26 +126,31 @@ def format_packs_to_openai_functions(packs: list[Pack]) -> list[dict[str, Any]]:
 
 def format_pack_to_openai_function(pack: Pack) -> dict[str, Any]:
     # Change this if/when other LLMs support functions
+    required = []
     run_args = pack.run_args
     for arg_name, arg in run_args.items():
-        arg.pop("required", "")
+        arg_required = arg.pop("required", "")
+        if arg_required:
+            required.append(arg_name)
         run_args[arg_name] = arg
 
     return {
         "name": pack.name,
         "description": pack.description,
         "parameters": {"type": "object", "properties": run_args},
+        "required": required,
     }
 
 
 def run_args_from_args_schema(args_schema: BaseModel) -> dict[str, dict[str, str]]:
     run_args = {}
-    for param_name, param in args_schema.schema().get("properties", []).items():
+    schema = args_schema.schema()
+    for param_name, param in schema.get("properties", []).items():
         run_args[param_name] = {
             "type": param.get("type", param.get("anyOf", "string")),
             "name": param_name,
             "description": param.get("description", ""),
-            "required": param.get("required", False),
+            "required": param_name in schema.get("required"),
         }
     return run_args
 
