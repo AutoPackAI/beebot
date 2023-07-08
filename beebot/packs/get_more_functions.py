@@ -18,8 +18,31 @@ class GetPacksArgs(BaseModel):
     )
 
 
+# Just a guess. This should change over time as we learn what coding tasks look like.
+CODING_KEYWORDS = [
+    "python",
+    "code",
+    "coding",
+    "debug",
+    "program",
+    "execute",
+    "exception",
+]
+
+
 def run_get_more_functions(sphere: Autosphere, function_request: str):
     from beebot.packs.utils import suggested_packs
+
+    task = sphere.initial_task.lower()
+
+    # Don't let it get access to coding/python things unless the task requires it. I can't get the prompt to do it.
+    # Perhaps ask the LLM if the task involves coding at the planning stage?
+    task_involves_coding = any(keyword in task for keyword in CODING_KEYWORDS)
+    request_involves_coding = any(
+        keyword in function_request for keyword in CODING_KEYWORDS
+    )
+    if request_involves_coding and not task_involves_coding:
+        return []
 
     new_packs = suggested_packs(sphere=sphere, task=function_request, cache=True)[:3]
     for pack in new_packs:

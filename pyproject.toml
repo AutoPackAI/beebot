@@ -17,6 +17,7 @@ python-dotenv = "^1.0.0"
 python-statemachine = "^2.1.0"
 playwright = "^1.35.0"
 lxml = "^4.9.3"
+jsbeautifier = "^1.14.8"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"

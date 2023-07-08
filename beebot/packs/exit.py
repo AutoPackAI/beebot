@@ -9,10 +9,10 @@ from beebot.packs.utils import (
     get_module_path,
 )
 
-PACK_NAME = "task_complete"
+PACK_NAME = "exit"
 
 
-class TaskCompleteArgs(BaseModel):
+class ExitArgs(BaseModel):
     success: bool = Field(..., description="Success")
     conclusion: str = Field(
         description="Summary of your experience on completing the task.", default=""
@@ -26,7 +26,7 @@ class TaskCompleteArgs(BaseModel):
     )
 
 
-def run_task_complete(
+def run_exit(
     sphere: Autosphere,
     success: str,
     conclusion: str,
@@ -46,27 +46,24 @@ def run_task_complete(
     exit()
 
 
-PACK_DESCRIPTION = (
-    "Marks the task as completed. This exits the program and should not be used to perform any other "
-    "action."
-)
+PACK_DESCRIPTION = "Exits the program, signalling that all tasks have bene completed and all goals have been met."
 
 
-class TaskCompleteTool(StructuredTool):
+class ExitTool(StructuredTool):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
-    func: Callable = run_task_complete
-    args_schema: Type[BaseModel] = Type[TaskCompleteArgs]
+    func: Callable = run_exit
+    args_schema: Type[BaseModel] = Type[ExitArgs]
     sphere: Autosphere
 
     def _run(self, *args, **kwargs):
         return super()._run(*args, sphere=self.sphere, **kwargs)
 
 
-class TaskComplete(SystemBasePack):
+class Exit(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     pack_id: str = f"autopack/beebot/{PACK_NAME}"
     module_path = get_module_path(__file__)
-    tool_class: Type = TaskCompleteTool
-    args_schema: Type[BaseModel] = TaskCompleteArgs
+    tool_class: Type = ExitTool
+    args_schema: Type[BaseModel] = ExitArgs

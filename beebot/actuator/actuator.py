@@ -14,6 +14,7 @@ class ActuatorOutput:
     response: any = ""
     error_reason: str = ""
     success: bool = True
+    document: str = ""
 
     def compressed(self) -> str:
         """Return this output as a str that is smaller so that it uses fewer tokens"""

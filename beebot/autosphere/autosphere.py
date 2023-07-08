@@ -2,7 +2,7 @@ import json
 from logging import Logger
 from typing import Any, Union, TYPE_CHECKING
 
-from langchain import WikipediaAPIWrapper
+from langchain import WikipediaAPIWrapper, GoogleSerperAPIWrapper
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.memory import ConversationBufferMemory
@@ -50,7 +50,6 @@ class Autosphere:
     config: Config
     state: AutosphereStateMachine
     packs: list["Pack"]
-    documents: dict[str, str]
     logger: Logger
     memory: BaseChatMemory
     # This is definitely not the most efficient way, but I want to keep this for our own reference, so we don't go
@@ -70,7 +69,6 @@ class Autosphere:
         self.cycle_memory = []
         self.sensor = Sensor(sphere=self)
         self.actuator = Actuator(sphere=self)
-        self.documents = {}
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
@@ -90,20 +88,18 @@ class Autosphere:
                 init_args["requests_wrapper"] = TextRequestsWrapper()
             if arg_name == "api_wrapper" and pack.name == "Wikipedia":
                 init_args["api_wrapper"] = WikipediaAPIWrapper()
+            if arg_name == "api_wrapper" and pack.name == "GoogleNewsSearchResultsJSON":
+                init_args["api_wrapper"] = GoogleSerperAPIWrapper
 
         return init_args
 
     def plan(self):
         formatted_prompt = planning_prompt().format(task=self.initial_task)
-        message_content = (
-            f"{formatted_prompt.content}. Finally, call the `task_complete` function."
-        )
-
         planned_prompt = self.llm(
-            messages=[SystemMessage(content=message_content)]
+            messages=[SystemMessage(content=formatted_prompt.content)]
         ).content
 
-        self.task = planned_prompt
+        self.task = f"{planned_prompt} Finally, call the exit function."
         self.logger.info("=== Steps Created ===")
         self.logger.info(self.task)
 
@@ -144,13 +140,19 @@ class Autosphere:
             self.add_action_memory(sense=sense, result=result)
             return result
         finally:
-            self.state.wait()
+            # If the action resulted in status change (e.g. task complete) don't do anything
+            if self.state.current_state == self.state.actuating:
+                self.state.wait()
 
     def sense(self) -> Sensation:
         self.state.sense()
 
         try:
             result = self.sensor.sense()
+            if not result.tool_name:
+                self.logger.error("No function was called. Exiting.")
+                exit()
+
             self.add_sense_memory(result)
             return result
         finally:

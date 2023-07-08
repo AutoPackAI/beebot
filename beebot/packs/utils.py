@@ -19,10 +19,10 @@ def gather_packs(sphere: "Autosphere", cache: bool = True) -> list[Pack]:
 
 
 def system_pack_classes() -> list[Type[BaseTool]]:
-    from beebot.packs.task_complete import TaskComplete
+    from beebot.packs.exit import Exit
     from beebot.packs.get_more_functions import GetMoreFunctions
 
-    return [TaskComplete, GetMoreFunctions]
+    return [Exit, GetMoreFunctions]
 
 
 def system_packs(sphere: "Autosphere") -> list[BaseTool]:
