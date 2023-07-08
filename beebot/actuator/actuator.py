@@ -1,7 +1,9 @@
 import json
 from dataclasses import dataclass
 from json import JSONDecodeError
-from typing import Any, TYPE_CHECKING
+from typing import TYPE_CHECKING
+
+from beebot.sensor.sensor import SensoryOutput
 
 if TYPE_CHECKING:
     from beebot.autosphere import Autosphere
@@ -35,17 +37,19 @@ class Actuator:
     def __init__(self, sphere: "Autosphere"):
         self.sphere = sphere
 
-    def actuate(self, tool_name: str, tool_args: Any) -> ActuatorOutput:
+    def actuate(self, sense: SensoryOutput) -> ActuatorOutput:
         """Get pack from tool name. call it"""
         try:
-            pack = next(pack for pack in self.sphere.packs if pack.name == tool_name)
+            pack = next(
+                pack for pack in self.sphere.packs if pack.name == sense.tool_name
+            )
         except StopIteration:
             return ActuatorOutput(
                 success=False,
-                error_reason=f"Invalid tool name received: {tool_name}. It may be invalid or may not be installed.",
+                error_reason=f"Invalid tool name received: {sense.tool_name}. It may be invalid or may not be installed.",
             )
 
-        result = pack.run(tool_input=tool_args)
+        result = pack.run(tool_input=sense.tool_args)
 
         try:
             return ActuatorOutput(response=json.loads(result))

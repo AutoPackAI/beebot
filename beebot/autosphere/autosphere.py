@@ -49,6 +49,7 @@ class Autosphere:
     config: Config
     state: AutosphereStateMachine
     packs: list["Pack"]
+    documents: dict[str, str]
     logger: Logger
     memory: BaseChatMemory
     # This is definitely not the most efficient way, but I want to keep this for our own reference, so we don't go
@@ -68,6 +69,7 @@ class Autosphere:
         self.cycle_memory = []
         self.sensor = Sensor(sphere=self)
         self.actuator = Actuator(sphere=self)
+        self.documents = {}
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
@@ -110,7 +112,7 @@ class Autosphere:
             self.state.finish()
             return sensory_output
 
-        actuation_result = self.actuate(sensory_output.tool, sensory_output.tool_args)
+        actuation_result = self.actuate(sense=sensory_output)
         self.add_chat_memory()
         return actuation_result
 
@@ -120,24 +122,24 @@ class Autosphere:
         current_cycle = self.cycle_memory[-1]
 
         # Don't memorize system calls
-        if current_cycle[0].tool in [
+        if current_cycle[0].tool_name in [
             klass.__fields__["name"].default for klass in system_pack_classes()
         ]:
             return
 
         action_str = (
-            f"{current_cycle[0].tool}({json.dumps(current_cycle[0].tool_args)})"
+            f"{current_cycle[0].tool_name}({json.dumps(current_cycle[0].tool_args)})"
         )
         result_str = current_cycle[1].compressed()
 
         chat_memory_string = f"- {action_str}: {result_str}"
         self.memory.chat_memory.add_message(SystemMessage(content=chat_memory_string))
 
-    def actuate(self, tool_name: str, tool_args: Any) -> ActuatorOutput:
+    def actuate(self, sense: SensoryOutput) -> ActuatorOutput:
         self.state.actuate()
         try:
-            result = self.actuator.actuate(tool_name=tool_name, tool_args=tool_args)
-            self.add_action_memory(tool_name, result)
+            result = self.actuator.actuate(sense=sense)
+            self.add_action_memory(sense=sense, result=result)
             return result
         finally:
             self.state.wait()
@@ -156,8 +158,8 @@ class Autosphere:
         # TODO: Error handling
         self.cycle_memory.append((output,))
 
-    def add_action_memory(self, tool_name: str, result: ActuatorOutput):
-        filtered_output = filter_output(tool_name, result)
+    def add_action_memory(self, sense: SensoryOutput, result: ActuatorOutput):
+        filtered_output = filter_output(sphere=self, sense=sense, output=result)
         self.cycle_memory[-1] = (self.cycle_memory[-1][0], filtered_output)
 
     @classmethod

@@ -21,19 +21,19 @@ if TYPE_CHECKING:
 @dataclass
 class SensoryOutput:
     reasoning: str
-    tool: str = "none"
+    tool_name: str = "none"
     tool_args: dict = field(default_factory=dict)
     finished: bool = False
 
     def compressed_dict(self):
         """Return this output as a dict that is smaller so that it uses fewer tokens"""
-        return {"tool": self.tool, "args": self.tool_args}
+        return {"tool": self.tool_name, "args": self.tool_args}
 
 
 class Sensor:
     """
-    A Sensor is in charge of taking sensory input, sending it to the LLM, taking the response, parsing it,
-    and then returning the output, which in our case is a function call and reasoning.
+    A Sensor is in charge of taking sensory input from a Sphere, sending it to the LLM, taking the response, parsing it,
+    and then returning the output, back (which in our case is a function call and reasoning) back to the Sphere.
     """
 
     sphere: "Autosphere"
@@ -44,9 +44,21 @@ class Sensor:
     def sense(self) -> Union[SensoryOutput, None]:
         history = self.compile_history()
 
+        # TODO: Put this in sphere class
+        documents = ""
+        if self.sphere.documents:
+            documents = (
+                "You have these documents available that you have requested before:"
+            )
+            for name, document in self.sphere.documents.items():
+                documents += f"\n~~~ {name}~~~\n"
+                documents += document
+                documents += f"\n~~~ End {name}~~~\n"
+
         functions_summary = ", ".join([f"{pack.name}()" for pack in self.sphere.packs])
         if history:
             execution_message = execution_prompt().format(
+                documents=documents,
                 functions=functions_summary,
                 history=history,
                 task=self.sphere.task,
@@ -108,11 +120,13 @@ class Sensor:
         try:
             parsed_tool_args = json.loads(function_call.get("arguments"))
             return SensoryOutput(
-                reasoning=response.content, tool=tool_name, tool_args=parsed_tool_args
+                reasoning=response.content,
+                tool_name=tool_name,
+                tool_args=parsed_tool_args,
             )
         except JSONDecodeError:
             return SensoryOutput(
                 reasoning=response.content,
-                tool=tool_name,
+                tool_name=tool_name,
                 tool_args={"output": function_call.get("arguments")},
             )

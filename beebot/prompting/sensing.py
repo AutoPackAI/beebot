@@ -18,10 +18,15 @@ You have these OpenAI functions at your disposal: {functions}. You may only exec
 
 Evaluate whether your available functions are sufficient to complete the task. If a necessary function is missing, use the get_more_functions() function to request it.
 
+
 {task}
 
 You have previously executed the following functions:
 {history}
+
+If there are repeated calls to the same function with the same output, you should change tactics.
+
+{documents}
 
 To progress in achieving your goals, follow these steps:
 - Analyze your past actions and the results they yielded.
