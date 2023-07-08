@@ -8,6 +8,8 @@ You have these OpenAI functions at your disposal: {functions}. You may only exec
 
 {task}
 
+You have access to these files: {file_list}
+
 Your instruction is to perform your first action by using only the provided OpenAI functions."""
 
 EXECUTION_TEMPLATE = """You are an Autonomous AI Assistant. Your actions are carried out by a computer program, and your thoughts are given to a human so that it can understand your thoughts.
@@ -24,6 +26,8 @@ You are also equipped with a vast array of general knowledge unrelated to this s
 
 You have previously executed the following functions:
 {history}
+
+You have access to these files: {file_list}
 
 To progress, take these steps:
 - Review the outcomes of past function executions. This includes the function used, the parameters provided, and the results returned.

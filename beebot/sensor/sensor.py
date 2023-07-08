@@ -14,6 +14,7 @@ from beebot.prompting.sensing import (
     execution_prompt,
     initiating_prompt,
 )
+from beebot.utils import list_files
 
 if TYPE_CHECKING:
     from beebot.autosphere import Autosphere
@@ -48,12 +49,14 @@ class Sensor:
         if history:
             execution_message = execution_prompt().format(
                 functions=functions_summary,
+                file_list=list_files(self.sphere),
                 history=history,
                 task=self.sphere.task,
             )
         else:
             execution_message = initiating_prompt().format(
                 functions=functions_summary,
+                file_list=list_files(self.sphere),
                 task=self.sphere.task,
             )
 
@@ -105,11 +108,8 @@ class Sensor:
 
         memory_content = []
         for message in self.sphere.memory.chat_memory.messages:
-            if "\n" in memory_content:
-                # Use json for escaping of ", \n, etc
-                memory_content.append(json.dumps(message.content))
-            else:
-                memory_content.append(message.content)
+            # Use json for escaping of ", \n, etc
+            memory_content.append(json.dumps(message.content))
 
         return "\n".join(memory_content)
 

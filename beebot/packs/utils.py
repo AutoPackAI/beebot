@@ -18,11 +18,23 @@ def gather_packs(sphere: "Autosphere", cache: bool = True) -> list[Pack]:
     return system_packs(sphere)
 
 
-def system_pack_classes() -> list[Type[BaseTool]]:
+def silent_pack_classes() -> list[Type[BaseTool]]:
+    """These classes won't get written to history"""
     from beebot.packs.exit import Exit
     from beebot.packs.get_more_functions import GetMoreFunctions
 
     return [Exit, GetMoreFunctions]
+
+
+def system_pack_classes() -> list[Type[BaseTool]]:
+    from beebot.packs.exit import Exit
+    from beebot.packs.get_more_functions import GetMoreFunctions
+    from beebot.packs.list_files import ListFiles
+    from beebot.packs.read_file import ReadFile
+    from beebot.packs.delete_file import DeleteFile
+    from beebot.packs.write_file import WriteFile
+
+    return [Exit, GetMoreFunctions, WriteFile, ReadFile, ListFiles, DeleteFile]
 
 
 def system_packs(sphere: "Autosphere") -> list[BaseTool]:
@@ -144,7 +156,13 @@ def format_pack_to_openai_function(pack: Pack) -> dict[str, Any]:
 
 def run_args_from_args_schema(args_schema: BaseModel) -> dict[str, dict[str, str]]:
     run_args = {}
+    if not args_schema:
+        return run_args
+
     schema = args_schema.schema()
+    if not schema:
+        return run_args
+
     for param_name, param in schema.get("properties", []).items():
         run_args[param_name] = {
             "type": param.get("type", param.get("anyOf", "string")),

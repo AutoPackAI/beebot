@@ -1,4 +1,5 @@
 import json
+import os.path
 from logging import Logger
 from typing import Any, Union, TYPE_CHECKING
 
@@ -15,7 +16,7 @@ from statemachine import StateMachine, State
 from beebot.actuator import Actuator
 from beebot.actuator.actuator import ActuatorOutput
 from beebot.config import Config
-from beebot.packs.utils import gather_packs, system_pack_classes
+from beebot.packs.utils import gather_packs, silent_pack_classes
 from beebot.prompting import planning_prompt
 from beebot.sensor import Sensor
 from beebot.sensor.sensor import Sensation
@@ -56,6 +57,7 @@ class Autosphere:
     # digging through memory all the time, which should be reserved just for AI use.
     cycle_memory: list[tuple[Sensation, ActuatorOutput]]
     playwright: Playwright
+    workspace_path: str
 
     def __init__(self, initial_task: str):
         self.initial_task = initial_task
@@ -69,6 +71,11 @@ class Autosphere:
         self.cycle_memory = []
         self.sensor = Sensor(sphere=self)
         self.actuator = Actuator(sphere=self)
+
+        # Get the workspace path as an abspath in case cwd changes happen. TODO: Configurable workspace paths
+        self.workspace_path = os.path.abspath("workspace")
+        if not os.path.exists(self.workspace_path):
+            os.makedirs(self.workspace_path, exist_ok=True)
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
@@ -121,7 +128,7 @@ class Autosphere:
 
         # Don't memorize system calls
         if current_cycle[0].tool_name in [
-            klass.__fields__["name"].default for klass in system_pack_classes()
+            klass.__fields__["name"].default for klass in silent_pack_classes()
         ]:
             return
 
