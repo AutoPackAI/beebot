@@ -8,7 +8,7 @@ if TYPE_CHECKING:
 
 def list_files(sphere: "Autosphere"):
     """List a file from disk. If/when we do sandboxing this provides a convenient way to intervene"""
-    directory = sphere.workspace_path
+    directory = sphere.config.workspace_path
     file_basenames = [
         os.path.basename(file)
         for file in os.listdir(directory)

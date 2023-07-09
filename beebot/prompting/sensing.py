@@ -25,7 +25,7 @@ You possess broad, general knowledge. Use it for known facts, but ensure it's fa
 You have previously executed the following functions:
 {history}
 
-You have access to these files: {file_list}
+You have access to the following files, but no others: {file_list}
 
 To progress, take these steps:
 - Review the outcomes of past function executions. This includes the function used, the parameters provided, and the results returned.

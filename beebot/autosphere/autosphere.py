@@ -57,7 +57,6 @@ class Autosphere:
     # digging through memory all the time, which should be reserved just for AI use.
     cycle_memory: list[tuple[Sensation, ActuatorOutput]]
     playwright: Playwright
-    workspace_path: str
 
     def __init__(self, initial_task: str):
         self.initial_task = initial_task
@@ -72,10 +71,8 @@ class Autosphere:
         self.sensor = Sensor(sphere=self)
         self.actuator = Actuator(sphere=self)
 
-        # Get the workspace path as an abspath in case cwd changes happen. TODO: Configurable workspace paths
-        self.workspace_path = os.path.abspath("workspace")
-        if not os.path.exists(self.workspace_path):
-            os.makedirs(self.workspace_path, exist_ok=True)
+        if not os.path.exists(self.config.workspace_path):
+            os.makedirs(self.config.workspace_path, exist_ok=True)
 
     def setup(self):
         """These are here instead of init because they involve network requests"""

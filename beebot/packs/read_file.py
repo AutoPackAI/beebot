@@ -25,7 +25,7 @@ def read_file(sphere: Autosphere, filename: str):
     try:
         # Just in case they give us a path
         filename = os.path.basename(filename)
-        file_path = os.path.join(sphere.workspace_path, filename)
+        file_path = os.path.join(sphere.config.workspace_path, filename)
         if not os.path.exists(file_path):
             return "Error: No such file"
 

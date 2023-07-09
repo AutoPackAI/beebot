@@ -10,6 +10,7 @@ class Config(BaseModel):
     auto_install_dependencies: bool = True
     log_level: str = "INFO"
     hard_exit: bool = False
+    workspace_path: str = "workspace"
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -26,6 +27,8 @@ class Config(BaseModel):
             kwargs["auto_install_dependencies"] = hard_exit
         if (hard_exit := os.getenv("LOG_LEVEL")) is not None:
             kwargs["log_level"] = hard_exit
+        if (workspace_path := os.getenv("WORKSPACE_PATH")) is not None:
+            kwargs["workspace_path"] = os.path.abspath(workspace_path)
 
         return cls(**kwargs)
 

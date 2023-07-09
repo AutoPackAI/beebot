@@ -31,8 +31,10 @@ def write_file(sphere: Autosphere, filename: str, text_content: str):
     try:
         # Just in case they give us a path
         filename = os.path.basename(filename)
-        with open(os.path.join(sphere.workspace_path, filename), "w+") as f:
+        file_path = os.path.join(sphere.config.workspace_path, filename)
+        with open(file_path, "w+") as f:
             f.write(text_content)
+        sphere.logger.info(f"Successfully wrote a file to {file_path}")
         return f"Successfully wrote to {filename}"
     except Exception as e:
         return f"Error: {e}"
