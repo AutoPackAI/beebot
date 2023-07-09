@@ -1,30 +1,33 @@
 import logging
 import os
 
+from pydantic import BaseModel
 
-class Config:
+
+class Config(BaseModel):
     openai_api_key: str = None
     auto_install_packs: bool = True
     auto_install_dependencies: bool = True
     log_level: str = "INFO"
-
-    def __init__(self, *args, **kwargs):
-        if openai_api_key := kwargs.get("openai_api_key"):
-            self.openai_api_key = openai_api_key
-
-        if auto_install_packs := kwargs.get("auto_install_packs"):
-            self.auto_install_packs = auto_install_packs
-
-        if auto_install_dependencies := kwargs.get("auto_install_dependencies"):
-            self.auto_install_dependencies = auto_install_dependencies
+    hard_exit: bool = False
 
     @classmethod
     def from_env(cls) -> "Config":
-        return cls(
-            openai_api_key=os.getenv("OPENAI_API_KEY"),
-            auto_install_packs=os.getenv("AUTO_INSTALL_PACKS"),
-            auto_install_dependencies=os.getenv("AUTO_INSTALL_DEPENDENCIES")
-        )
+        kwargs = {}
+
+        # Go through and only supply kwargs if the values are actually set, otherwise Pydantic complains
+        if (hard_exit := os.getenv("HARD_EXIT")) is not None:
+            kwargs["hard_exit"] = hard_exit
+        if (hard_exit := os.getenv("OPENAI_API_KEY")) is not None:
+            kwargs["openai_api_key"] = hard_exit
+        if (hard_exit := os.getenv("AUTO_INSTALL_PACKS")) is not None:
+            kwargs["auto_install_packs"] = hard_exit
+        if (hard_exit := os.getenv("AUTO_INSTALL_DEPENDENCIES")) is not None:
+            kwargs["auto_install_dependencies"] = hard_exit
+        if (hard_exit := os.getenv("LOG_LEVEL")) is not None:
+            kwargs["log_level"] = hard_exit
+
+        return cls(**kwargs)
 
     def custom_logger(self, name: str) -> logging.Logger:
         log = logging.getLogger(name)

@@ -1,6 +1,7 @@
 # each test runs on cwd to its temp dir
+import os
+import shutil
 import sys
-from unittest.mock import patch
 
 import pytest
 from dotenv import load_dotenv
@@ -15,6 +16,11 @@ def go_to_tmpdir(request):
     # ensure local test created packages can be imported
     sys.path.insert(0, str(tmpdir))
 
+    # In an ideal world we would truly end-to-end pack search, but it's really expensive to do every time, so we copy it
+    source_dir = ".autopack"
+    destination_dir = os.path.join(tmpdir.strpath, ".autopack")
+    shutil.copytree(source_dir, destination_dir)
+
     # Chdir only for the duration of the test.
     with tmpdir.as_cwd():
         yield
@@ -27,16 +33,10 @@ def simple_task():
 
 @pytest.fixture()
 def sphere(simple_task):
-    return Autosphere(initial_task=simple_task)
-
-
-@pytest.fixture(autouse=True)
-def mock_run_exit(sphere):
-    def mocked_run_exit():
-        sphere.state.finish()
-
-    with patch("beebot.packs.exit.run_exit", side_effect=mocked_run_exit):
-        yield
+    sphere_obj = Autosphere(initial_task=simple_task)
+    sphere_obj.setup()
+    sphere_obj.config.hard_exit = False
+    return sphere_obj
 
 
 @pytest.fixture(autouse=True)

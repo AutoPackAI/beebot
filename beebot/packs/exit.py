@@ -36,14 +36,17 @@ def run_exit(
     sphere.state.finish()
     # TODO: Save the output somehow
     if success:
-        print("\n=== Task completed ===")
+        sphere.logger.info("\n=== Task completed ===")
     else:
-        print("\n=== Task failed ===")
+        sphere.logger.info("\n=== Task failed ===")
 
-    print(f"- Conclusion: {conclusion}")
-    print(f"- Process Summary: {process_summary}")
-    print(f"- Function Summary: {function_summary}")
-    exit()
+    sphere.logger.info(f"- Conclusion: {conclusion}")
+    sphere.logger.info(f"- Process Summary: {process_summary}")
+    sphere.logger.info(f"- Function Summary: {function_summary}")
+    if sphere.config.hard_exit:
+        exit()
+
+    return "Exited"
 
 
 PACK_DESCRIPTION = "Exits the program, signalling that all tasks have bene completed and all goals have been met."

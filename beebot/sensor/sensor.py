@@ -108,8 +108,7 @@ class Sensor:
 
         memory_content = []
         for message in self.sphere.memory.chat_memory.messages:
-            # Use json for escaping of ", \n, etc
-            memory_content.append(json.dumps(message.content))
+            memory_content.append(message.content)
 
         return "\n".join(memory_content)
 
