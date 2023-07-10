@@ -26,7 +26,7 @@ logger = logging.getLogger(__name__)
 
 
 class GetPacksArgs(BaseModel):
-    function_request: str = Field(
+    desired_functionality: str = Field(
         ...,
         description="Express the desired operation or outcome of the function you need in simple, plain English.",
     )
