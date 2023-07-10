@@ -3,7 +3,7 @@ import argparse
 
 from dotenv import load_dotenv
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 
 
 def parse_args():
@@ -28,8 +28,9 @@ def main():
         print("> ", end="")
         task = input()
 
-    sphere = Autosphere.init(task)
-    while output := sphere.cycle():
+    body = Body(initial_task=task)
+    body.setup()
+    while output := body.cycle():
         print("=== Cycle Output ===")
         print(output)
 

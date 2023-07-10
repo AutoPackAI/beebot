@@ -3,7 +3,7 @@ from typing import Callable, Type
 from langchain.tools import StructuredTool
 from pydantic import BaseModel
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import get_module_path
 from beebot.utils import list_files
@@ -20,11 +20,11 @@ class ListFilesTool(StructuredTool):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     func: Callable = list_files
-    sphere: Autosphere
+    body: Body
     args_schema: Type[BaseModel] = Type[ListFilesArgs]
 
     def _run(self, *args, **kwargs):
-        return super()._run(*args, sphere=self.sphere, **kwargs)
+        return super()._run(*args, body=self.body, **kwargs)
 
 
 class ListFiles(SystemBasePack):

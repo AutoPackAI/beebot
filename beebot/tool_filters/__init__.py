@@ -1,34 +1,30 @@
 from typing import TYPE_CHECKING
 
-from beebot.actuator.actuator import ActuatorOutput
-from beebot.sensor.sensor import Sensation
+from beebot.models.observation import Observation
+from beebot.models.stimulus import Stimulus
 from beebot.tool_filters.filter_long_documents import filter_long_documents
-from beebot.tool_filters.list_directory import filter_list_directory_output
-from beebot.tool_filters.read_file import filter_read_file_output
 
 if TYPE_CHECKING:
-    from beebot.autosphere import Autosphere
+    from beebot.body import Body
 
-FILTERS = {
-    "list_directory": filter_list_directory_output,
-    "read_file": filter_read_file_output,
-}
+FILTERS = {}
 
 GLOBAL_FILTERS = [filter_long_documents]
 
 
 def filter_output(
-    sphere: "Autosphere", sense: Sensation, output: ActuatorOutput
-) -> ActuatorOutput:
-    tool_name = sense.tool_name
+    body: "Body", stimulus: Stimulus, action, Action, observation: Observation
+) -> Observation:
+    """If any function call needs to have its content changed to make it more readable for our LLM, do it here."""
+    tool_name = action.tool_name
     if filter_fn := FILTERS.get(tool_name):
-        new_response = filter_fn(sphere, sense, output)
+        new_response = filter_fn(body, stimulus, action, observation)
         if new_response:
-            output.response = new_response
+            observation.response = new_response
 
     for filter_fn in GLOBAL_FILTERS:
-        new_response = filter_fn(sphere, sense, output)
+        new_response = filter_fn(body, stimulus, action, observation)
         if new_response:
-            output.response = new_response
+            observation.response = new_response
 
-    return output
+    return observation

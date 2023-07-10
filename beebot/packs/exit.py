@@ -1,15 +1,18 @@
+import logging
 from typing import Callable, Type
 
 from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import (
     get_module_path,
 )
 
 PACK_NAME = "exit"
+
+logger = logging.getLogger(__name__)
 
 
 class ExitArgs(BaseModel):
@@ -27,23 +30,23 @@ class ExitArgs(BaseModel):
 
 
 def run_exit(
-    sphere: Autosphere,
+    body: Body,
     success: str,
     conclusion: str,
     process_summary: str,
     function_summary: str,
 ):
-    sphere.state.finish()
+    body.state.finish()
     # TODO: Save the output somehow
     if success:
-        sphere.logger.info("\n=== Task completed ===")
+        logger.info("\n=== Task completed ===")
     else:
-        sphere.logger.info("\n=== Task failed ===")
+        logger.info("\n=== Task failed ===")
 
-    sphere.logger.info(f"- Conclusion: {conclusion}")
-    sphere.logger.info(f"- Process Summary: {process_summary}")
-    sphere.logger.info(f"- Function Summary: {function_summary}")
-    if sphere.config.hard_exit:
+    logger.info(f"- Conclusion: {conclusion}")
+    logger.info(f"- Process Summary: {process_summary}")
+    logger.info(f"- Function Summary: {function_summary}")
+    if body.config.hard_exit:
         exit()
 
     return "Exited"
@@ -57,10 +60,10 @@ class ExitTool(StructuredTool):
     description: str = PACK_DESCRIPTION
     func: Callable = run_exit
     args_schema: Type[BaseModel] = Type[ExitArgs]
-    sphere: Autosphere
+    body: Body
 
     def _run(self, *args, **kwargs):
-        return super()._run(*args, sphere=self.sphere, **kwargs)
+        return super()._run(*args, body=self.body, **kwargs)
 
 
 class Exit(SystemBasePack):

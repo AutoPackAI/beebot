@@ -5,7 +5,7 @@ from typing import Callable, Type
 from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import get_module_path
 
@@ -20,12 +20,12 @@ class ReadFileArgs(BaseModel):
     )
 
 
-def read_file(sphere: Autosphere, filename: str):
+def read_file(body: Body, filename: str):
     """Read a file from disk. If/when we do sandboxing this provides a convenient way to intervene"""
     try:
         # Just in case they give us a path
         filename = os.path.basename(filename)
-        file_path = os.path.join(sphere.config.workspace_path, filename)
+        file_path = os.path.join(body.config.workspace_path, filename)
         if not os.path.exists(file_path):
             return "Error: No such file"
 
@@ -41,10 +41,10 @@ class ReadFileTool(StructuredTool):
     description: str = PACK_DESCRIPTION
     func: Callable = read_file
     args_schema: Type[BaseModel] = Type[ReadFileArgs]
-    sphere: Autosphere
+    body: Body
 
     def _run(self, *args, **kwargs):
-        return super()._run(*args, sphere=self.sphere, **kwargs)
+        return super()._run(*args, body=self.body, **kwargs)
 
 
 class ReadFile(SystemBasePack):

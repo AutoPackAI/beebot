@@ -6,7 +6,7 @@ import sys
 import pytest
 from dotenv import load_dotenv
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 
 
 @pytest.fixture(autouse=True)
@@ -32,11 +32,11 @@ def simple_task():
 
 
 @pytest.fixture()
-def sphere(simple_task):
-    sphere_obj = Autosphere(initial_task=simple_task)
-    sphere_obj.setup()
-    sphere_obj.config.hard_exit = False
-    return sphere_obj
+def body(simple_task):
+    body_obj = Body(initial_task=simple_task)
+    body_obj.setup()
+    body_obj.config.hard_exit = False
+    return body_obj
 
 
 @pytest.fixture(autouse=True)

@@ -3,7 +3,7 @@ from typing import Callable, Type
 from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import get_module_path
 
@@ -26,10 +26,10 @@ class DeleteFileTool(StructuredTool):
     description: str = PACK_DESCRIPTION
     func: Callable = delete_file
     args_schema: Type[BaseModel] = Type[DeleteFileArgs]
-    sphere: Autosphere
+    body: Body
 
     def _run(self, *args, **kwargs):
-        return super()._run(*args, sphere=self.sphere, **kwargs)
+        return super()._run(*args, body=self.body, **kwargs)
 
 
 class DeleteFile(SystemBasePack):

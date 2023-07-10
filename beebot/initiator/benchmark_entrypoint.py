@@ -2,13 +2,14 @@ import sys
 
 from dotenv import load_dotenv
 
-from beebot.autosphere import Autosphere
+from beebot.body import Body
 
 
 def run_specific_agent(task: str) -> None:
     load_dotenv()
-    sphere = Autosphere.init(task)
-    while output := sphere.cycle():
+    body = Body(task)
+    body.setup()
+    while output := body.cycle():
         print(output)
 
 
