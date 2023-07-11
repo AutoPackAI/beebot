@@ -31,7 +31,13 @@ class Sensor:
             if response_line:
                 logger.info(response_line)
         logger.info("")
-        logger.info(f"Functions provided: {[p.tool.name for p in self.body.packs]}")
+        try:
+            logger.info(f"Functions provided: {[p.tool.name for p in self.body.packs]}")
+        except Exception as e:
+            print(e)
+            import pdb
+
+            pdb.set_trace()
 
         response = self.body.brain.call_llm([stimulus.input])
         logger.info("=== Received from LLM ===")

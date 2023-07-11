@@ -83,13 +83,13 @@ def suggested_packs(
                 pack_ids = cached_results.get(initial_task)
 
     if not pack_ids:
-        body.logger.info("Selecting packs")
-        pack_ids = select_packs(task, body.llm)[:3]
-        body.logger.info(f"Packs selected: {pack_ids}")
+        logger.info("Selecting packs")
+        pack_ids = select_packs(task, body.brain.llm)[:3]
+        logger.info(f"Packs selected: {pack_ids}")
 
     packs = get_packs_by_ids(body=body, pack_ids=pack_ids)
     used_pack_ids = [pack.pack_id for pack in packs]
-    body.logger.info(f"Packs used: {used_pack_ids}")
+    logger.info(f"Packs used: {used_pack_ids}")
 
     if cache:
         os.makedirs(os.path.dirname(cache_path), exist_ok=True)
@@ -115,26 +115,24 @@ def get_packs_by_ids(pack_ids: list[str], body: "Body") -> list["Pack"]:
             continue
 
         if body.config.auto_install_packs:
-            body.logger.info(f"Installing pack {pack_id}")
+            logger.info(f"Installing pack {pack_id}")
             try:
                 pack = install_pack(
                     pack_id,
                     force_dependencies=body.config.auto_install_dependencies,
                 )
             except Exception as e:
-                body.logger.warning(
-                    f"Pack {pack_id} could not be loaded, skipping: {e}"
-                )
+                logger.warning(f"Pack {pack_id} could not be loaded, skipping: {e}")
                 continue
 
             if pack:
                 packs.append(pack)
             else:
-                body.logger.warning(f"Pack {pack_id} could not be installed")
+                logger.warning(f"Pack {pack_id} could not be installed")
                 continue
 
         else:
-            body.logger.warning(f"Pack {pack_id} is not installed")
+            logger.warning(f"Pack {pack_id} is not installed")
             continue
 
     for pack in packs:
@@ -142,9 +140,7 @@ def get_packs_by_ids(pack_ids: list[str], body: "Body") -> list["Pack"]:
             init_args = body.get_init_args(pack=pack)
             pack.init_tool(init_args=init_args)
         except Exception as e:
-            body.logger.warning(
-                f"Pack {pack.pack_id} could not be loaded, skipping {e}"
-            )
+            logger.warning(f"Pack {pack.pack_id} could not be loaded, skipping {e}")
             continue
 
     return packs

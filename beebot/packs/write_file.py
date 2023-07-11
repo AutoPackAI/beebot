@@ -37,7 +37,7 @@ def write_file(body: Body, filename: str, text_content: str):
         file_path = os.path.join(body.config.workspace_path, filename)
         with open(file_path, "w+") as f:
             f.write(text_content)
-        logger.info(f"Successfully wrote a file to {file_path}")
+        logger.info(f"Successfully wrote to {file_path}")
         return f"Successfully wrote to {filename}"
     except Exception as e:
         return f"Error: {e}"

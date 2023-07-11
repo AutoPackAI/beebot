@@ -10,7 +10,7 @@ class Config(BaseModel):
     helicone_key: str = None
     auto_install_packs: bool = True
     auto_install_dependencies: bool = True
-    log_level: str = "DEBUG"
+    log_level: str = "INFO"
     hard_exit: bool = False
     workspace_path: str = "workspace"
 
@@ -46,7 +46,7 @@ class Config(BaseModel):
         )
 
         file_handler = logging.FileHandler("logs/debug.log")
-        file_handler.setLevel(self.log_level)
+        file_handler.setLevel("DEBUG")
         file_handler.setFormatter(
             logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
         )

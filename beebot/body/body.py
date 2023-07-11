@@ -3,9 +3,28 @@ import os.path
 from typing import Any
 
 from autopack.pack import Pack
-from langchain import WikipediaAPIWrapper, GoogleSerperAPIWrapper
+from langchain import (
+    WikipediaAPIWrapper,
+    GoogleSerperAPIWrapper,
+    GoogleSearchAPIWrapper,
+    WolframAlphaAPIWrapper,
+    ArxivAPIWrapper,
+    SearxSearchWrapper,
+)
 from langchain.requests import TextRequestsWrapper
 from langchain.schema import AIMessage, Memory
+from langchain.utilities import (
+    DuckDuckGoSearchAPIWrapper,
+    BingSearchAPIWrapper,
+    GraphQLAPIWrapper,
+    BraveSearchWrapper,
+    PubMedAPIWrapper,
+    SceneXplainAPIWrapper,
+    ZapierNLAWrapper,
+    GooglePlacesAPIWrapper,
+    OpenWeatherMapAPIWrapper,
+    MetaphorSearchAPIWrapper,
+)
 from playwright.sync_api import Playwright, PlaywrightContextManager
 from statemachine import StateMachine, State
 
@@ -20,6 +39,31 @@ from beebot.packs.system_pack import system_packs
 from beebot.sensor import Sensor
 
 logger = logging.getLogger(__name__)
+
+RETRY_LIMIT = 3
+API_WRAPPERS = {
+    "wikipedia": WikipediaAPIWrapper,
+    "google_search": GoogleSearchAPIWrapper,
+    "google_search_results_json": GoogleSearchAPIWrapper,
+    "google_serper": GoogleSerperAPIWrapper,
+    "google_serrper_results_json": GoogleSerperAPIWrapper,
+    "wolfram_alpha": WolframAlphaAPIWrapper,
+    "duckduckgo_results_json": DuckDuckGoSearchAPIWrapper,
+    "duckduckgo_search": DuckDuckGoSearchAPIWrapper,
+    "bing_search_results_json": BingSearchAPIWrapper,
+    "bing_search": BingSearchAPIWrapper,
+    "query_graphql": GraphQLAPIWrapper,
+    "brave_search": BraveSearchWrapper,
+    "arxiv": ArxivAPIWrapper,
+    "pubmed": PubMedAPIWrapper,
+    "image_explainer": SceneXplainAPIWrapper,
+    "zapiernla_list_actions": ZapierNLAWrapper,
+    "google_places": GooglePlacesAPIWrapper,
+    "searx_search_results": SearxSearchWrapper,
+    "searx_search": SearxSearchWrapper,
+    "openweathermap": OpenWeatherMapAPIWrapper,
+    "metaphor_search_results_json": MetaphorSearchAPIWrapper,
+}
 
 
 class BodyStateMachine(StateMachine):
@@ -82,10 +126,10 @@ class Body:
                 init_args["sync_browser"] = self.playwright.chromium.launch()
             if arg_name == "requests_wrapper":
                 init_args["requests_wrapper"] = TextRequestsWrapper()
-            if arg_name == "api_wrapper" and pack.name == "Wikipedia":
-                init_args["api_wrapper"] = WikipediaAPIWrapper()
-            if arg_name == "api_wrapper" and pack.name == "GoogleNewsSearchResultsJSON":
-                init_args["api_wrapper"] = GoogleSerperAPIWrapper
+
+            pack_api_wrapper = API_WRAPPERS.get(pack.name)
+            if pack_api_wrapper and callable(pack_api_wrapper):
+                init_args["api_wrapper"] = pack_api_wrapper()
 
         return init_args
 

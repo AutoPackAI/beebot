@@ -32,12 +32,13 @@ class SystemBasePack(Pack):
 
 def system_pack_classes() -> list[Type["Pack"]]:
     from beebot.packs.exit import Exit
-    from beebot.packs.get_more_functions import GetMoreFunctions
     from beebot.packs.read_file import ReadFile
     from beebot.packs.delete_file import DeleteFile
     from beebot.packs.write_file import WriteFile
+    from beebot.packs.get_more_tools import GetMoreTools
+    from beebot.packs.general_knowledge import GeneralKnowledge
 
-    return [Exit, GetMoreFunctions, WriteFile, ReadFile, DeleteFile]
+    return [Exit, GetMoreTools, WriteFile, ReadFile, DeleteFile, GeneralKnowledge]
 
 
 def system_packs(body: "Body") -> list["Pack"]:
@@ -51,8 +52,7 @@ def system_packs(body: "Body") -> list["Pack"]:
 
 
 def silent_pack_names() -> list[str]:
-    """These classes won't get written to history"""
+    """These classes won't get written to history. This may not be needed?"""
     from beebot.packs.exit import Exit
-    from beebot.packs.get_more_functions import GetMoreFunctions
 
-    return [Exit.name, GetMoreFunctions.name]
+    return [Exit.name]

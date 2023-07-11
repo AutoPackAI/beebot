@@ -1,6 +1,3 @@
-Here's the edited version of the document with improvements to sentence structure and flow while maintaining the
-terminology:
-
 # BeeBot AI System Architecture
 
 The architecture of BeeBot follows a Stimulus/Action cycle, where a Stimulus represents an event or input that needs to
