@@ -33,6 +33,7 @@ class Brain:
         planned = self.call_llm(
             messages=[SystemMessage(content=formatted_prompt.content)]
         ).content
+        planned += "\nFinally, call exit()."
 
         logger.info("=== Plan Created ===")
         logger.info(planned)

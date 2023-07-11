@@ -11,6 +11,7 @@ from pydantic import BaseModel
 
 if TYPE_CHECKING:
     from autopack.pack import Pack
+    from beebot.body import Body
 
 logger = logging.getLogger(__name__)
 

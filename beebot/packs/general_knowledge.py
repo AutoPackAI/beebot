@@ -9,13 +9,13 @@ from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import get_module_path
 
 PACK_NAME = "general_knowledge"
-PACK_DESCRIPTION = "Fetches general knowledge information based on a provided query."
+PACK_DESCRIPTION = "Makes a query to ChatGPT to answer general knowledge questions outside the scope of this task."
 
 
 class GeneralKnowledgeArgs(BaseModel):
     query: str = Field(
         ...,
-        description="The question or statement to pose to Chat-GPT.",
+        description="The question or statement to pose to ChatGPT.",
     )
 
 
