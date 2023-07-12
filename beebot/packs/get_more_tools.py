@@ -46,7 +46,13 @@ def run_get_more_tools(body: Body, desired_functionality: str):
     if request_involves_coding and not task_involves_coding:
         return []
 
-    new_packs = suggested_packs(body=body, task=desired_functionality, cache=True)
+    existing_pack_names = [pack.name for pack in body.packs]
+    suggested_new_packs = suggested_packs(
+        body=body, task=desired_functionality, cache=True
+    )
+    new_packs = [
+        pack for pack in suggested_new_packs if pack.name not in existing_pack_names
+    ]
     initialized_packs = []
     for pack in new_packs:
         try:

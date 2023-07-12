@@ -38,6 +38,7 @@ from beebot.memory.memory_storage import MemoryStorage
 from beebot.models import Action, Stimulus
 from beebot.models.observation import Observation
 from beebot.packs.system_pack import system_packs
+from beebot.packs.utils import gather_packs
 from beebot.sensor import Sensor
 
 logger = logging.getLogger(__name__)
@@ -145,6 +146,7 @@ class Body:
             return
 
         self.plan()
+        gather_packs(self, pack_limit=10)
 
         # If a stimulus was not supplied, generate one from history
         if not stimulus:

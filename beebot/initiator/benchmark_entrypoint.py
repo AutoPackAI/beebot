@@ -10,7 +10,7 @@ def run_specific_agent(task: str) -> None:
     body = Body(task)
     body.setup()
     while output := body.cycle():
-        print(output)
+        print(output.observation.response)
 
 
 if __name__ == "__main__":

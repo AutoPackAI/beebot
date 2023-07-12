@@ -27,22 +27,14 @@ class Sensor:
         """Take a stimulus and send it to the Brain (LLM), returning it back to the Body
         TODO: Maybe take in stimulus and not just go off of history"""
         logger.info("=== Sent to LLM ===")
-        for response_line in stimulus.input.content.split("\n"):
-            if response_line:
-                logger.info(response_line)
+        logger.info(stimulus.input.content)
         logger.info("")
-        try:
-            logger.info(f"Functions provided: {[p.tool.name for p in self.body.packs]}")
-        except Exception as e:
-            print(e)
-            import pdb
-
-            pdb.set_trace()
+        logger.info(f"Functions provided: {[p.tool.name for p in self.body.packs]}")
 
         response = self.body.brain.call_llm([stimulus.input])
         logger.info("=== Received from LLM ===")
-        for response_line in response.content.replace("\n\n", "\n").split("\n"):
-            if response_line:
-                logger.info(response_line)
+        logger.info(response.content)
+        logger.info("")
         logger.info(f"Function Call: {json.dumps(response.additional_kwargs)}")
+        logger.info("")
         return response

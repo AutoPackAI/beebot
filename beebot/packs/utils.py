@@ -64,8 +64,24 @@ def get_module_path(file: str) -> str:
     return os.path.relpath(module_directory, start=os.getcwd()).replace(os.sep, ".")
 
 
+def gather_packs(body: "Body", pack_limit: int = 3) -> list[str]:
+    new_packs = suggested_packs(body=body, task=body.initial_task)
+
+    initialized_packs = []
+    for pack in new_packs:
+        try:
+            pack.init_tool(init_args=body.get_init_args(pack=pack))
+            initialized_packs.append(pack)
+        except Exception as e:
+            logger.warning(f"Pack {pack.name} could not be initialized: {e}")
+
+    body.packs += initialized_packs[:pack_limit]
+    new_packs_list = ", ".join([pack.name for pack in initialized_packs[:pack_limit]])
+    return new_packs_list
+
+
 def suggested_packs(
-    body: "Body", task: str, initial_task: str = None, cache: bool = True
+    body: "Body", task: str, pack_limit: int = 3, cache: bool = True
 ) -> list["Pack"]:
     """This would be more convenient as an instance method on Body but good god is this long and unimportant to
     what the rest of it is doing. So it's here."""
@@ -73,7 +89,7 @@ def suggested_packs(
     cache_path = os.path.abspath(".autopack/selection_cache.json")
 
     # The initial task is the cache key, so we can't cache if we don't have it
-    if not initial_task:
+    if not task:
         cache = False
 
     if cache:
@@ -81,11 +97,11 @@ def suggested_packs(
             with open(cache_path) as f:
                 cached_results = json.load(f)
             if body.initial_task in cached_results:
-                pack_ids = cached_results.get(initial_task)
+                pack_ids = cached_results.get(task)
 
     if not pack_ids:
         logger.info("Selecting packs")
-        pack_ids = select_packs(task, body.brain.llm)[:3]
+        pack_ids = select_packs(task, body.brain.llm)[:pack_limit]
         logger.info(f"Packs selected: {pack_ids}")
 
     packs = get_packs_by_ids(body=body, pack_ids=pack_ids)

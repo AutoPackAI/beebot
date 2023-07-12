@@ -27,13 +27,15 @@ class Brain:
         self.llm = ChatOpenAI(model_name=IDEAL_MODEL, model_kwargs={"top_p": 0.2})
 
     def plan(self, task: str) -> str:
+        functions_summary = ", ".join([f"{pack.name}" for pack in self.body.packs])
         formatted_prompt = planning_prompt().format(
-            task=task, history=self.body.memories.compile_history()
+            task=task,
+            history=self.body.memories.compile_history(),
+            functions=functions_summary,
         )
         planned = self.call_llm(
             messages=[SystemMessage(content=formatted_prompt.content)],
         ).content
-        planned += "\nWhen you have completed your task, use the exit() tool."
 
         logger.info("=== Plan Created ===")
         logger.info(planned)

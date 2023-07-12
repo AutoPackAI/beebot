@@ -17,24 +17,26 @@ logger = logging.getLogger(__name__)
 
 class ExitArgs(BaseModel):
     success: bool = Field(..., description="Success")
-    conclusion: str = Field(
-        description="Summary of your experience on completing the task.", default=""
+    categorization: str = Field(
+        description="Assign a broad category to this task, ensuring it's general enough to protect sensitive details yet specific enough to group similar tasks.",
+        default="",
     )
-    process_summary: str = Field(
-        description="Summary of the task's efficiency.", default=""
+    conclusion: str = Field(
+        description="Reflect on the task execution process. Highlight any challenges faced and potential alternative strategies.",
+        default="",
     )
     function_summary: str = Field(
-        description="Overview of function utilization and suggestions for improvements.",
+        description="Create a concise review of the functions used, their effectiveness, and pinpoint potential areas for future development to optimize task execution.",
         default="",
     )
 
 
 def run_exit(
     body: Body,
-    success: str,
-    conclusion: str,
-    process_summary: str,
-    function_summary: str,
+    success: bool,
+    categorization: str = "",
+    conclusion: str = "",
+    function_summary: str = "",
 ):
     body.state.finish()
     # TODO: Save the output somehow
@@ -43,8 +45,8 @@ def run_exit(
     else:
         logger.info("\n=== Task failed ===")
 
+    logger.info(f"- Categorization: {categorization}")
     logger.info(f"- Conclusion: {conclusion}")
-    logger.info(f"- Process Summary: {process_summary}")
     logger.info(f"- Function Summary: {function_summary}")
     if body.config.hard_exit:
         exit()

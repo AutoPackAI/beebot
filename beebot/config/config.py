@@ -42,7 +42,8 @@ class Config(BaseModel):
         console_handler = logging.StreamHandler()
         console_handler.setLevel(self.log_level)
         console_handler.setFormatter(
-            ColoredFormatter("[%(levelname)s][%(funcName)s] %(message)s")
+            ColoredFormatter("%(message)s")
+            # ColoredFormatter("[%(levelname)s][%(funcName)s] %(message)s")
         )
 
         file_handler = logging.FileHandler("logs/debug.log")
