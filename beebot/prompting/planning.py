@@ -8,6 +8,8 @@ Remember, the goal summary is not a step-by-step plan, but rather a broad unders
 
 Focus on ensuring that the human's task will be fully completed by clearly specifying any desired outcomes.
 
+The 
+
 You are provided the following task by a human user:
 {task}
 

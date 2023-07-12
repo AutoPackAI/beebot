@@ -1,3 +1,4 @@
+import json
 from typing import Callable, Type
 
 from langchain.schema import HumanMessage
@@ -8,14 +9,16 @@ from beebot.body import Body
 from beebot.packs.system_pack import SystemBasePack
 from beebot.packs.utils import get_module_path
 
-PACK_NAME = "general_knowledge"
-PACK_DESCRIPTION = "Makes a query to ChatGPT to answer general knowledge questions outside the scope of this task."
+PACK_NAME = "encyclopedia"
+PACK_DESCRIPTION = (
+    "Useful for obtaining factual information on general knowledge topics."
+)
 
 
 class GeneralKnowledgeArgs(BaseModel):
     query: str = Field(
         ...,
-        description="The question or statement to pose to ChatGPT.",
+        description="The question or statement to pose.",
     )
 
 
@@ -23,7 +26,7 @@ def general_knowledge(body: Body, query: str):
     try:
         # TODO: Maybe a custom prompt?
         response = body.brain.call_llm(messages=[HumanMessage(content=query)])
-        return response.content
+        return json.dumps(response.content)
     except Exception as e:
         return f"Error: {e}"
 

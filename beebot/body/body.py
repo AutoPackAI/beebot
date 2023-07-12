@@ -26,6 +26,7 @@ from langchain.utilities import (
     MetaphorSearchAPIWrapper,
 )
 from playwright.sync_api import Playwright, PlaywrightContextManager
+from pydantic import ValidationError
 from statemachine import StateMachine, State
 
 from beebot.brain import Brain
@@ -84,7 +85,7 @@ class BodyStateMachine(StateMachine):
 
 class Body:
     initial_task: str
-    task: str
+    current_plan: str
     state: BodyStateMachine
     packs: list["Pack"]
     memories: MemoryStorage
@@ -135,9 +136,9 @@ class Body:
 
     def plan(self):
         """Turn the initial task into a plan"""
-        self.task = self.brain.plan(self.initial_task)
+        self.current_plan = self.brain.plan(self.initial_task)
 
-    def cycle(self, stimulus: Stimulus = None) -> Memory:
+    def cycle(self, stimulus: Stimulus = None, retry_count: int = 0) -> Memory:
         """Step through one stimulus-action-observation loop"""
         if self.state.current_state == BodyStateMachine.done:
             return
@@ -147,16 +148,44 @@ class Body:
             stimulus = Stimulus.generate_stimulus(self)
 
         self.memories.add_stimulus(stimulus=stimulus)
-        brain_output = self.sense(stimulus)
 
-        action = self.brainstem.interpret_brain_output(brain_output)
+        action = self.sense_and_interpretation_with_retry(stimulus)
         self.memories.add_action(action=action)
 
-        observation = self.execute(action=action)
-        self.memories.add_observation(observation)
+        try:
+            observation = self.execute(action=action)
+            self.memories.add_observation(observation)
+        except ValidationError as e:
+            # It's likely the AI just sent bad arguments, try again.
+            logger.warning(
+                f"Invalid arguments received: {e}. {action.tool_name}({action.tool_args}"
+            )
+            if retry_count >= RETRY_LIMIT:
+                return
+            return self.cycle(stimulus, retry_count + 1)
 
         complete_memory = self.memories.finish()
         return complete_memory
+
+    def sense_and_interpretation_with_retry(
+        self, stimulus: Stimulus, retry_count: int = 0, previous_response: str = ""
+    ) -> Action:
+        if retry_count and previous_response:
+            stimulus.input.content += (
+                f"\n\nWarning: You have attempted this next action in the past unsuccessfully. Please reassess your "
+                f"strategy. Your failed attempt is: {previous_response}"
+            )
+
+        brain_output = self.sense(stimulus)
+        try:
+            return self.brainstem.interpret_brain_output(brain_output)
+        except ValueError:
+            logger.warning("Got invalid response from LLM, retrying...")
+            if retry_count >= RETRY_LIMIT:
+                raise ValueError(f"Got invalid response {RETRY_LIMIT} times in a row")
+            return self.sense_and_interpretation_with_retry(
+                stimulus, retry_count + 1, previous_response=brain_output.content
+            )
 
     def execute(self, action: Action) -> Observation:
         """Execute an action and keep track of state"""

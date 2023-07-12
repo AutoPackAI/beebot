@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 from langchain.schema import SystemMessage
 
-from beebot.prompting.sensing import initiating_prompt, stimulus_template
+from beebot.prompting.sensing import stimulus_template
 from beebot.utils import list_files
 
 if TYPE_CHECKING:
@@ -20,18 +20,12 @@ class Stimulus:
         history = body.memories.compile_history()
 
         functions_summary = ", ".join([f"{pack.name}" for pack in body.packs])
-        if history:
-            stimulus_message = stimulus_template().format(
-                functions=functions_summary,
-                file_list=list_files(body),
-                history=history,
-                task=body.task,
-            )
-        else:
-            stimulus_message = initiating_prompt().format(
-                functions=functions_summary,
-                file_list=list_files(body),
-                task=body.task,
-            )
+        stimulus_message = stimulus_template().format(
+            functions=functions_summary,
+            file_list=list_files(body),
+            history=history,
+            plan=body.current_plan,
+            task=body.initial_task,
+        )
 
         return cls(input_message=stimulus_message)
