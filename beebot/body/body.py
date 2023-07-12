@@ -12,7 +12,7 @@ from langchain import (
     SearxSearchWrapper,
 )
 from langchain.requests import TextRequestsWrapper
-from langchain.schema import AIMessage, Memory
+from langchain.schema import AIMessage
 from langchain.utilities import (
     DuckDuckGoSearchAPIWrapper,
     BingSearchAPIWrapper,
@@ -33,6 +33,7 @@ from beebot.brain import Brain
 from beebot.brainstem import Brainstem
 from beebot.config import Config
 from beebot.executor import Executor
+from beebot.memory import Memory
 from beebot.memory.memory_storage import MemoryStorage
 from beebot.models import Action, Stimulus
 from beebot.models.observation import Observation
@@ -142,6 +143,8 @@ class Body:
         """Step through one stimulus-action-observation loop"""
         if self.state.current_state == BodyStateMachine.done:
             return
+
+        self.plan()
 
         # If a stimulus was not supplied, generate one from history
         if not stimulus:

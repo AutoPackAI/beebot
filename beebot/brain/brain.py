@@ -24,10 +24,12 @@ class Brain:
 
     def __init__(self, body: "Body"):
         self.body = body
-        self.llm = ChatOpenAI(temperature=2, model_name=IDEAL_MODEL)
+        self.llm = ChatOpenAI(model_name=IDEAL_MODEL, model_kwargs={"top_p": 0.2})
 
     def plan(self, task: str) -> str:
-        formatted_prompt = planning_prompt().format(task=task)
+        formatted_prompt = planning_prompt().format(
+            task=task, history=self.body.memories.compile_history()
+        )
         planned = self.call_llm(
             messages=[SystemMessage(content=formatted_prompt.content)],
         ).content

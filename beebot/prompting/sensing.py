@@ -8,9 +8,9 @@ You possess broad, general knowledge. Use it for known facts, but ensure it's fa
 
 Avoid writing code unless specifically requested by the task.
 
-Your task is: {task}
+Your original task is: {task}
 
-Here is a high level plan that you may use to accomplish your task:
+Here is your high level plan:
 {plan}
 
 You have previously executed the following functions:

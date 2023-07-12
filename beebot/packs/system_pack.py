@@ -33,12 +33,10 @@ class SystemBasePack(Pack):
 def system_pack_classes() -> list[Type["Pack"]]:
     from beebot.packs.exit import Exit
     from beebot.packs.read_file import ReadFile
-    from beebot.packs.delete_file import DeleteFile
     from beebot.packs.write_file import WriteFile
     from beebot.packs.get_more_tools import GetMoreTools
-    from beebot.packs.general_knowledge import GeneralKnowledge
 
-    return [Exit, GetMoreTools, WriteFile, ReadFile, DeleteFile, GeneralKnowledge]
+    return [Exit, GetMoreTools, WriteFile, ReadFile]
 
 
 def system_packs(body: "Body") -> list["Pack"]:

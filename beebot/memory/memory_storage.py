@@ -36,14 +36,12 @@ class MemoryStorage:
 
         memory_table = []
         for i, memory in enumerate(self.memories):
-            # Does stimulus matter here? Probably not
-            if memory.observation.success:
-                memory_table.append(
-                    f"{i + 1}. {memory.action.tool_name}\n  - Arguments: {memory.action.tool_args}\n  - Outcome: {memory.observation.response}"
-                )
-            else:
-                memory_table.append(
-                    f"{i + 1}. {memory.action.tool_name}\n  - Arguments: {memory.action.tool_args}\n  - Outcome: {memory.observation.error_reason}"
-                )
+            action_format = f"{memory.action.tool_name}({memory.action.tool_args}"
+            outcome = (
+                memory.observation.response
+                if memory.observation.success
+                else memory.observation.error_reason
+            )
+            memory_table.append(f"{i + 1}. {action_format} -> {outcome}")
 
         return "\n".join(memory_table)
