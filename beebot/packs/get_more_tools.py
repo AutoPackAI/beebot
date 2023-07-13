@@ -1,3 +1,4 @@
+import json
 import logging
 from typing import Callable, Type
 
@@ -5,8 +6,9 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
 from beebot.body import Body
-from beebot.packs.system_pack import SystemBasePack
-from beebot.packs.utils import get_module_path
+from beebot.body.pack_utils import get_module_path, pack_summaries, all_packs
+from beebot.packs.system_base_pack import SystemBasePack
+from beebot.prompting.function_selection import get_more_tools_template
 
 PACK_NAME = "get_more_tools"
 PACK_DESCRIPTION = "Requests a tool necessary for task fulfillment."
@@ -32,39 +34,33 @@ class GetPacksArgs(BaseModel):
     )
 
 
-def run_get_more_tools(body: Body, desired_functionality: str):
-    from beebot.packs.utils import suggested_packs
-
-    task = body.initial_task.lower()
-
-    # Don't let it get access to coding/python things unless the task requires it. I can't get the prompt to do it.
-    # Perhaps ask the LLM if the task involves coding at the planning stage?
-    task_involves_coding = any(keyword in task for keyword in CODING_KEYWORDS)
-    request_involves_coding = any(
-        keyword in desired_functionality for keyword in CODING_KEYWORDS
+def run_get_more_tools(body: Body, desired_functionality: str) -> list[str]:
+    prompt = get_more_tools_template().format(
+        plan=body.current_plan,
+        functions_string=json.dumps(pack_summaries(body=body)),
+        functions_request=desired_functionality,
     )
-    if request_involves_coding and not task_involves_coding:
+
+    response = body.brain.llm([prompt])
+
+    try:
+        functions = json.loads(response.content).get("functions")
+    except json.JSONDecodeError:
         return []
 
-    existing_pack_names = [pack.name for pack in body.packs]
-    suggested_new_packs = suggested_packs(
-        body=body, task=desired_functionality, cache=True
-    )
-    new_packs = [
-        pack for pack in suggested_new_packs if pack.name not in existing_pack_names
-    ]
-    initialized_packs = []
-    for pack in new_packs:
+    packs = all_packs(body=body)
+    added_packs = []
+    # This is just returning ['get_more_tools']
+    for pack_data in functions:
+        pack_name = pack_data.get("name")
         try:
-            pack.init_tool(init_args=body.get_init_args(pack=pack))
-            initialized_packs.append(pack)
+            pack = packs[pack_name]
+            added_packs.append(pack.name)
+            body.packs[pack_name] = pack
         except Exception as e:
-            logger.warning(f"Pack {pack.name} could not be initialized: {e}")
+            logger.warning(f"Pack {pack_name} could not be initialized: {e}")
 
-    body.packs += initialized_packs[:3]
-    new_packs_list = ", ".join([pack.name for pack in initialized_packs[:3]])
-
-    return f"New Packs: {new_packs_list}"
+    return added_packs
 
 
 class GetMoreToolsTool(StructuredTool):
@@ -79,7 +75,10 @@ class GetMoreToolsTool(StructuredTool):
 
 
 class GetMoreTools(SystemBasePack):
-    name: str = PACK_NAME
+    class Meta:
+        name: str = PACK_NAME
+
+    name: str = Meta.name
     description: str = PACK_DESCRIPTION
     pack_id: str = f"autopack/beebot/{PACK_NAME}"
     module_path = get_module_path(__file__)

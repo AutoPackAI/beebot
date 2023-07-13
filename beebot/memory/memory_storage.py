@@ -1,3 +1,4 @@
+import json
 from typing import List
 
 from beebot.memory import Memory
@@ -35,13 +36,13 @@ class MemoryStorage:
             return ""
 
         memory_table = []
-        for i, memory in enumerate(self.memories):
-            action_format = f"{memory.action.tool_name}({memory.action.tool_args}"
+        for memory in self.memories:
+            action_format = f"{memory.action.tool_name}({memory.action.tool_args})"
             outcome = (
-                memory.observation.response
+                json.dumps(memory.observation.response)
                 if memory.observation.success
                 else memory.observation.error_reason
             )
-            memory_table.append(f"{i + 1}. {action_format} -> {outcome}")
+            memory_table.append(f"- {action_format} -> {outcome}")
 
         return "\n".join(memory_table)

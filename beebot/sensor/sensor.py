@@ -29,7 +29,7 @@ class Sensor:
         logger.info("=== Sent to LLM ===")
         logger.info(stimulus.input.content)
         logger.info("")
-        logger.info(f"Functions provided: {[p.tool.name for p in self.body.packs]}")
+        logger.info(f"Functions provided: {[name for name in self.body.packs.keys()]}")
 
         response = self.body.brain.call_llm([stimulus.input])
         logger.info("=== Received from LLM ===")

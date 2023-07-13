@@ -1,6 +1,7 @@
 import json
-from json import JSONDecodeError
 from typing import TYPE_CHECKING
+
+from pydantic import ValidationError
 
 from beebot.models import Action
 from beebot.models.observation import Observation
@@ -17,20 +18,19 @@ class Executor:
 
     def execute(self, action: Action) -> Observation:
         """Get pack from tool name. call it"""
-        try:
-            pack = next(
-                pack for pack in self.body.packs if pack.name == action.tool_name
-            )
-        except StopIteration:
+        pack = self.body.packs.get(action.tool_name)
+        if not pack:
             return Observation(
                 success=False,
-                error_reason=f"Invalid tool name received: {action.tool_name}. It may be invalid or may not be installed.",
+                error_reason=f"Invalid tool name received: {action.tool_name}. It may be invalid or may not be "
+                f"installed.",
             )
 
         tool_args = action.tool_args or {}
-        result = pack.run(tool_input=tool_args)
-
         try:
-            return Observation(response=json.loads(result))
-        except JSONDecodeError:
+            result = pack.run(tool_input=tool_args)
             return Observation(response=result)
+        except ValidationError as e:
+            return Observation(response=f"Error: {json.dumps(e.errors())}")
+        except Exception as e:
+            return Observation(response=f"Exception: {e}")

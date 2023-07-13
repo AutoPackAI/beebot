@@ -17,15 +17,13 @@ class Stimulus:
 
     @classmethod
     def generate_stimulus(cls, body: "Body") -> "Stimulus":
-        history = body.memories.compile_history()
-
-        functions_summary = ", ".join([f"{pack.name}" for pack in body.packs])
+        functions_summary = ", ".join([f"{name}" for name in body.packs.keys()])
         stimulus_message = stimulus_template().format(
             functions=functions_summary,
-            file_list=list_files(body),
-            history=history,
+            file_list=", ".join(list_files(body)),
             plan=body.current_plan,
             task=body.initial_task,
+            history=body.memories.compile_history(),
         )
 
         return cls(input_message=stimulus_message)

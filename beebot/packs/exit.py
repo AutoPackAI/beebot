@@ -5,10 +5,8 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
 from beebot.body import Body
-from beebot.packs.system_pack import SystemBasePack
-from beebot.packs.utils import (
-    get_module_path,
-)
+from beebot.body.pack_utils import get_module_path
+from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "exit"
 
@@ -37,7 +35,7 @@ def run_exit(
     categorization: str = "",
     conclusion: str = "",
     function_summary: str = "",
-):
+) -> str:
     body.state.finish()
     # TODO: Save the output somehow
     if success:
@@ -69,7 +67,10 @@ class ExitTool(StructuredTool):
 
 
 class Exit(SystemBasePack):
-    name: str = PACK_NAME
+    class Meta:
+        name: str = PACK_NAME
+
+    name: str = Meta.name
     description: str = PACK_DESCRIPTION
     pack_id: str = f"autopack/beebot/{PACK_NAME}"
     module_path = get_module_path(__file__)

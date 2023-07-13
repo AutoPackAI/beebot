@@ -20,7 +20,7 @@ class Config(BaseModel):
 
         # Go through and only supply kwargs if the values are actually set, otherwise Pydantic complains
         if (hard_exit := os.getenv("HARD_EXIT")) is not None:
-            kwargs["hard_exit"] = hard_exit
+            kwargs["hard_exit"] = hard_exit in ["True", True, "t", "true"]
         if (hard_exit := os.getenv("OPENAI_API_KEY")) is not None:
             kwargs["openai_api_key"] = hard_exit
         if (hard_exit := os.getenv("AUTO_INSTALL_PACKS")) is not None:
