@@ -1,31 +1,26 @@
-from typing import TYPE_CHECKING
+from typing import Any
 
-from autopack.pack import Pack
-from langchain.tools import StructuredTool
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
-if TYPE_CHECKING:
-    from beebot.body import Body
+from beebot.body import Body
 
 
-class SystemBasePack(Pack):
+class SystemBasePack(BaseModel):
+    class Config:
+        arbitrary_types_allowed = True
+
+    body: Body
+    dependencies: list[str] = Field(default_factory=list)
     args_schema: BaseModel = None
-    tool: StructuredTool = None
-    body: "Body"
     run_args: dict[str, dict[str, str]] = None
 
     def __init__(self, **kwargs):
         from beebot.body.pack_utils import run_args_from_args_schema
 
-        super().__init__(
-            init_args={},
-            dependencies=[],
-            source="self",
-            repo="beebot",
-            author="autopack",
-            **kwargs
-        )
+        super().__init__(**kwargs)
         self.run_args = run_args_from_args_schema(self.args_schema)
 
-    def init_tool(self, *args, **kwargs):
-        self.tool = self.tool_class(body=self.body)
+    def run(self, tool_input: dict[str, Any]) -> Any:
+        if hasattr(self, "_run"):
+            return self._run(**tool_input)
+        raise NotImplementedError

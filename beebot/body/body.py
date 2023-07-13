@@ -168,11 +168,10 @@ class Body:
         return [p.strip() for p in response.content.split(",")]
 
     def update_packs(self) -> list[Pack]:
-        packs = all_packs(self)
+        available_packs = all_packs(self)
         for pack_name in self.recommend_packs_for_current_plan():
             try:
-                pack = packs[pack_name]
-                pack.init_tool()
+                pack = available_packs[pack_name]
                 self.packs[pack_name] = pack
             except Exception as e:
                 logger.warning(f"Pack {pack_name} could not be initialized: {e}")

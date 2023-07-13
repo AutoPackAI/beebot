@@ -1,14 +1,12 @@
 import logging
-from typing import Callable, Type
+from typing import Type
 
-from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
-from beebot.body import Body
-from beebot.body.pack_utils import get_module_path
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "exit"
+PACK_DESCRIPTION = "Exits the program, signalling that all tasks have bene completed and all goals have been met."
 
 logger = logging.getLogger(__name__)
 
@@ -29,50 +27,32 @@ class ExitArgs(BaseModel):
     )
 
 
-def run_exit(
-    body: Body,
-    success: bool,
-    categorization: str = "",
-    conclusion: str = "",
-    function_summary: str = "",
-) -> str:
-    body.state.finish()
-    # TODO: Save the output somehow
-    if success:
-        logger.info("\n=== Task completed ===")
-    else:
-        logger.info("\n=== Task failed ===")
-
-    logger.info(f"- Categorization: {categorization}")
-    logger.info(f"- Conclusion: {conclusion}")
-    logger.info(f"- Function Summary: {function_summary}")
-    if body.config.hard_exit:
-        exit()
-
-    return "Exited"
-
-
-PACK_DESCRIPTION = "Exits the program, signalling that all tasks have bene completed and all goals have been met."
-
-
-class ExitTool(StructuredTool):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    func: Callable = run_exit
-    args_schema: Type[BaseModel] = Type[ExitArgs]
-    body: Body
-
-    def _run(self, *args, **kwargs):
-        return super()._run(*args, body=self.body, **kwargs)
-
-
 class Exit(SystemBasePack):
     class Meta:
         name: str = PACK_NAME
 
     name: str = Meta.name
     description: str = PACK_DESCRIPTION
-    pack_id: str = f"autopack/beebot/{PACK_NAME}"
-    module_path = get_module_path(__file__)
-    tool_class: Type = ExitTool
     args_schema: Type[BaseModel] = ExitArgs
+
+    def _run(
+        self,
+        success: bool,
+        categorization: str = "",
+        conclusion: str = "",
+        function_summary: str = "",
+    ) -> str:
+        self.body.state.finish()
+        # TODO: Save the output somehow
+        if success:
+            logger.info("\n=== Task completed ===")
+        else:
+            logger.info("\n=== Task failed ===")
+
+        logger.info(f"- Categorization: {categorization}")
+        logger.info(f"- Conclusion: {conclusion}")
+        logger.info(f"- Function Summary: {function_summary}")
+        if self.body.config.hard_exit:
+            exit()
+
+        return "Exited"

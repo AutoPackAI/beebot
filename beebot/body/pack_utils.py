@@ -1,7 +1,7 @@
 import inspect
 import logging
 import os
-from typing import TYPE_CHECKING, Any, Type
+from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
 
@@ -12,7 +12,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def format_packs_to_openai_functions(packs: list["Pack"]) -> list[dict[str, Any]]:
+def format_packs_to_openai_functions(packs: dict[str, "Pack"]) -> list[dict[str, Any]]:
     return [format_pack_to_openai_function(pack) for pack in packs.values()]
 
 
@@ -77,21 +77,11 @@ def all_packs(body: "Body") -> dict[str, "Pack"]:
     return return_packs
 
 
-def system_packs(body: "Body") -> dict["Pack"]:
-    instantiated_packs = {}
-    for pack_class in system_pack_classes():
-        pack = pack_class(body=body)
-        pack.init_tool()
-        instantiated_packs[pack.name] = pack
-
-    return instantiated_packs
-
-
-def system_pack_classes() -> list[Type["Pack"]]:
+def system_packs(body: "Body") -> dict[str, "Pack"]:
     from beebot.packs.exit import Exit
     from beebot.packs.get_more_tools import GetMoreTools
 
-    return [Exit, GetMoreTools]
+    return {"exit": Exit(body=body), "get_more_tools": GetMoreTools(body=body)}
 
 
 def pack_summaries(body: "Body") -> list[dict[str, Any]]:
