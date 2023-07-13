@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING
 
 from langchain.schema import SystemMessage
 
+from beebot.body.llm import call_llm
 from beebot.models import Action
 from beebot.models.observation import Observation
 from beebot.models.stimulus import Stimulus
@@ -22,7 +23,7 @@ def filter_long_documents(
             summarization_prompt().format(long_text=response[:8000]).content
         )
         message = SystemMessage(content=summary_prompt)
-        summarization = body.brain.llm([message])
+        summarization = call_llm(body, [message])
         response = (
             f"The response was summarized as: {json.dumps(summarization.content)}"
         )

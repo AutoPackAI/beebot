@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from beebot.body import Body
 
 
-class Brainstem:
+class Interpreter:
     body: "Body"
 
     def __init__(self, body: "Body"):

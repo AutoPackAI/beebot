@@ -1,4 +1,4 @@
-from beebot.brainstem.brainstem import extract_function_call_from_response
+from beebot.interpreter.interpreter import extract_function_call_from_response
 
 
 def test_extract_function_call_from_response():

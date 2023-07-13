@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 
 from langchain.schema import AIMessage
 
+from beebot.body.llm import call_llm
 from beebot.models import Stimulus
 
 if TYPE_CHECKING:
@@ -31,7 +32,7 @@ class Sensor:
         logger.info("")
         logger.info(f"Functions provided: {[name for name in self.body.packs.keys()]}")
 
-        response = self.body.brain.call_llm([stimulus.input])
+        response = call_llm(self.body, [stimulus.input])
         logger.info("=== Received from LLM ===")
         logger.info(response.content)
         logger.info("")

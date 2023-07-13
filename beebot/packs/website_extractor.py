@@ -6,6 +6,7 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
 from beebot.body import Body
+from beebot.body.llm import call_llm
 from beebot.body.pack_utils import get_module_path
 from beebot.packs.system_base_pack import SystemBasePack
 
@@ -57,7 +58,7 @@ def web_extractor(body: Body, url: str, question: str = "") -> str:
     else:
         prompt = PROMPT_TEMPLATE.format(content=text, url=url)
 
-    response = body.brain.call_llm([SystemMessage(content=prompt)])
+    response = call_llm(body, [SystemMessage(content=prompt)])
     return response.content
 
 

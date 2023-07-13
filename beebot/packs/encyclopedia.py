@@ -5,6 +5,7 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
 from beebot.body import Body
+from beebot.body.llm import call_llm
 from beebot.body.pack_utils import get_module_path
 from beebot.packs.system_base_pack import SystemBasePack
 
@@ -22,8 +23,8 @@ class EncyclopediaArgs(BaseModel):
 def encyclopedia(body: Body, query: str) -> str:
     try:
         # TODO: Maybe a custom prompt?
-        response = body.brain.call_llm(
-            messages=[HumanMessage(content=query)], return_function_call=False
+        response = call_llm(
+            body, messages=[HumanMessage(content=query)], return_function_call=False
         )
         return response.content
     except Exception as e:

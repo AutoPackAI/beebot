@@ -16,12 +16,10 @@ clearer representation of the system's components and their interactions.
    that deliver stimuli to the Brain. Its function is to receive a Stimulus from the Body and transmit it to the Brain
    for processing and interpretation.
 
-2. Brain: In this architecture, the LLM serves as the Brain. It receives stimuli from the Sensor and generates
-   appropriate Actions to be conveyed to the Brainstem. The Brain is responsible for high-level decision-making and
-   generating instructions based on the received stimuli. Currently this is one LLM, but in the future we will have
-   different LLMs all within the Brain, each excelling at a certain type of task.
+2. Brain: In this architecture, the Brain serves as a planner. It receives stimuli from the Sensor and generates
+   a plan for execution going forward. This is then transmitted back to the Body.
 
-3. Brainstem: The Brainstem translates Brain output into an Action that the rest of the body can understand.
+3. Brainstem: The Brainstem translates Brain output into a plan that the rest of the body can understand.
 
 4. Executor: The Executor component corresponds to the parts of the nervous system that deliver output from the Brain to
    muscles and other effectors. It receives refined Actions from the Brainstem (via the Body) and executes them in the

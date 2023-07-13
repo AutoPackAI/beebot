@@ -1,11 +1,8 @@
 from langchain.prompts import SystemMessagePromptTemplate
 
-TEMPLATE = """Given the plan and the function list provided below, please return a JSON object identifying which functions would be most suitable for completing the task, along with reasons for each choice.
+TEMPLATE = """Given the plan and the function list provided below, please return a comma-separated list identifying which functions would be most suitable for completing the task, along with reasons for each choice.
 
-The response should only include the JSON object, without any additional explanatory text.
-
-Please provide the recommended functions in the following format:
-{{"functions": [{{"name": function_name, "reason": reason_for_recommending }}]}}
+The response should only include the recommended functions as a comma-separated list, without any additional explanatory text.
 
 Plan:
 {user_input}
@@ -13,12 +10,9 @@ Plan:
 You may only recommend functions from this Functions List (in JSON format):
 {functions_string}
 """
-GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the plan and the function list provided below, please return a JSON object identifying which functions would be most suitable for the request, along with reasons for each choice.
+GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the plan and the function list provided below, please return a comma-separated list identifying which functions would be most suitable for the request, along with reasons for each choice.
 
-The response should only include the JSON object, without any additional explanatory text.
-
-Please provide the recommended functions in the following format:
-{{"functions": [{{"name": function_name, "reason": reason_for_recommending }}]}}
+The response should only include the recommended functions as a comma-separated list, without any additional explanatory text.
 
 Functions Request:
 {functions_request}

@@ -4,6 +4,10 @@ from copy import copy
 
 from pydantic import BaseModel
 
+# IDEAL_MODEL = "gpt-4-0613"
+FALLBACK_MODEL = "gpt-3.5-turbo-16k-0613"
+IDEAL_MODEL = FALLBACK_MODEL
+
 
 class Config(BaseModel):
     openai_api_key: str = None
@@ -13,6 +17,7 @@ class Config(BaseModel):
     log_level: str = "INFO"
     hard_exit: bool = False
     workspace_path: str = "workspace"
+    llm_model: str = IDEAL_MODEL
 
     @classmethod
     def from_env(cls) -> "Config":

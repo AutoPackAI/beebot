@@ -1,4 +1,3 @@
-import json
 import logging
 import os.path
 
@@ -11,6 +10,8 @@ from langchain import (
     ArxivAPIWrapper,
     SearxSearchWrapper,
 )
+from langchain.chat_models import ChatOpenAI
+from langchain.chat_models.base import BaseChatModel
 from langchain.schema import AIMessage
 from langchain.utilities import (
     DuckDuckGoSearchAPIWrapper,
@@ -28,15 +29,17 @@ from playwright.sync_api import Playwright, PlaywrightContextManager
 from pydantic import ValidationError
 from statemachine import StateMachine, State
 
+from beebot.body.llm import call_llm
 from beebot.body.pack_utils import all_packs, system_packs
-from beebot.brain import Brain
-from beebot.brainstem import Brainstem
 from beebot.config import Config
+from beebot.config.config import IDEAL_MODEL
 from beebot.executor import Executor
+from beebot.interpreter import Interpreter
 from beebot.memory import Memory
 from beebot.memory.memory_storage import MemoryStorage
 from beebot.models import Action, Stimulus
 from beebot.models.observation import Observation
+from beebot.planner import Planner
 from beebot.prompting.function_selection import initial_selection_template
 from beebot.sensor import Sensor
 
@@ -92,8 +95,9 @@ class Body:
     memories: MemoryStorage
     playwright: Playwright
 
-    brain: Brain
-    brainstem: Brainstem
+    llm: BaseChatModel
+    planner: Planner
+    interpreter: Interpreter
     executor: Executor
     sensor: Sensor
     config: Config
@@ -105,10 +109,11 @@ class Body:
         self.config = Config.from_env()
         self.memories = MemoryStorage()
 
-        self.brain = Brain(body=self)
+        self.llm = ChatOpenAI(model_name=IDEAL_MODEL, model_kwargs={"top_p": 0.2})
+        self.planner = Planner(body=self)
         self.sensor = Sensor(body=self)
         self.executor = Executor(body=self)
-        self.brainstem = Brainstem(body=self)
+        self.interpreter = Interpreter(body=self)
         self.packs = {}
 
         if not os.path.exists(self.config.workspace_path):
@@ -125,7 +130,7 @@ class Body:
 
     def plan(self):
         """Turn the initial task into a plan"""
-        self.current_plan = self.brain.plan()
+        self.current_plan = self.planner.plan()
 
     def cycle(self, stimulus: Stimulus = None, retry_count: int = 0) -> Memory:
         """Step through one stimulus-action-observation loop"""
@@ -170,7 +175,7 @@ class Body:
 
         brain_output = self.sense(stimulus)
         try:
-            return self.brainstem.interpret_brain_output(brain_output)
+            return self.interpreter.interpret_brain_output(brain_output)
         except ValueError:
             logger.warning("Got invalid response from LLM, retrying...")
             if retry_count >= RETRY_LIMIT:
@@ -216,18 +221,13 @@ class Body:
             user_input=user_input, functions_string="\n".join(functions_string)
         )
 
-        response = self.brain.llm([prompt])
+        response = call_llm(self, [prompt])
 
-        # TODO Handle json errors, perhaps a retry
-        try:
-            return json.loads(response.content).get("functions")
-        except json.JSONDecodeError:
-            return []
+        return [p.strip() for p in response.content.split(",")]
 
     def update_packs(self) -> list[Pack]:
         packs = all_packs(self)
-        for pack_data in self.recommend_packs_for_current_plan():
-            pack_name = pack_data.get("name")
+        for pack_name in self.recommend_packs_for_current_plan():
             try:
                 pack = packs[pack_name]
                 pack.init_tool()

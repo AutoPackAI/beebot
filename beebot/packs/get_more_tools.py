@@ -6,6 +6,7 @@ from langchain.tools import StructuredTool
 from pydantic import BaseModel, Field
 
 from beebot.body import Body
+from beebot.body.llm import call_llm
 from beebot.body.pack_utils import get_module_path, pack_summaries, all_packs
 from beebot.packs.system_base_pack import SystemBasePack
 from beebot.prompting.function_selection import get_more_tools_template
@@ -35,19 +36,21 @@ class GetPacksArgs(BaseModel):
 
 
 def run_get_more_tools(body: Body, desired_functionality: str) -> list[str]:
+    unfetchable_pack_names = ["exit", "get_more_tools"]
+    fetchable_summaries = [
+        summary
+        for summary in pack_summaries(body=body)
+        if summary.get("name") not in unfetchable_pack_names
+    ]
     prompt = get_more_tools_template().format(
         plan=body.current_plan,
-        functions_string=json.dumps(pack_summaries(body=body)),
+        functions_string=json.dumps(fetchable_summaries),
         functions_request=desired_functionality,
     )
 
-    response = body.brain.llm([prompt])
+    response = call_llm(body, [prompt])
 
-    try:
-        functions = json.loads(response.content).get("functions")
-    except json.JSONDecodeError:
-        return []
-
+    functions = [p.strip() for p in response.content.split(",")]
     packs = all_packs(body=body)
     added_packs = []
     # This is just returning ['get_more_tools']
