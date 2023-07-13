@@ -4,9 +4,9 @@ from typing import TYPE_CHECKING
 from langchain.schema import SystemMessage
 
 from beebot.body.llm import call_llm
-from beebot.models import Action
+from beebot.models import Decision
 from beebot.models.observation import Observation
-from beebot.models.stimulus import Stimulus
+from beebot.models.plan import Plan
 from beebot.prompting.summarization import summarization_prompt
 
 if TYPE_CHECKING:
@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 
 
 def filter_long_documents(
-    body: "Body", stimulus: Stimulus, action: Action, observation: Observation
+    body: "Body", plan: Plan, decision: Decision, observation: Observation
 ) -> str:
     response = observation.response
     # TODO: Configurable limit or like configurable turn it off?

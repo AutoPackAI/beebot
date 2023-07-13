@@ -1,7 +1,7 @@
 from pydantic import Field, BaseModel
 
 
-class Action(BaseModel):
+class Decision(BaseModel):
     reasoning: str = Field()
     tool_name: str = Field(...)
     tool_args: dict = Field(default_factory=dict)

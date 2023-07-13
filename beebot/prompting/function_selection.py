@@ -1,18 +1,15 @@
 from langchain.prompts import SystemMessagePromptTemplate
 
-TEMPLATE = """Given the plan and the function list provided below, please return a comma-separated list identifying which functions would be most suitable for completing the task, along with reasons for each choice.
-
-The response should only include the recommended functions as a comma-separated list, without any additional explanatory text.
+TEMPLATE = """Given the plan and the function list provided below, identify the functions that would be most suitable for completing the task.
 
 Plan:
 {user_input}
 
-You may only recommend functions from this Functions List (in JSON format):
-{functions_string}
-"""
-GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the plan and the function list provided below, please return a comma-separated list identifying which functions would be most suitable for the request, along with reasons for each choice.
+You may only recommend functions from this Functions List: {functions_string}
 
-The response should only include the recommended functions as a comma-separated list, without any additional explanatory text.
+Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
+"""
+GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the plan and the function list provided below, identify the functions that would be most suitable for completing the task.
 
 Functions Request:
 {functions_request}
@@ -20,8 +17,10 @@ Functions Request:
 Plan:
 {plan}
 
-You may only recommend functions from this Functions List (in JSON format):
+You may only recommend functions from this Functions List:
 {functions_string}
+
+Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
 """
 
 

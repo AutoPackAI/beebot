@@ -3,7 +3,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
-from beebot.models import Action
+from beebot.models import Decision
 from beebot.models.observation import Observation
 
 if TYPE_CHECKING:
@@ -16,17 +16,17 @@ class Executor:
     def __init__(self, body: "Body"):
         self.body = body
 
-    def execute(self, action: Action) -> Observation:
+    def execute(self, decision: Decision) -> Observation:
         """Get pack from tool name. call it"""
-        pack = self.body.packs.get(action.tool_name)
+        pack = self.body.packs.get(decision.tool_name)
         if not pack:
             return Observation(
                 success=False,
-                error_reason=f"Invalid tool name received: {action.tool_name}. It may be invalid or may not be "
+                error_reason=f"Invalid tool name received: {decision.tool_name}. It may be invalid or may not be "
                 f"installed.",
             )
 
-        tool_args = action.tool_args or {}
+        tool_args = decision.tool_args or {}
         try:
             result = pack.run(tool_input=tool_args)
             return Observation(response=result)

@@ -1,5 +1,5 @@
-from .action import Action
+from .decision import Decision
 from .observation import Observation
-from .stimulus import Stimulus
+from .plan import Plan
 
-__all__ = ["Action", "Observation", "Stimulus"]
+__all__ = ["Decision", "Observation", "Plan"]

@@ -53,9 +53,7 @@ def run_get_more_tools(body: Body, desired_functionality: str) -> list[str]:
     functions = [p.strip() for p in response.content.split(",")]
     packs = all_packs(body=body)
     added_packs = []
-    # This is just returning ['get_more_tools']
-    for pack_data in functions:
-        pack_name = pack_data.get("name")
+    for pack_name in functions:
         try:
             pack = packs[pack_name]
             added_packs.append(pack.name)
@@ -63,7 +61,7 @@ def run_get_more_tools(body: Body, desired_functionality: str) -> list[str]:
         except Exception as e:
             logger.warning(f"Pack {pack_name} could not be initialized: {e}")
 
-    return added_packs
+    return f"Functions added: {', '.join(added_packs)}"
 
 
 class GetMoreToolsTool(StructuredTool):

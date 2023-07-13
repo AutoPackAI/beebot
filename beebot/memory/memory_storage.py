@@ -2,7 +2,7 @@ import json
 from typing import List
 
 from beebot.memory import Memory
-from beebot.models import Stimulus, Observation
+from beebot.models import Plan, Observation
 
 
 class MemoryStorage:
@@ -15,11 +15,11 @@ class MemoryStorage:
         self.memories = []
         self.uncompleted_memory = Memory()
 
-    def add_stimulus(self, stimulus: Stimulus):
-        self.uncompleted_memory.stimulus = stimulus
+    def add_plan(self, plan: Plan):
+        self.uncompleted_memory.plan = plan
 
-    def add_action(self, action: str):
-        self.uncompleted_memory.action = action
+    def add_decision(self, decision: str):
+        self.uncompleted_memory.decision = decision
 
     def add_observation(self, observation: Observation):
         self.uncompleted_memory.observation = observation
@@ -37,7 +37,7 @@ class MemoryStorage:
 
         memory_table = []
         for memory in self.memories:
-            action_format = f"{memory.action.tool_name}({memory.action.tool_args})"
+            action_format = f"{memory.decision.tool_name}({memory.decision.tool_args})"
             outcome = (
                 json.dumps(memory.observation.response)
                 if memory.observation.success

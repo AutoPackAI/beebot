@@ -1,73 +1,77 @@
-# BeeBot AI System Architecture
+# BeeBot Architecture Document
 
-The architecture of BeeBot follows a Stimulus/Action cycle, where a Stimulus represents an event or input that needs to
-be processed by the system, and the Action is an action to be taken, typically through a function call. While the
-Stimulus is often the direct output of a previous action, it's important to note that the system aims for task
-accomplishment rather than complete independence, and it may solicit user feedback to continue. Let's explore the key
-components of the architecture:
+## Introduction
 
-The Human Body analogy is utilized in BeeBot's architecture to enhance ease of understanding and abstraction. This
-choice is made to overcome the ambiguity and multiple meanings associated with commonly used AI terms, allowing for a
-clearer representation of the system's components and their interactions.
+BeeBot is an Autonomous AI Assistant is designed to perform a range of tasks autonomously, taking high-level
+instructions from human users and transforming them into actions which are then performed. BeeBot's capabilities are
+based on the
+underlying components: Planner, Decider, Executor, and Body. These components work in unison, each fulfilling its part
+in a state machine-driven process.
 
-## Explanation of Components:
+## Major Components
 
-1. Sensor: The Sensor component of the system plays a role similar to the parts of the nervous system in the human body
-   that deliver stimuli to the Brain. Its function is to receive a Stimulus from the Body and transmit it to the Brain
-   for processing and interpretation.
+### Planner
 
-2. Brain: In this architecture, the Brain serves as a planner. It receives stimuli from the Sensor and generates
-   a plan for execution going forward. This is then transmitted back to the Body.
+The Planner is responsible for taking the human task and the previous outputs, and creating a Plan object for it. This
+is done through an LLM that can interpret the requirements of the task and the context provided by
+previous outputs. The Planner thus plays a vital role in interpreting and organizing tasks, setting the stage for their
+execution.
 
-3. Brainstem: The Brainstem translates Brain output into a plan that the rest of the body can understand.
+### Decider
 
-4. Executor: The Executor component corresponds to the parts of the nervous system that deliver output from the Brain to
-   muscles and other effectors. It receives refined Actions from the Brainstem (via the Body) and executes them in the
-   system or environment. The Executor carries out the necessary tasks, computations, or actions based on the received
-   instructions, generating Observations that are conveyed back to the system's Body.
+Once a Plan has been generated, the Decider takes over. It assesses the Plan and makes a Decision, again through the
+LLM, about what action the system should take next. The Decision maps to exactly one function call.
 
-5. Body: The Body component encapsulates the entire system, resembling a human body. It integrates sensations, planning,
-   and Actions, facilitating the coordination and interaction between different components. Additionally, the Body
-   manages memory, allowing for the storage and retrieval of relevant information to support ongoing operations and
-   decision-making within the system.
+### Executor
 
-## Explanation of Other Items:
+The Executor is the "action" component of the system. Once a Decision has been made about the next step, the Executor
+takes this Decision and performs the necessary action. It also creates an Observation based on the results of the
+action. This Observation is a structured record of what occurred during execution.
 
-**Stimulus**: A Stimulus refers to an event or input that originates from the system's Body and is transmitted to the
-Sensor. It represents the information that needs to be processed and analyzed by the system. The Stimulus serves as a
-trigger for the system to generate an appropriate Action or response.
+### Body
 
-**Action**: An Action represents the system's response to a given Stimulus. It is the outcome of the information
-processing performed by the Brain, which determines the appropriate course of action based on the received Stimulus.
-Actions may involve executing specific tasks, performing calculations, or making decisions to achieve a desired outcome.
-The Executor carries out the Action, and its result is conveyed back to the system's Body.
+The Body is a container for the Planner, Decider, and Executor components. It also holds memories and
+configuration settings that help the Assistant adapt and optimize its functioning. The Body manages the data flow
+between the other components and also holds the State Machine that governs the operation of the entire system.
 
-**Observation**: The Observation, also known as the "Action Output," refers to the result or output of an Action that is
-generated by the Executor component and conveyed back to the system's Body. Similar to an observation in the real world,
-it provides valuable feedback or information about the effects of the Action. The Observation can influence subsequent
-decisions or tasks performed by the Body. While the Observation has the potential to become a Stimulus for the next
-cycle, it does not necessarily do so. The Body stores the Observation in memory for reference or further analysis if
-needed.
-
-## Basic Flow
-
-The basic cycle of the system is as follows:
-
-1. The Body receives an initial task and proceeds to perform planning and refinements on the task wording.
-2. The Sensor converts the task into a Stimulus and transmits it to the Brain for processing.
-3. The Brain processes the Stimulus and determines the next action .
-4. the Brainstem interprets the response from the Brain and passes it to the Body.
-5. The Body sends this next action to the Executor.
-6. The Executor executes the action and returns the Observation to the Body.
-7. The Body stores the Stimulus-Action-Observation combination in memory for future reference.
-8. The Body can either automatically initiate the next action, creating a loop, or wait for user input to start a new
-   cycle.
+## Operational Workflow (State Machine)
 
 ```
-[Body] -> [Sensor] -> [Brain] -> [Brainstem] -> [Body] -> [Executor]
-  ^                                                            |
-  |------------------------------------------------------------|
+[ Setup ]
+    |
+    | start
+    v
+[ Starting ]
+    |
+    | plan
+    v
+[ Planning ] <--------+
+    |                 |
+    | wait            |
+    v                 |
+[ Waiting ]           |
+    |                 |
+    | decide          |
+    v                 |
+[ Deciding ]          |
+    |                 | plan (Cycle Loop)
+    | wait            |
+    v                 |
+[ Waiting ]           |
+    |                 |
+    | execute         |
+    v                 |
+[ Executing ]         |
+    |                 |
+    | wait            |
+    v                 |
+[ Waiting ] ----------+
+    |
+    | finish
+    v
+[ Done ]
 ```
 
-Furthermore, each step of the cycle can store state, enabling persistence and facilitating user feedback or intervention
-when necessary.
+These state transitions are governed by events or conditions such as `start`, `plan`, `decide`, `execute`, `wait`,
+and `finish`. These dictate how the Assistant moves from one state to the next, and how the Planner, Decider, and
+Executor components interact.

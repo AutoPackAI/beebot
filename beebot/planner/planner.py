@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING
 from langchain.chat_models.base import BaseChatModel
 
 from beebot.body.llm import call_llm
+from beebot.models import Plan
 from beebot.prompting import planning_prompt
 from beebot.prompting.planning import initial_prompt
 from beebot.utils import list_files
@@ -21,7 +22,7 @@ class Planner:
     def __init__(self, body: "Body"):
         self.body = body
 
-    def plan(self) -> str:
+    def plan(self) -> Plan:
         task = self.body.initial_task
         functions_summary = ", ".join([f"{name}" for name in self.body.packs.keys()])
         if self.body.memories.memories:
@@ -50,4 +51,4 @@ class Planner:
         logger.info("=== Plan Created ===")
         logger.info(planned)
 
-        return planned
+        return Plan(planned)
