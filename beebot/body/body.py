@@ -2,29 +2,9 @@ import logging
 import os.path
 
 from autopack.pack import Pack
-from langchain import (
-    WikipediaAPIWrapper,
-    GoogleSerperAPIWrapper,
-    GoogleSearchAPIWrapper,
-    WolframAlphaAPIWrapper,
-    ArxivAPIWrapper,
-    SearxSearchWrapper,
-)
 from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from langchain.schema import AIMessage
-from langchain.utilities import (
-    DuckDuckGoSearchAPIWrapper,
-    BingSearchAPIWrapper,
-    GraphQLAPIWrapper,
-    BraveSearchWrapper,
-    PubMedAPIWrapper,
-    SceneXplainAPIWrapper,
-    ZapierNLAWrapper,
-    GooglePlacesAPIWrapper,
-    OpenWeatherMapAPIWrapper,
-    MetaphorSearchAPIWrapper,
-)
 from playwright.sync_api import Playwright, PlaywrightContextManager
 from pydantic import ValidationError
 from statemachine import StateMachine, State
@@ -33,6 +13,7 @@ from beebot.body.llm import call_llm
 from beebot.body.pack_utils import all_packs, system_packs
 from beebot.config import Config
 from beebot.config.config import IDEAL_MODEL
+from beebot.decider import Decider
 from beebot.executor import Executor
 from beebot.interpreter import Interpreter
 from beebot.memory import Memory
@@ -41,49 +22,31 @@ from beebot.models import Action, Stimulus
 from beebot.models.observation import Observation
 from beebot.planner import Planner
 from beebot.prompting.function_selection import initial_selection_template
-from beebot.sensor import Sensor
 
 logger = logging.getLogger(__name__)
 
 RETRY_LIMIT = 3
-API_WRAPPERS = {
-    "wikipedia": WikipediaAPIWrapper,
-    "google_search": GoogleSearchAPIWrapper,
-    "google_search_results_json": GoogleSearchAPIWrapper,
-    "google_serper": GoogleSerperAPIWrapper,
-    "google_serrper_results_json": GoogleSerperAPIWrapper,
-    "wolfram_alpha": WolframAlphaAPIWrapper,
-    "duckduckgo_results_json": DuckDuckGoSearchAPIWrapper,
-    "duckduckgo_search": DuckDuckGoSearchAPIWrapper,
-    "bing_search_results_json": BingSearchAPIWrapper,
-    "bing_search": BingSearchAPIWrapper,
-    "query_graphql": GraphQLAPIWrapper,
-    "brave_search": BraveSearchWrapper,
-    "arxiv": ArxivAPIWrapper,
-    "pubmed": PubMedAPIWrapper,
-    "image_explainer": SceneXplainAPIWrapper,
-    "zapiernla_list_actions": ZapierNLAWrapper,
-    "google_places": GooglePlacesAPIWrapper,
-    "searx_search_results": SearxSearchWrapper,
-    "searx_search": SearxSearchWrapper,
-    "openweathermap": OpenWeatherMapAPIWrapper,
-    "metaphor_search_results_json": MetaphorSearchAPIWrapper,
-}
 
 
 class BodyStateMachine(StateMachine):
     setup = State(initial=True)
     starting = State()
-    sensing = State()
+    planning = State()
+    deciding = State()
     executing = State()
     waiting = State()
     done = State(final=True)
 
     start = setup.to(starting)
-    sense = executing.to(sensing) | waiting.to(sensing) | starting.to(sensing)
-    execute = sensing.to(executing) | waiting.to(executing)
-
-    wait = executing.to(waiting) | sensing.to(waiting) | starting.to(waiting)
+    plan = starting.to(planning) | waiting.to(planning)
+    decide = waiting.to(deciding)
+    execute = waiting.to(executing)
+    wait = (
+        deciding.to(waiting)
+        | planning.to(waiting)
+        | executing.to(waiting)
+        | starting.to(waiting)
+    )
     finish = waiting.to(done) | executing.to(done)
 
 
@@ -99,7 +62,7 @@ class Body:
     planner: Planner
     interpreter: Interpreter
     executor: Executor
-    sensor: Sensor
+    decider: Decider
     config: Config
 
     def __init__(self, initial_task: str):
@@ -111,7 +74,7 @@ class Body:
 
         self.llm = ChatOpenAI(model_name=IDEAL_MODEL, model_kwargs={"top_p": 0.2})
         self.planner = Planner(body=self)
-        self.sensor = Sensor(body=self)
+        self.decider = Decider(body=self)
         self.executor = Executor(body=self)
         self.interpreter = Interpreter(body=self)
         self.packs = {}
@@ -130,7 +93,11 @@ class Body:
 
     def plan(self):
         """Turn the initial task into a plan"""
-        self.current_plan = self.planner.plan()
+        self.state.plan()
+        try:
+            self.current_plan = self.planner.plan()
+        finally:
+            self.state.wait()
 
     def cycle(self, stimulus: Stimulus = None, retry_count: int = 0) -> Memory:
         """Step through one stimulus-action-observation loop"""
@@ -146,7 +113,7 @@ class Body:
 
         self.memories.add_stimulus(stimulus=stimulus)
 
-        action = self.sense_and_interpretation_with_retry(stimulus)
+        action = self.decide_and_interpret_with_retry(stimulus)
         self.memories.add_action(action=action)
 
         try:
@@ -164,7 +131,7 @@ class Body:
         complete_memory = self.memories.finish()
         return complete_memory
 
-    def sense_and_interpretation_with_retry(
+    def decide_and_interpret_with_retry(
         self, stimulus: Stimulus, retry_count: int = 0, previous_response: str = ""
     ) -> Action:
         if retry_count and previous_response:
@@ -173,14 +140,14 @@ class Body:
                 f"strategy. Your failed attempt is: {previous_response}"
             )
 
-        brain_output = self.sense(stimulus)
+        brain_output = self.decide(stimulus)
         try:
             return self.interpreter.interpret_brain_output(brain_output)
         except ValueError:
             logger.warning("Got invalid response from LLM, retrying...")
             if retry_count >= RETRY_LIMIT:
                 raise ValueError(f"Got invalid response {RETRY_LIMIT} times in a row")
-            return self.sense_and_interpretation_with_retry(
+            return self.decide_and_interpret_with_retry(
                 stimulus, retry_count + 1, previous_response=brain_output.content
             )
 
@@ -195,13 +162,13 @@ class Body:
             if self.state.current_state == self.state.executing:
                 self.state.wait()
 
-    def sense(self, stimulus: Stimulus) -> AIMessage:
+    def decide(self, stimulus: Stimulus) -> AIMessage:
         """Execute an action and keep track of state"""
-        self.state.sense()
+        self.state.decide()
 
         try:
             self.memories.add_stimulus(stimulus)
-            return self.sensor.sense(stimulus=stimulus)
+            return self.decider.decide(stimulus=stimulus)
         finally:
             self.state.wait()
 

@@ -13,10 +13,9 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-class Sensor:
+class Decider:
     """
-    A Sensor is in charge of taking sensory input from the Body, sending it to the LLM, then returning the response
-    back to the Body
+    The Decider is in charge of taking the plan and deciding the next step
     """
 
     body: "Body"
@@ -24,7 +23,7 @@ class Sensor:
     def __init__(self, body: "Body"):
         self.body = body
 
-    def sense(self, stimulus: Stimulus) -> AIMessage:
+    def decide(self, stimulus: Stimulus) -> AIMessage:
         """Take a stimulus and send it to the Brain (LLM), returning it back to the Body
         TODO: Maybe take in stimulus and not just go off of history"""
         logger.info("=== Sent to LLM ===")

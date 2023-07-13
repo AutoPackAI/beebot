@@ -1,6 +1,6 @@
 from langchain.prompts import SystemMessagePromptTemplate
 
-STIMULUS_TEMPLATE = """You are the Autonomous AI Assistant. Your role is to execute the steps defined in the high-level plan, using one of the functions provided: {functions}. If additional functions are needed, they can be acquired using the get_more_tools() function.
+TEMPLATE = """You are the Autonomous AI Assistant. Your role is to execute the steps defined in the high-level plan, using one of the functions provided: {functions}. If additional functions are needed, they can be acquired using the get_more_tools() function.
 
 Your primary objective is efficiency, effectiveness, and adaptability.
 
@@ -24,5 +24,5 @@ Follow these guidelines:
 Proceed with executing the next step from the plan. Use exactly one of the provided functions, indicated in the `function_call` parameter."""
 
 
-def stimulus_template() -> SystemMessagePromptTemplate:
-    return SystemMessagePromptTemplate.from_template(STIMULUS_TEMPLATE)
+def decider_template() -> SystemMessagePromptTemplate:
+    return SystemMessagePromptTemplate.from_template(TEMPLATE)
