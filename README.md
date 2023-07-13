@@ -1,12 +1,11 @@
-# BeeBot Architecture Document
+# BeeBot
 
 ## Introduction
 
 BeeBot is an Autonomous AI Assistant is designed to perform a range of tasks autonomously, taking high-level
 instructions from human users and transforming them into actions which are then performed. BeeBot's capabilities are
-based on the
-underlying components: Planner, Decider, Executor, and Body. These components work in unison, each fulfilling its part
-in a state machine-driven process.
+based on the underlying components: Planner, Decider, Executor, and Body. These components work in unison, each
+fulfilling its part in a state machine-driven process.
 
 ## Major Components
 
