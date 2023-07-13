@@ -44,6 +44,7 @@ class Config(BaseModel):
         return config
 
     def setup_logging(self) -> logging.Logger:
+        os.makedirs("logs", exist_ok=True)
         console_handler = logging.StreamHandler()
         console_handler.setLevel(self.log_level)
         console_handler.setFormatter(
