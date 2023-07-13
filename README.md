@@ -7,6 +7,24 @@ instructions from human users and transforming them into actions which are then 
 based on the underlying components: Planner, Decider, Executor, and Body. These components work in unison, each
 fulfilling its part in a state machine-driven process.
 
+## Installation
+
+Instructions to install. This may vary depending on your Python virtual env setup.
+
+```bash
+git clone https://github.com/AutoPackAI/beebot.git
+cd beebot
+poetry install
+```
+
+## Running
+
+The only way to run BeeBot currently is through the CLI:
+
+```bash
+python beebot/initiator/cli.py --task "Write 'hello world' to hi.txt"
+```
+
 ## Major Components
 
 ### Planner
