@@ -4,7 +4,7 @@ BeeBot is your personal worker bee, an Autonomous AI Assistant designed to perfo
 autonomously.
 
 <p align="center">
-<img src="https://github.com/AutoPackAI/beebot/assets/6236/2e6fe40b-d94c-475d-95bc-71b987443007)" alt="BeeBot Mascot"  align="center" />
+<img src="https://eriklp.com/mascot.png" alt="BeeBot Mascot"  align="center" />
 </p>
 
 ## Status
