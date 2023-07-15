@@ -3,6 +3,36 @@
 BeeBot is your personal worker bee, an Autonomous AI Assistant designed to perform a wide range of practical tasks
 autonomously.
 
+## Status
+
+BeeBot is currently a work in progress and should be treated as an early stage research project. Its focus is not on
+production usage at this time. Please be patient as the foundations are still constantly shifting. The world of AI moves
+fast, and this project needs to move fast to keep up.
+
+## Installation
+
+To get started with BeeBot, you can clone the repo to your local machine and install its dependencies using `poetry`.
+These instructions may vary depending on your local development environment.
+
+```bash
+git clone https://github.com/AutoPackAI/beebot.git
+cd beebot
+poetry install
+```
+
+## Running
+
+Currently, you can only run BeeBot using the CLI:
+
+```bash
+python beebot/initiator/cli.py --task "Write 'hello world' to hi.txt"
+```
+
+Please note that while the CLI is the only available method at this time, there are future plans:
+
+- API: Will probably use [e2b](https://www.e2b.dev/).
+- Web Interface: We are working on a web interface using Node.js (Remix)
+
 ## Philosophy
 
 BeeBot's development process is guided by a specific philosophy, emphasizing key principles that shape its development
@@ -32,35 +62,6 @@ To achieve these priorities, BeeBot follows the following principles:
   the absence of unit tests.
 - Proven concepts: BeeBot adopts new concepts only after they have been proven to enhance its five priorities.
   As a result, it does not have complex memory or a tree of thought.
-
-### Status
-
-BeeBot is currently a work in progress and an early stage research project. Its focus is not on production usage at this
-time.
-
-## Installation
-
-To get started with BeeBot, you can install it on your local machine using Python. Please note that BeeBot is still
-under active development, and its dependencies and requirements may change.
-
-```bash
-git clone https://github.com/AutoPackAI/beebot.git
-cd beebot
-poetry install
-```
-
-## Running
-
-Currently, you can run BeeBot using the CLI:
-
-```bash
-python beebot/initiator/cli.py --task "Write 'hello world' to hi.txt"
-```
-
-Please note that while the CLI is the only available method at this time, here are some future plans:
-
-- API: Will probably use [e2b](https://www.e2b.dev/).
-- Web Interface: We are working on a web interface using Node.js (Remix)
 
 ## Documentation
 
