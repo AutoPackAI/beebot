@@ -1,6 +1,7 @@
-import subprocess
 from typing import Type
 
+from langchain.tools.python.tool import sanitize_input
+from langchain.utilities import PythonREPL
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
@@ -25,21 +26,11 @@ class ExecutePythonCode(SystemBasePack):
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
         try:
-            proc = subprocess.Popen(
-                ["python", "-c", code],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                cwd=self.body.config.workspace_path,
-            )
-            proc.wait()
-            stdout, stderr = proc.communicate()
+            repl = PythonREPL(_globals=globals(), _locals=None)
+            sanitized_code = sanitize_input(code)
+            result = repl.run(sanitized_code)
 
-            if proc.returncode > 0:
-                return (
-                    f'Exit code {proc.returncode}. Captured stderr: "{stderr.strip()}". '
-                    f'Captured output: "{stdout.strip()}"'
-                )
-            return f'Executed successfully. Captured output: "{stdout.strip()}"'
+            return result.strip()
+
         except Exception as e:
             return f"Error: {e}"
