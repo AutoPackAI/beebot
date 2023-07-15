@@ -26,17 +26,13 @@ def instructions_files(ids) -> list[str]:
     os.makedirs("workspace", exist_ok=True)
     instructions = []
     for i, instruction in enumerate(ids):
-        with open(f"workspace/instructions_{i + 1}.txt", "w+") as f:
-            if i >= len(ids):
-                instruction = (
-                    f"The id to remember is {ids[i]}. Read the file instructions_{i + 1}.txt.",
-                )
-            else:
-                instruction = (
-                    "Write the ids previously mentioned to a file named 'ids.txt'."
-                )
+        instructions.append(
+            f"The id to remember is {ids[i]}. Read the file instructions_{i + 2}.txt."
+        )
 
-            instructions.append(instruction)
+    instructions.append("Write the ids previously mentioned to a file named 'ids.txt'.")
+    for i, instruction in enumerate(instructions):
+        with open(f"workspace/instructions_{i + 1}.txt", "w+") as f:
             f.write(instruction)
 
     return instructions

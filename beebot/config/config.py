@@ -3,9 +3,9 @@ import os
 
 from pydantic import BaseModel
 
-# IDEAL_MODEL = "gpt-4-0613"
+IDEAL_MODEL = "gpt-4-0613"
 FALLBACK_MODEL = "gpt-3.5-turbo-16k-0613"
-IDEAL_MODEL = FALLBACK_MODEL
+# IDEAL_MODEL = FALLBACK_MODEL
 
 TRUEISH = [
     "True",

@@ -21,6 +21,8 @@ def go_to_tmpdir(request):
     destination_dir = os.path.join(tmpdir.strpath, ".autopack")
     shutil.copytree(source_dir, destination_dir)
 
+    print(f"Executing tests in the directory {tmpdir.strpath}")
+
     # Chdir only for the duration of the test.
     with tmpdir.as_cwd():
         yield
