@@ -7,7 +7,14 @@ from pydantic import BaseModel, Field
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "execute_python_code"
-PACK_DESCRIPTION = "Executes Python code in a restricted environment, prohibiting shell execution and filesystem access. Ensure that the provided Python code is safe and adheres to the restrictions of the environment."
+
+# IMPORTANT NOTE: This does NOT actually restrict the execution environment, it just nudges the AI to avoid doing
+# those things.
+PACK_DESCRIPTION = (
+    "Executes Python code in a restricted environment, prohibiting shell execution and filesystem "
+    "access. Returns the output of the execution as a string. Ensure that the provided Python code is safe and "
+    "adheres to the restrictions of the environment."
+)
 
 
 class ExecutePythonCodeArgs(BaseModel):
