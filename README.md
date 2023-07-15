@@ -3,6 +3,8 @@
 BeeBot is your personal worker bee, an Autonomous AI Assistant designed to perform a wide range of practical tasks
 autonomously.
 
+![beebot](https://github.com/AutoPackAI/beebot/assets/6236/4fb8a070-077b-4c9f-ab5d-b975a7de009f)
+
 ## Status
 
 BeeBot is currently a work in progress and should be treated as an early stage research project. Its focus is not on
