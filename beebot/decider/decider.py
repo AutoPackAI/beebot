@@ -3,10 +3,12 @@ import logging
 from json import JSONDecodeError
 from typing import TYPE_CHECKING, Any
 
-from langchain.schema import SystemMessage, AIMessage
+from langchain.schema import AIMessage
 
 from beebot.body.llm import call_llm
 from beebot.models import Plan, Decision
+from beebot.prompting import decider_template
+from beebot.utils import functions_summary, list_files
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -28,16 +30,23 @@ class Decider:
 
     def decide(self, plan: Plan) -> Decision:
         """Take a Plan and send it to the LLM, returning it back to the Body"""
-        logger.info("=== Sent to LLM ===")
+        logger.info("=== Plan sent to LLM for Decision ===")
         logger.info(plan.plan_text)
         logger.info("")
         logger.info(f"Functions provided: {[name for name in self.body.packs.keys()]}")
+        template = decider_template().format(
+            plan=plan.plan_text,
+            task=self.body.task,
+            history=self.body.memories.compile_history(),
+            functions=functions_summary(self.body),
+            file_list=", ".join(list_files(self.body)),
+        )
 
-        response = call_llm(self.body, [SystemMessage(content=plan.plan_text)])
-        logger.info("=== Received from LLM ===")
+        response = call_llm(self.body, [template])
+        logger.info("=== Decision received from LLM ===")
         logger.info(response.content)
         logger.info("")
-        logger.info(f"Function Call: {json.dumps(response.additional_kwargs)}")
+        logger.info(f"---- Function Call: {json.dumps(response.additional_kwargs)}")
         logger.info("")
         return interpret_brain_output(response)
 

@@ -30,12 +30,9 @@ Your original task, given by the human, is:
 Here's the history of steps already executed, in order:
 {history}
 
-You have the following functions at your disposal:
-{functions}
+You have these functions at your disposal: {functions}. If additional functions are needed, they can be acquired via the get_more_functions() function.
 
 You have access to these files, but no others: {file_list}
-
-If additional functions are needed, they can be acquired via the get_more_functions() function.
 
 Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow these guidelines:
 
@@ -53,9 +50,9 @@ Your primary objective is efficiency and effectiveness.
 """
 
 
-def initial_prompt() -> SystemMessagePromptTemplate:
+def initial_prompt_template() -> SystemMessagePromptTemplate:
     return SystemMessagePromptTemplate.from_template(INITIAL_TEMPLATE)
 
 
-def planning_prompt() -> SystemMessagePromptTemplate:
+def planning_prompt_template() -> SystemMessagePromptTemplate:
     return SystemMessagePromptTemplate.from_template(TEMPLATE)

@@ -1,6 +1,5 @@
 import inspect
 import logging
-import os
 from typing import TYPE_CHECKING, Any
 
 from pydantic import BaseModel
@@ -51,13 +50,6 @@ def run_args_from_args_schema(args_schema: BaseModel) -> dict[str, dict[str, str
             "required": param_name in schema.get("required"),
         }
     return run_args
-
-
-def get_module_path(file: str) -> str:
-    module_path = os.path.abspath(file)
-    module_directory = os.path.dirname(module_path)
-
-    return os.path.relpath(module_directory, start=os.getcwd()).replace(os.sep, ".")
 
 
 def all_packs(body: "Body") -> dict[str, "Pack"]:

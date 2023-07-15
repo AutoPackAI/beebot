@@ -1,11 +1,12 @@
 from langchain.prompts import SystemMessagePromptTemplate
 
-TEMPLATE = """Given the plan and the function list provided below, identify the functions that would be most suitable for completing the task.
+TEMPLATE = """Given the task and the function list provided below, identify the functions that would be most suitable for completing every element of the task.
 
-Plan:
-{user_input}
+Task:
+{task}
 
-You may only recommend functions from this Functions List: {functions_string}
+You may only recommend functions from this Functions List:
+{functions_string}
 
 Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
 """
@@ -18,9 +19,10 @@ Plan:
 {plan}
 
 You may only recommend functions from this Functions List:
+
 {functions_string}
 
-Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
+The response should include only the names of the selected functions and should not include any additional explanatory text.
 """
 
 

@@ -1,5 +1,6 @@
 import logging
 import os.path
+import re
 
 from autopack.pack import Pack
 from langchain.chat_models import ChatOpenAI
@@ -11,7 +12,6 @@ from statemachine import StateMachine, State
 from beebot.body.llm import call_llm
 from beebot.body.pack_utils import all_packs, system_packs
 from beebot.config import Config
-from beebot.config.config import IDEAL_MODEL
 from beebot.decider import Decider
 from beebot.executor import Executor
 from beebot.memory import Memory
@@ -20,6 +20,7 @@ from beebot.models import Decision, Plan
 from beebot.models.observation import Observation
 from beebot.planner import Planner
 from beebot.prompting.function_selection import initial_selection_template
+from beebot.prompting.prompting import revise_task_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -50,6 +51,7 @@ class BodyStateMachine(StateMachine):
 
 class Body:
     initial_task: str
+    task: str
     current_plan: Plan
     state: BodyStateMachine
     packs: dict["Pack"]
@@ -64,12 +66,15 @@ class Body:
 
     def __init__(self, initial_task: str):
         self.initial_task = initial_task
+        self.task = initial_task
         self.current_plan = Plan(initial_task)
         self.state = BodyStateMachine()
         self.config = Config.from_env()
         self.memories = MemoryStorage()
 
-        self.llm = ChatOpenAI(model_name=IDEAL_MODEL, model_kwargs={"top_p": 0.2})
+        self.llm = ChatOpenAI(
+            model_name=self.config.llm_model, model_kwargs={"top_p": 0.2}
+        )
         self.planner = Planner(body=self)
         self.decider = Decider(body=self)
         self.executor = Executor(body=self)
@@ -82,6 +87,7 @@ class Body:
         """These are here instead of init because they involve network requests"""
 
         self.playwright = PlaywrightContextManager().start()
+        self.revise_task()
         self.packs = system_packs(self)
         self.update_packs()
 
@@ -101,7 +107,6 @@ class Body:
             return
 
         self.plan()
-        self.update_packs()
 
         self.memories.add_plan(plan=self.plan)
 
@@ -146,26 +151,48 @@ class Body:
             self.state.wait()
 
     def recommend_packs_for_current_plan(self) -> list[dict[str, str]]:
-        # TODO: This should probably be mostly, if not entirely, in Brain
-        # Use the plan if we have it, otherwise just use the task.
-        user_input = self.current_plan or self.initial_task
+        # TODO: This should probably be mostly, if not entirely, in some other place
         functions_string = []
         for pack in all_packs(self).values():
-            formatted_args = ", ".join(
+            args_signature = ", ".join(
                 [
                     f"{arg.get('name')}: {arg.get('type')}"
                     for arg in pack.run_args.values()
                 ]
             )
-            functions_string.append(f"{pack.name}({formatted_args})")
+            args_descriptions = (
+                "; ".join(
+                    [
+                        f"{arg.get('name')} ({arg.get('type')}): {arg.get('description')}"
+                        for arg in pack.run_args.values()
+                    ]
+                )
+                or "None."
+            )
+            functions_string.append(
+                f"{pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
+            )
 
         prompt = initial_selection_template().format(
-            user_input=user_input, functions_string="\n".join(functions_string)
+            task=self.task, functions_string="\n- ".join(functions_string)
         )
+        logger.info("=== Function request sent to LLM ===")
+        logger.info(prompt.content)
 
         response = call_llm(self, [prompt])
+        logger.info("=== Functions received from LLM ===")
+        logger.info(response.content)
 
-        return [p.strip() for p in response.content.split(",")]
+        return [r.strip() for r in re.split(r",|\n", response.content)]
+
+    def revise_task(self):
+        prompt = revise_task_prompt().format(task=self.initial_task)
+        logger.info("=== Task Revision given to LLM ===")
+        logger.info(self.task)
+        response = call_llm(self, [prompt], include_functions=False)
+        self.task = response.content
+        logger.info("=== Task Revised by LLM ===")
+        logger.info(self.task)
 
     def update_packs(self) -> list[Pack]:
         available_packs = all_packs(self)
@@ -174,4 +201,7 @@ class Body:
                 pack = available_packs[pack_name]
                 self.packs[pack_name] = pack
             except Exception as e:
+                import pdb
+
+                pdb.set_trace()
                 logger.warning(f"Pack {pack_name} could not be initialized: {e}")

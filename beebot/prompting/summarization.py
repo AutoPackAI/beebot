@@ -15,5 +15,5 @@ Retain key details such as file names, IDs, people, places, and important events
 {long_text}"""
 
 
-def summarization_prompt() -> SystemMessagePromptTemplate:
+def summarization_prompt_template() -> SystemMessagePromptTemplate:
     return SystemMessagePromptTemplate.from_template(TEMPLATE)

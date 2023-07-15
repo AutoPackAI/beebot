@@ -14,3 +14,7 @@ def list_files(body: "Body") -> list[str]:
         if os.path.isfile(os.path.join(directory, file))
     ]
     return file_basenames
+
+
+def functions_summary(body: "Body"):
+    return ", ".join([f"{name}" for name in body.packs.keys()])

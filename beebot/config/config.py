@@ -1,6 +1,5 @@
 import logging
 import os
-from copy import copy
 
 from pydantic import BaseModel
 
@@ -18,6 +17,7 @@ class Config(BaseModel):
     hard_exit: bool = False
     workspace_path: str = "workspace"
     llm_model: str = IDEAL_MODEL
+    gmail_credentials_file: str = "credentials.json"
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -38,6 +38,8 @@ class Config(BaseModel):
             kwargs["workspace_path"] = os.path.abspath(workspace_path)
         if (helicone_key := os.getenv("HELICONE_KEY")) is not None:
             kwargs["helicone_key"] = helicone_key
+        if (credentials_file := os.getenv("DEFAULT_CLIENT_SECRETS_FILE")) is not None:
+            kwargs["gmail_credentials_file"] = credentials_file
 
         config = cls(**kwargs)
         config.setup_logging()
@@ -47,10 +49,7 @@ class Config(BaseModel):
         os.makedirs("logs", exist_ok=True)
         console_handler = logging.StreamHandler()
         console_handler.setLevel(self.log_level)
-        console_handler.setFormatter(
-            ColoredFormatter("%(message)s")
-            # ColoredFormatter("[%(levelname)s][%(funcName)s] %(message)s")
-        )
+        console_handler.setFormatter(logging.Formatter("%(message)s"))
 
         file_handler = logging.FileHandler("logs/debug.log")
         file_handler.setLevel("DEBUG")
@@ -66,28 +65,3 @@ class Config(BaseModel):
                 file_handler,
             ],
         )
-
-
-LOG_LEVEL_TO_COLOR = {
-    "DEBUG": 32,  # green
-    "INFO": 36,  # cyan
-    "WARNING": 33,  # yellow
-    "ERROR": 31,  # red
-    "CRITICAL": 41,  # white on red bg
-}
-
-PREFIX = "\033["
-SUFFIX = "\033[0m"
-
-
-class ColoredFormatter(logging.Formatter):
-    def __init__(self, pattern):
-        logging.Formatter.__init__(self, pattern)
-
-    def format(self, record):
-        colored_record = copy(record)
-        levelname = colored_record.levelname
-        seq = LOG_LEVEL_TO_COLOR.get(levelname, 37)  # default white
-        colored_levelname = ("{0}{1}m{2}{3}").format(PREFIX, seq, levelname, SUFFIX)
-        colored_record.levelname = colored_levelname
-        return logging.Formatter.format(self, colored_record)

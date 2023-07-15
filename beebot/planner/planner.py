@@ -5,9 +5,9 @@ from langchain.chat_models.base import BaseChatModel
 
 from beebot.body.llm import call_llm
 from beebot.models import Plan
-from beebot.prompting import planning_prompt
-from beebot.prompting.planning import initial_prompt
-from beebot.utils import list_files
+from beebot.prompting import planning_prompt_template
+from beebot.prompting.planning import initial_prompt_template
+from beebot.utils import list_files, functions_summary
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -23,19 +23,18 @@ class Planner:
         self.body = body
 
     def plan(self) -> Plan:
-        task = self.body.initial_task
-        functions_summary = ", ".join([f"{name}" for name in self.body.packs.keys()])
+        task = self.body.task
         if self.body.memories.memories:
-            formatted_prompt = planning_prompt().format(
+            formatted_prompt = planning_prompt_template().format(
                 task=task,
                 history=self.body.memories.compile_history(),
-                functions=functions_summary,
+                functions=functions_summary(self.body),
                 file_list=", ".join(list_files(self.body)),
             )
         else:
-            formatted_prompt = initial_prompt().format(
+            formatted_prompt = initial_prompt_template().format(
                 task=task,
-                functions=functions_summary,
+                functions=functions_summary(self.body),
                 file_list=", ".join(list_files(self.body)),
             )
 
