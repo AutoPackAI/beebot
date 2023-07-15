@@ -8,6 +8,7 @@ from .os_info import OSInfo
 from .read_file import ReadFile
 from .website_info_extractor import WebsiteExtractor
 from .wikipedia import Wikipedia
+from .wolfram_alpha import WolframAlpha
 from .write_file import WriteFile
 
 __all__ = [
@@ -26,4 +27,5 @@ __all__ = [
     "GetThread",
     "Search",
     "SendMessage",
+    "WolframAlpha",
 ]

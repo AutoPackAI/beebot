@@ -20,7 +20,7 @@ from beebot.models import Decision, Plan
 from beebot.models.observation import Observation
 from beebot.planner import Planner
 from beebot.prompting.function_selection import initial_selection_template
-from beebot.prompting.prompting import revise_task_prompt
+from beebot.prompting.revising import revise_task_prompt
 
 logger = logging.getLogger(__name__)
 
@@ -170,11 +170,11 @@ class Body:
                 or "None."
             )
             functions_string.append(
-                f"{pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
+                f"- {pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
             )
 
         prompt = initial_selection_template().format(
-            task=self.task, functions_string="\n- ".join(functions_string)
+            task=self.task, functions_string="\n".join(functions_string)
         )
         logger.info("=== Function request sent to LLM ===")
         logger.info(prompt.content)

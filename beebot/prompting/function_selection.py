@@ -2,8 +2,7 @@ from langchain.prompts import SystemMessagePromptTemplate
 
 TEMPLATE = """Given the task and the function list provided below, identify the functions that would be most suitable for completing every element of the task.
 
-Task:
-{task}
+Task: {task}
 
 You may only recommend functions from this Functions List:
 {functions_string}
