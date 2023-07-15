@@ -2,6 +2,10 @@
 scripts/
 tmp/
 .autopack
+credentials.json
+token.json
+.DS_STORE
+agbenchmark/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
