@@ -1,5 +1,6 @@
 from .disk_usage import DiskUsage
 from .encyclopedia import Encyclopedia
+from .execute_python_code import ExecutePythonCode
 from .exit import Exit
 from .get_more_tools import GetMoreTools
 from .gmail import CreateDraft, GetMessage, GetThread, Search, SendMessage
@@ -14,6 +15,7 @@ from .write_file import WriteFile
 __all__ = [
     "DiskUsage",
     "Encyclopedia",
+    "ExecutePythonCode",
     "Exit",
     "GetMoreTools",
     "GoogleSearch",

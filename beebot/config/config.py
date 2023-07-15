@@ -7,6 +7,13 @@ from pydantic import BaseModel
 FALLBACK_MODEL = "gpt-3.5-turbo-16k-0613"
 IDEAL_MODEL = FALLBACK_MODEL
 
+TRUEISH = [
+    "True",
+    True,
+    "t",
+    "true",
+]
+
 
 class Config(BaseModel):
     openai_api_key: str = None
@@ -18,6 +25,7 @@ class Config(BaseModel):
     workspace_path: str = "workspace"
     llm_model: str = IDEAL_MODEL
     gmail_credentials_file: str = "credentials.json"
+    restrict_code_execution: bool = False
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -25,21 +33,27 @@ class Config(BaseModel):
 
         # Go through and only supply kwargs if the values are actually set, otherwise Pydantic complains
         if (hard_exit := os.getenv("HARD_EXIT")) is not None:
-            kwargs["hard_exit"] = hard_exit in ["True", True, "t", "true"]
-        if (hard_exit := os.getenv("OPENAI_API_KEY")) is not None:
-            kwargs["openai_api_key"] = hard_exit
-        if (hard_exit := os.getenv("AUTO_INSTALL_PACKS")) is not None:
-            kwargs["auto_install_packs"] = hard_exit
-        if (hard_exit := os.getenv("AUTO_INSTALL_DEPENDENCIES")) is not None:
-            kwargs["auto_install_dependencies"] = hard_exit
-        if (hard_exit := os.getenv("LOG_LEVEL")) is not None:
-            kwargs["log_level"] = hard_exit
+            kwargs["hard_exit"] = hard_exit in TRUEISH
+        if (openai_api_key := os.getenv("OPENAI_API_KEY")) is not None:
+            kwargs["openai_api_key"] = openai_api_key
+        if (auto_install_packs := os.getenv("AUTO_INSTALL_PACKS")) is not None:
+            kwargs["auto_install_packs"] = auto_install_packs in TRUEISH
+        if (
+            auto_install_dependencies := os.getenv("AUTO_INSTALL_DEPENDENCIES")
+        ) is not None:
+            kwargs["auto_install_dependencies"] = auto_install_dependencies in TRUEISH
+        if (log_level := os.getenv("LOG_LEVEL")) is not None:
+            kwargs["log_level"] = log_level
         if (workspace_path := os.getenv("WORKSPACE_PATH")) is not None:
             kwargs["workspace_path"] = os.path.abspath(workspace_path)
         if (helicone_key := os.getenv("HELICONE_KEY")) is not None:
             kwargs["helicone_key"] = helicone_key
         if (credentials_file := os.getenv("DEFAULT_CLIENT_SECRETS_FILE")) is not None:
             kwargs["gmail_credentials_file"] = credentials_file
+        if (
+            restrict_code_execution := os.getenv("RESTRICT_CODE_EXECUTION")
+        ) is not None:
+            kwargs["restrict_code_execution"] = restrict_code_execution in TRUEISH
 
         config = cls(**kwargs)
         config.setup_logging()

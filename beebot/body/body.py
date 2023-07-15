@@ -201,7 +201,5 @@ class Body:
                 pack = available_packs[pack_name]
                 self.packs[pack_name] = pack
             except Exception as e:
-                import pdb
-
-                pdb.set_trace()
+                # This is usually because we got a response with a made-up function.
                 logger.warning(f"Pack {pack_name} could not be initialized: {e}")
