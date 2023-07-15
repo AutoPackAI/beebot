@@ -7,17 +7,17 @@ from pydantic import BaseModel, Field
 from beebot.body.llm import call_llm
 from beebot.packs.system_base_pack import SystemBasePack
 
-PACK_NAME = "website_info_extractor"
+PACK_NAME = "website_text_summary"
 PACK_DESCRIPTION = (
-    "Retrieves data from a specified URL and creates a concise summary based on a given query. It navigates "
-    "the webpage, identifies relevant information, and synthesizes it into a useful and understandable response, "
-    "allowing the AI Assistant to gain targeted insights from web content."
+    "Extracts text content from a specified website URL and generates a summary based on a provided "
+    "question."
 )
+
 PROMPT_TEMPLATE = """Please provide a summary of the following content, which was gathered from the website {url}:
 {content}
 """
 
-QUESTION_PROMPT_TEMPLATE = """You are a language model tasked with answering a specific question based on the given content from the website {url}. Please provide a concise answer to the following question:
+QUESTION_PROMPT_TEMPLATE = """You are a language model tasked with answering a specific question based on the given content from the website {url}. Please provide an answer to the following question:
 
 Question: {question}
 
@@ -29,10 +29,11 @@ Answer:
 
 
 class WebExtractorArgs(BaseModel):
-    url: str = Field(..., description="The web address to extract information from")
+    url: str = Field(
+        ..., description="The URL of the website to be accessed and extracted."
+    )
     question: str = Field(
-        ...,
-        description="A detailed description of the desired information to be retrieved in the form of a question.",
+        description="The question or query used to generate a summary of the extracted text content.",
     )
 
 

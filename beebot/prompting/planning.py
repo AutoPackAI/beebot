@@ -44,9 +44,9 @@ Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow
 6. Explain your reasoning behind the next planned action, without coding.
 7. Direct the execution of the next action using exactly one of the functions, specified in the `function_call` parameter.
 
-If you observe that the AI Assistant is stuck and unable to complete the task, instruct the AI Assistant to call exit() with an error to signal the inability to proceed further.
+If you observe that the AI Assistant is stuck and unable to complete the task, instruct the AI Assistant to call the exit function with an error to signal the inability to proceed further.
 
-Once all task objectives have been met, instruct the AI Assistant to call the `exit` function, indicating the completion of the task.
+Once the original task has been successfully completed, instruct the AI Assistant to call the `exit` function.
 
 Your primary objective is efficiency and effectiveness."""
 

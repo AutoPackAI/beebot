@@ -1,12 +1,22 @@
 from typing import Type
 
 from langchain import WikipediaAPIWrapper
+from langchain.schema import SystemMessage
 from pydantic import BaseModel, Field
 
+from beebot.body.llm import call_llm
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "wikipedia"
 PACK_DESCRIPTION = "Retrieve information from Wikipedia based on a given query. It provides a summary of the relevant Wikipedia page, enabling quick access to factual knowledge."
+
+PROMPT_TEMPLATE = """Given the following pages from Wikipedia, provide an answer to the following question:
+
+Question: {question}
+
+Pages:
+{pages}
+"""
 
 
 class WikipediaArgs(BaseModel):
@@ -23,6 +33,16 @@ class Wikipedia(SystemBasePack):
 
     def _run(self, query: str) -> list[str]:
         try:
-            return [page.page_content for page in WikipediaAPIWrapper().load(query)]
+            page_text = []
+
+            for page in WikipediaAPIWrapper().load(query):
+                title = page.metadata.get("title", "Uknown title")
+                # Assuming we don't want the summary?
+                page_text.append(f"-- Page: {title}\n{page.page_content}")
+
+            prompt = PROMPT_TEMPLATE.format(question=query, pages="\n".join(page_text))
+            response = call_llm(self.body, [SystemMessage(content=prompt)])
+            return response.content
+
         except Exception as e:
             return f"Error: {e}"

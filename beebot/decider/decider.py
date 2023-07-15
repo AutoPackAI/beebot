@@ -44,9 +44,13 @@ class Decider:
 
         response = call_llm(self.body, [template])
         logger.info("=== Decision received from LLM ===")
-        logger.info(response.content)
-        logger.info("")
-        logger.info(f"---- Function Call: {json.dumps(response.additional_kwargs)}")
+        if response.content:
+            logger.info(response.content)
+            logger.info("")
+
+        logger.info(
+            json.dumps(response.additional_kwargs.get("function_call", {}), indent=4)
+        )
         logger.info("")
         return interpret_brain_output(response)
 
