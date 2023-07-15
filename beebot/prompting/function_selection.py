@@ -4,11 +4,13 @@ TEMPLATE = """Given the task and the function list provided below, identify the 
 
 Task: {task}
 
-You may only recommend functions from this Functions List:
+You may only recommend functions from among this list of functions:
+
 {functions_string}
 
 Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
 """
+
 GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the plan and the function list provided below, identify the functions that would be most suitable for completing the task.
 
 Functions Request:

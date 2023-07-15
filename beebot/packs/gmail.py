@@ -41,7 +41,7 @@ class MessageSchema(BaseModel):
 
     message: str = Field(
         ...,
-        description="The message to include in the draft.",
+        description="The content to include in the message.",
     )
     to: str = Field(
         ...,
@@ -63,7 +63,7 @@ class MessageSchema(BaseModel):
 
 class CreateDraft(SystemBasePack):
     name: str = "gmail_create_draft"
-    description: str = "Create a draft email with Gmail"
+    description: str = "Use Gmail to create a draft email inside of Gmail."
     args_schema: Type[BaseModel] = MessageSchema
 
     def _run(self, *args, **kwargs):

@@ -153,7 +153,8 @@ class Body:
     def recommend_packs_for_current_plan(self) -> list[dict[str, str]]:
         # TODO: This should probably be mostly, if not entirely, in some other place
         functions_string = []
-        for pack in all_packs(self).values():
+        sorted_packs = sorted(all_packs(self).values(), key=lambda p: p.name)
+        for pack in sorted_packs:
             args_signature = ", ".join(
                 [
                     f"{arg.get('name')}: {arg.get('type')}"
