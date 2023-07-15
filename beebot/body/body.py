@@ -3,13 +3,12 @@ import os.path
 import re
 
 from autopack.pack import Pack
-from langchain.chat_models import ChatOpenAI
 from langchain.chat_models.base import BaseChatModel
 from playwright.sync_api import Playwright, PlaywrightContextManager
 from pydantic import ValidationError
 from statemachine import StateMachine, State
 
-from beebot.body.llm import call_llm
+from beebot.body.llm import call_llm, create_llm
 from beebot.body.pack_utils import all_packs, system_packs
 from beebot.config import Config
 from beebot.decider import Decider
@@ -72,9 +71,7 @@ class Body:
         self.config = Config.from_env()
         self.memories = MemoryStorage()
 
-        self.llm = ChatOpenAI(
-            model_name=self.config.llm_model, model_kwargs={"top_p": 0.2}
-        )
+        self.llm = create_llm(self.config)
         self.planner = Planner(body=self)
         self.decider = Decider(body=self)
         self.executor = Executor(body=self)

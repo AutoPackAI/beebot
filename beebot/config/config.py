@@ -18,6 +18,7 @@ TRUEISH = [
 class Config(BaseModel):
     openai_api_key: str = None
     helicone_key: str = None
+    openai_api_base: str = None
     auto_install_packs: bool = True
     auto_install_dependencies: bool = True
     log_level: str = "INFO"
@@ -48,6 +49,8 @@ class Config(BaseModel):
             kwargs["workspace_path"] = os.path.abspath(workspace_path)
         if (helicone_key := os.getenv("HELICONE_KEY")) is not None:
             kwargs["helicone_key"] = helicone_key
+        if (openai_api_base := os.getenv("OPENAI_API_BASE")) is not None:
+            kwargs["openai_api_base"] = openai_api_base
         if (credentials_file := os.getenv("DEFAULT_CLIENT_SECRETS_FILE")) is not None:
             kwargs["gmail_credentials_file"] = credentials_file
         if (
