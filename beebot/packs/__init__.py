@@ -24,7 +24,7 @@ __all__ = [
     "OSInfo",
     "ReadFile",
     "WebsiteExtractor",
-    "wikipedia",
+    "Wikipedia",
     "WriteFile",
     "CreateDraft",
     "GetMessage",

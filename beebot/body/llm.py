@@ -1,4 +1,5 @@
 import logging
+from typing import TYPE_CHECKING
 
 import openai
 from langchain.chat_models import ChatOpenAI
@@ -9,6 +10,9 @@ from beebot.body.pack_utils import format_packs_to_openai_functions
 from beebot.config.config import FALLBACK_MODEL, Config
 
 logger = logging.getLogger(__name__)
+
+if TYPE_CHECKING:
+    from beebot.body import Body
 
 
 def create_llm(config: Config):

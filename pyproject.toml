@@ -32,3 +32,8 @@ pytest = "^7.4.0"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.ruff]
+line-length = 120
+# Never enforce `E501` (line length violations). Newlines in strings sent to the LLM may impact its comprehension.
+ignore = ["E501"]
