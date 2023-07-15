@@ -11,19 +11,21 @@ You may only recommend functions from among this list of functions:
 Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
 """
 
-GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the plan and the function list provided below, identify the functions that would be most suitable for completing the task.
+GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the task, the plan and the function list provided below, identify the functions that would be most suitable for completing every element of the task.
 
 Functions Request:
 {functions_request}
 
+Task: {task}
+
 Plan:
 {plan}
 
-You may only recommend functions from this Functions List:
+You may only recommend functions from among this list of functions:
 
 {functions_string}
 
-The response should include only the names of the selected functions and should not include any additional explanatory text.
+Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
 """
 
 
