@@ -1,10 +1,19 @@
 import os
 
+import pytest
+from tests.conftest import init_body
+
 from beebot.body.body import BodyStateMachine
 from beebot.config import Config
 
 
-def test_system_basic_cycle(body):
+@pytest.fixture()
+def simple_task():
+    return "Get my OS name and version, and my current disk usage. write it to a file called my_computer.txt"
+
+
+def test_system_basic_cycle(simple_task):
+    body = init_body(simple_task)
     assert body.state.current_state == BodyStateMachine.starting
 
     assert "my_computer.txt" in body.initial_task

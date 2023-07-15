@@ -26,15 +26,11 @@ def go_to_tmpdir(request):
         yield
 
 
-@pytest.fixture()
-def simple_task():
-    return "Get my OS name and version, and my current disk usage. write it to a file called my_computer.txt"
-
-
-@pytest.fixture()
-def body(simple_task):
-    body_obj = Body(initial_task=simple_task)
+def init_body(task: str):
+    body_obj = Body(initial_task=task)
     body_obj.setup()
+    body_obj.config.log_level = "WARN"
+    body_obj.config.setup_logging()
     body_obj.config.hard_exit = False
     return body_obj
 
