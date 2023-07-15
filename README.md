@@ -40,10 +40,10 @@ and future direction.
 
 ### Priorities
 
-The development of BeeBot is driven by the following priorities:
+The development of BeeBot is driven by the following priorities, always in this order:
 
-1. Functionality: BeeBot aims to achieve a high success rate for tasks within its range of expected capabilities.
-2. Flexibility: BeeBot strives to be adaptable to a wide range of tasks, expanding its range over time.
+1. Functionality: BeeBot aims to achieve a high success rate for tasks within its range of _expected_ capabilities.
+2. Flexibility: BeeBot strives to be adaptable to a wide range of tasks, expanding that range over time.
 3. Reliability: BeeBot focuses on reliably completing known tasks with predictability.
 4. Efficiency: BeeBot aims to execute tasks with minimal steps, optimizing both time and resource usage.
 5. Convenience: BeeBot aims to provide a user-friendly platform for task automation.
@@ -56,10 +56,10 @@ To achieve these priorities, BeeBot follows the following principles:
   will utilize [AutoPack](https://autopack.ai) as the package manager for its tools.
 - LLM specialization: BeeBot will leverage a variety of LLMs best suited for different tasks, while OpenAI remains the
   primary LLM for planning and decision-making.
-- Functionality and reliability first: BeeBot prioritizes functionality and reliability over developer quality-of-life,
-  which may limit support for specific platforms.
+- Functionality and flexibility first: BeeBot prioritizes functionality and flexibility over developer quality-of-life,
+  which may limit support for specific platforms and other deployment conveniences.
 - Unorthodox methodologies: BeeBot employs unconventional development approaches to increase development speed, such as
-  the absence of unit tests.
+  the absence of unit tests. Instead, end-to-end tests are used, ensuring the entire system works together as expected.
 - Proven concepts: BeeBot adopts new concepts only after they have been proven to enhance its five priorities.
   As a result, it does not have complex memory or a tree of thought.
 
