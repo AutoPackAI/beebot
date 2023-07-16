@@ -3,6 +3,7 @@ from .disk_usage import DiskUsage
 from .encyclopedia import Encyclopedia
 from .execute_python_code import ExecutePythonCode
 from .execute_python_file import ExecutePythonFile
+from .execute_python_file_in_background import ExecutePythonFileInBackground
 from .exit import Exit
 from .get_html_content import GetHtmlContent
 from .get_more_tools import GetMoreTools
@@ -22,6 +23,7 @@ __all__ = [
     "Encyclopedia",
     "ExecutePythonCode",
     "ExecutePythonFile",
+    "ExecutePythonFileInBackground",
     "Exit",
     "GetMoreTools",
     "GoogleSearch",

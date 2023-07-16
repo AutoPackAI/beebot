@@ -1,6 +1,7 @@
 import logging
 import os.path
 import re
+import subprocess
 
 from autopack.pack import Pack
 from langchain.chat_models.base import BaseChatModel
@@ -56,6 +57,7 @@ class Body:
     packs: dict["Pack"]
     memories: MemoryStorage
     playwright: Playwright
+    processes: list[subprocess.Popen]
 
     llm: BaseChatModel
     planner: Planner
@@ -76,6 +78,7 @@ class Body:
         self.decider = Decider(body=self)
         self.executor = Executor(body=self)
         self.packs = {}
+        self.processes = []
 
         if not os.path.exists(self.config.workspace_path):
             os.makedirs(self.config.workspace_path, exist_ok=True)
