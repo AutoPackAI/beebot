@@ -83,7 +83,14 @@ class Body:
     def setup(self):
         """These are here instead of init because they involve network requests"""
 
-        self.playwright = PlaywrightContextManager().start()
+        try:
+            self.playwright = PlaywrightContextManager().start()
+        except Exception as e:
+            # TODO: Implement async playwright
+            logger.warning(
+                f"Playwright could not be started, likely because it needs to be async {e}"
+            )
+
         self.revise_task()
         self.packs = system_packs(self)
         self.update_packs()

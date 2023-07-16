@@ -70,9 +70,6 @@ class GetMoreTools(SystemBasePack):
                 added_packs.append(pack.name)
                 self.body.packs[pack_name] = pack
             except Exception as e:
-                import pdb
-
-                pdb.set_trace()
                 logger.warning(f"Pack {pack_name} could not be initialized: {e}")
 
         return f"Functions added: {', '.join(added_packs)}"

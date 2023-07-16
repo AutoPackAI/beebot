@@ -41,6 +41,7 @@ class ExecutePythonFile(SystemBasePack):
     args_schema: Type[BaseModel] = ExecutePythonFileArgs
 
     def _run(self, file_path: str) -> str:
+        file_path = os.path.join(self.body.config.workspace_path, file_path)
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
         try:

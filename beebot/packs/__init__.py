@@ -1,3 +1,4 @@
+from .delegate_task import DelegateTask
 from .disk_usage import DiskUsage
 from .encyclopedia import Encyclopedia
 from .execute_python_code import ExecutePythonCode
@@ -16,6 +17,7 @@ from .wolfram_alpha import WolframAlpha
 from .write_file import WriteFile
 
 __all__ = [
+    "DelegateTask",
     "DiskUsage",
     "Encyclopedia",
     "ExecutePythonCode",
