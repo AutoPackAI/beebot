@@ -171,24 +171,26 @@ class Body:
                 f"- {pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
             )
 
-        prompt = initial_selection_template().format(
-            task=self.task, functions_string="\n".join(functions_string)
+        prompt = (
+            initial_selection_template()
+            .format(task=self.task, functions_string="\n".join(functions_string))
+            .content
         )
         logger.info("=== Function request sent to LLM ===")
-        logger.info(prompt.content)
+        logger.info(prompt)
 
-        response = call_llm(self, [prompt])
+        response = call_llm(self, prompt).text
         logger.info("=== Functions received from LLM ===")
-        logger.info(response.content)
+        logger.info(response)
 
-        return [r.strip() for r in re.split(r",|\n", response.content)]
+        return [r.strip() for r in re.split(r",|\n", response)]
 
     def revise_task(self):
-        prompt = revise_task_prompt().format(task=self.initial_task)
+        prompt = revise_task_prompt().format(task=self.initial_task).content
         logger.info("=== Task Revision given to LLM ===")
         logger.info(self.task)
-        response = call_llm(self, [prompt], include_functions=False)
-        self.task = response.content
+        response = call_llm(self, prompt, include_functions=False).text
+        self.task = response
         logger.info("=== Task Revised by LLM ===")
         logger.info(self.task)
 

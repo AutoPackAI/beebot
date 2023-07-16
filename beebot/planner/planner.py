@@ -25,29 +25,37 @@ class Planner:
     def plan(self) -> Plan:
         task = self.body.task
         if self.body.memories.memories:
-            formatted_prompt = planning_prompt_template().format(
-                task=task,
-                history=self.body.memories.compile_history(),
-                functions=functions_summary(self.body),
-                file_list=", ".join(list_files(self.body)),
+            formatted_prompt = (
+                planning_prompt_template()
+                .format(
+                    task=task,
+                    history=self.body.memories.compile_history(),
+                    functions=functions_summary(self.body),
+                    file_list=", ".join(list_files(self.body)),
+                )
+                .content
             )
         else:
-            formatted_prompt = initial_prompt_template().format(
-                task=task,
-                functions=functions_summary(self.body),
-                file_list=", ".join(list_files(self.body)),
+            formatted_prompt = (
+                initial_prompt_template()
+                .format(
+                    task=task,
+                    functions=functions_summary(self.body),
+                    file_list=", ".join(list_files(self.body)),
+                )
+                .content
             )
 
         response = call_llm(
             self.body,
-            messages=[formatted_prompt],
-            return_function_call=False,
+            message=formatted_prompt,
+            function_call="none",
         )
-        planned = response.content
+        planned = response
 
         logger.info("=== Plan Request ===")
-        logger.info(formatted_prompt.content)
+        logger.info(formatted_prompt)
         logger.info("=== Plan Created ===")
-        logger.info(planned)
+        logger.info(planned.text)
 
-        return Plan(planned)
+        return Plan(plan_text=planned.text)

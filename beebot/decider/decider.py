@@ -1,11 +1,10 @@
 import json
 import logging
 from json import JSONDecodeError
+from subprocess import TimeoutExpired
 from typing import TYPE_CHECKING, Any
 
-from langchain.schema import AIMessage
-
-from beebot.body.llm import call_llm
+from beebot.body.llm import call_llm, LLMResponse
 from beebot.models import Plan, Decision
 from beebot.prompting import decider_template
 from beebot.utils import functions_summary, list_files
@@ -34,35 +33,37 @@ class Decider:
         logger.info(plan.plan_text)
         logger.info("")
         logger.info(f"Functions provided: {[name for name in self.body.packs.keys()]}")
-        template = decider_template().format(
-            plan=plan.plan_text,
-            task=self.body.task,
-            history=self.body.memories.compile_history(),
-            functions=functions_summary(self.body),
-            file_list=", ".join(list_files(self.body)),
+        template = (
+            decider_template()
+            .format(
+                plan=plan.plan_text,
+                task=self.body.task,
+                history=self.body.memories.compile_history(),
+                functions=functions_summary(self.body),
+                file_list=", ".join(list_files(self.body)),
+            )
+            .content
         )
 
-        response = call_llm(self.body, [template])
+        response = call_llm(self.body, template)
         logger.info("=== Decision received from LLM ===")
-        if response.content:
-            logger.info(response.content)
+        if response:
+            logger.info(response.text)
             logger.info("")
 
-        logger.info(
-            json.dumps(response.additional_kwargs.get("function_call", {}), indent=4)
-        )
+        logger.info(json.dumps(response.function_call, indent=4))
         logger.info("")
-        return interpret_brain_output(response)
+        return interpret_llm_response(response)
 
     def decide_with_retry(
-        self, plan: Plan, retry_count: int = 0, previous_response: str = ""
+        self, plan: Plan, retry_count: int = 0, previous_plan: Plan = None
     ) -> Decision:
-        if retry_count and previous_response:
+        if retry_count and previous_plan:
             plan = Plan(
                 plan_text=plan.plan_text
                 + (
                     f"\n\nWarning: You have attempted this next action in the past unsuccessfully. Please reassess your"
-                    f" strategy. Your failed attempt is: {previous_response}"
+                    f" strategy. Your failed attempt is: {previous_plan.plan_text}"
                 )
             )
 
@@ -72,17 +73,15 @@ class Decider:
             logger.warning("Got invalid response from LLM, retrying...")
             if retry_count >= RETRY_LIMIT:
                 raise ValueError(f"Got invalid response {RETRY_LIMIT} times in a row")
-            return self.decide_with_retry(
-                retry_count + 1, previous_response=plan.plan_text
-            )
+            return self.decide_with_retry(retry_count + 1, previous_plan=plan)
 
 
-def interpret_brain_output(response: AIMessage) -> Decision:
-    if function_call_kwargs := response.additional_kwargs.get("function_call"):
-        tool_name, tool_args = parse_function_call_args(function_call_kwargs)
+def interpret_llm_response(response: LLMResponse) -> Decision:
+    if response.function_call:
+        tool_name, tool_args = parse_function_call_args(response.function_call)
 
         decision = Decision(
-            reasoning=response.content,
+            reasoning=response.text,
             tool_name=tool_name,
             tool_args=tool_args,
         )
@@ -103,3 +102,6 @@ def parse_function_call_args(
         return tool_name, parsed_tool_args
     except JSONDecodeError:
         return tool_name, {"output": function_call_args.get("arguments")}
+
+
+TimeoutExpired

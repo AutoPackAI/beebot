@@ -1,6 +1,6 @@
 {
   "workspace": "workspace",
-  "entry_path": "beebot/initiator/benchmark_entrypoint.py",
+  "entry_path": "beebot.initiator.benchmark_entrypoint",
   "home_path": "",
-  "cutoff": 60
+  "cutoff": 180
 }

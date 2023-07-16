@@ -23,9 +23,7 @@ def filter_long_documents(
             summarization_prompt_template().format(long_text=response[:8000]).content
         )
         message = SystemMessage(content=summary_prompt)
-        summarization = call_llm(body, [message])
-        response = (
-            f"The response was summarized as: {json.dumps(summarization.content)}"
-        )
+        summarization = call_llm(body, message)
+        response = f"The response was summarized as: {json.dumps(summarization.text)}"
 
     return response
