@@ -27,7 +27,9 @@ def create_llm(config: Config):
     if config.openai_api_base:
         openai.api_base = config.openai_api_base
     if config.helicone_key:
+        logger.info("Using helicone to make requests with cache enabled.")
         headers["Helicone-Auth"] = f"Bearer {config.helicone_key}"
+        headers["Helicone-Cache-Enabled"] = "true"
 
     llm = ChatOpenAI(
         model_name=config.llm_model,
