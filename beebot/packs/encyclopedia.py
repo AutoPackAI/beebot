@@ -1,8 +1,8 @@
 from typing import Type
 
-from langchain.schema import HumanMessage
 from pydantic import BaseModel, Field
 
+from beebot.body.llm import call_llm
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "encyclopedia"
@@ -24,9 +24,12 @@ class Encyclopedia(SystemBasePack):
     def _run(self, query: str) -> str:
         try:
             # TODO: Maybe a custom prompt?
-            response = self.body.llm(
-                messages=[HumanMessage(content=query)], return_function_call=False
-            )
-            return response.content
+            response = call_llm(
+                body=self.body,
+                message=query,
+                function_call="none",
+            ).text
+
+            return response
         except Exception as e:
             return f"Error: {e}"

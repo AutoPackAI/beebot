@@ -1,7 +1,6 @@
 from typing import Type
 
 from langchain import WikipediaAPIWrapper
-from langchain.schema import SystemMessage
 from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
@@ -51,8 +50,8 @@ class Wikipedia(SystemBasePack):
             prompt = PROMPT_TEMPLATE.format(
                 question=question, pages="\n".join(page_text)
             )
-            response = call_llm(self.body, [SystemMessage(content=prompt)])
-            return response.content
+            response = call_llm(self.body, prompt).text
+            return response
 
         except Exception as e:
             return f"Error: {e}"

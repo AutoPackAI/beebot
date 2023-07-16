@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 class GetPacksArgs(BaseModel):
     desired_functionality: str = Field(
         ...,
-        description="Express the requirements of the tool(s) you require in broad terms.",
+        description="Express the type of tool that you require in broad terms.",
     )
 
 
@@ -48,16 +48,20 @@ class GetMoreTools(SystemBasePack):
             for summary in pack_summaries(body=self.body)
             if summary.get("name") not in unfetchable_pack_names
         ]
-        prompt = get_more_tools_template().format(
-            task=self.body.task,
-            plan=self.body.current_plan,
-            functions_string=json.dumps(fetchable_summaries),
-            functions_request=desired_functionality,
+        prompt = (
+            get_more_tools_template()
+            .format(
+                task=self.body.task,
+                plan=self.body.current_plan,
+                functions_string=json.dumps(fetchable_summaries),
+                functions_request=desired_functionality,
+            )
+            .content
         )
 
-        response = call_llm(self.body, [prompt])
+        response = call_llm(self.body, prompt).text
 
-        functions = [p.strip() for p in response.content.split(",")]
+        functions = [p.strip() for p in response.split(",")]
         packs = all_packs(body=self.body)
         added_packs = []
         for pack_name in functions:

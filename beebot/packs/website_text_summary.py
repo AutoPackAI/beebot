@@ -1,7 +1,6 @@
 from typing import Type
 
 from bs4 import BeautifulSoup
-from langchain.schema import SystemMessage
 from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
@@ -28,7 +27,7 @@ Answer:
 """
 
 
-class WebExtractorArgs(BaseModel):
+class WebsiteTextSummaryArgs(BaseModel):
     url: str = Field(
         ..., description="The URL of the website to be accessed and extracted."
     )
@@ -37,10 +36,10 @@ class WebExtractorArgs(BaseModel):
     )
 
 
-class WebsiteExtractor(SystemBasePack):
+class WebsiteTextSummary(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = WebExtractorArgs
+    args_schema: Type[BaseModel] = WebsiteTextSummaryArgs
 
     def _run(self, url: str, question: str = "") -> str:
         browser = self.body.playwright.chromium.launch()
@@ -65,5 +64,5 @@ class WebsiteExtractor(SystemBasePack):
         else:
             prompt = PROMPT_TEMPLATE.format(content=text, url=url)
 
-        response = call_llm(self.body, [SystemMessage(content=prompt)])
-        return response.content
+        response = call_llm(self.body, prompt, include_functions=False).text
+        return response
