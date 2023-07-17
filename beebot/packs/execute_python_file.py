@@ -60,7 +60,7 @@ class ExecutePythonFile(SystemBasePack):
             if output:
                 return f"Execution successful. Output: {output}"
 
-            return f"Execution successful."
+            return "Execution successful."
 
         except Exception as e:
             return f"Error: {e}"

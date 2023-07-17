@@ -9,8 +9,8 @@ from beebot.body.pack_utils import (
     all_packs,
     functions_bulleted_list,
 )
+from beebot.packs.function_selection_prompt import get_more_tools_template
 from beebot.packs.system_base_pack import SystemBasePack
-from beebot.prompting.function_selection import get_more_tools_template
 
 PACK_NAME = "get_more_tools"
 PACK_DESCRIPTION = "Requests a tool necessary for task fulfillment."

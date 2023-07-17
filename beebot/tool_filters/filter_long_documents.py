@@ -7,7 +7,7 @@ from beebot.body.llm import call_llm
 from beebot.models import Decision
 from beebot.models.observation import Observation
 from beebot.models.plan import Plan
-from beebot.prompting.summarization import summarization_prompt_template
+from beebot.packs.summarization_prompt import summarization_prompt_template
 
 if TYPE_CHECKING:
     from beebot.body import Body

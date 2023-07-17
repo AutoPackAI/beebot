@@ -12,6 +12,7 @@ from statemachine import StateMachine, State
 
 from beebot.body.llm import call_llm, create_llm
 from beebot.body.pack_utils import all_packs, system_packs, functions_bulleted_list
+from beebot.body.revising_prompt import revise_task_prompt
 from beebot.config import Config
 from beebot.decider import Decider
 from beebot.executor import Executor
@@ -19,9 +20,8 @@ from beebot.memory import Memory
 from beebot.memory.memory_storage import MemoryStorage
 from beebot.models import Decision, Plan
 from beebot.models.observation import Observation
+from beebot.packs.function_selection_prompt import initial_selection_template
 from beebot.planner import Planner
-from beebot.prompting.function_selection import initial_selection_template
-from beebot.prompting.revising import revise_task_prompt
 
 logger = logging.getLogger(__name__)
 

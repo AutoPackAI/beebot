@@ -5,8 +5,10 @@ from langchain.chat_models.base import BaseChatModel
 
 from beebot.body.llm import call_llm
 from beebot.models import Plan
-from beebot.prompting import planning_prompt_template
-from beebot.prompting.planning import initial_prompt_template
+from beebot.planner.planning_prompt import (
+    initial_prompt_template,
+    planning_prompt_template,
+)
 from beebot.utils import list_files, functions_summary
 
 if TYPE_CHECKING:

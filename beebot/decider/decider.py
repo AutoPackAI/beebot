@@ -5,8 +5,8 @@ from subprocess import TimeoutExpired
 from typing import TYPE_CHECKING, Any
 
 from beebot.body.llm import call_llm, LLMResponse
+from beebot.decider.deciding_prompt import decider_template
 from beebot.models import Plan, Decision
-from beebot.prompting import decider_template
 from beebot.utils import functions_summary, list_files
 
 if TYPE_CHECKING:
@@ -60,7 +60,7 @@ class Decider:
             plan = Plan(
                 plan_text=plan.plan_text
                 + (
-                    f"\n\nWarning: Invalid response received. Please reassess your strategy."
+                    "\n\nWarning: Invalid response received. Please reassess your strategy."
                 )
             )
 
