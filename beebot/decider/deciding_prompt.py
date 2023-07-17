@@ -26,8 +26,8 @@ You have access to these files, but no others:
 
 Follow these guidelines:
 1. Study your high-level plan, and understand the next step in it.
-2. Implement the next action from the plan using exactly one of the provided functions.
-3. If the specified action in the plan seems ineffective or redundant, consult the high-level plan for a different action or consider acquiring a new function with get_more_tools().
+2. If you determine that the next planned action seems ineffective or redundant you may override the plan. In that case, consider using a different action or acquiring a new function with get_more_tools().
+3. Implement the next action by using exactly one of the provided functions.
 4. Focus on maintaining the efficiency, effectiveness, and adaptability of your execution process.
 
 Proceed with executing the next step from the plan. Use exactly one of the provided functions through the `function_call` parameter of your response."""

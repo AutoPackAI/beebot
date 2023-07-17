@@ -19,7 +19,7 @@ def recommend_packs_for_plan(body: "Body") -> list[dict[str, str]]:
         initial_selection_template()
         .format(
             task=body.task,
-            functions_string=functions_bulleted_list(all_packs(body).values()),
+            functions=functions_bulleted_list(all_packs(body).values()),
         )
         .content
     )
