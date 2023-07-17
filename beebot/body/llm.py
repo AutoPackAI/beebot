@@ -43,6 +43,7 @@ def call_llm(
     message: str,
     function_call: str = "auto",
     include_functions: bool = True,
+    disregard_cache: bool = False,
 ) -> LLMResponse:
     llm = body.llm
     output_kwargs = {}
@@ -50,6 +51,9 @@ def call_llm(
     if include_functions:
         output_kwargs["functions"] = format_packs_to_openai_functions(body.packs)
         output_kwargs["function_call"] = function_call
+
+    if disregard_cache:
+        output_kwargs["headers"] = {"Helicone-Cache-Enabled": "false"}
 
     try:
         response = llm.generate(

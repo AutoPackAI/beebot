@@ -27,7 +27,7 @@ class Decider:
     def __init__(self, body: "Body"):
         self.body = body
 
-    def decide(self, plan: Plan) -> Decision:
+    def decide(self, plan: Plan, disregard_cache: bool = False) -> Decision:
         """Take a Plan and send it to the LLM, returning it back to the Body"""
         logger.info("=== Plan sent to LLM for Decision ===")
         logger.info(plan.plan_text)
@@ -38,14 +38,14 @@ class Decider:
             .format(
                 plan=plan.plan_text,
                 task=self.body.task,
-                history=self.body.memories.compile_history(),
+                # history=self.body.memories.compile_history(),
                 functions=functions_summary(self.body),
                 file_list=", ".join(list_files(self.body)),
             )
             .content
         )
 
-        response = call_llm(self.body, template)
+        response = call_llm(self.body, template, disregard_cache=disregard_cache)
         logger.info("=== Decision received from LLM ===")
         if response:
             logger.info(response.text)
@@ -55,25 +55,25 @@ class Decider:
         logger.info("")
         return interpret_llm_response(response)
 
-    def decide_with_retry(
-        self, plan: Plan, retry_count: int = 0, previous_plan: Plan = None
-    ) -> Decision:
-        if retry_count and previous_plan:
+    def decide_with_retry(self, plan: Plan, retry_count: int = 0) -> Decision:
+        if retry_count:
             plan = Plan(
                 plan_text=plan.plan_text
                 + (
-                    f"\n\nWarning: You have attempted this next action in the past unsuccessfully. Please reassess your"
-                    f" strategy. Your failed attempt is: {previous_plan.plan_text}"
+                    f"\n\nWarning: Invalid response received. Please reassess your strategy."
                 )
             )
 
         try:
-            return self.decide(plan)
+            return self.decide(plan, disregard_cache=retry_count > 0)
         except ValueError:
+            import pdb
+
+            pdb.set_trace()
             logger.warning("Got invalid response from LLM, retrying...")
             if retry_count >= RETRY_LIMIT:
                 raise ValueError(f"Got invalid response {RETRY_LIMIT} times in a row")
-            return self.decide_with_retry(retry_count + 1, previous_plan=plan)
+            return self.decide_with_retry(plan=plan, retry_count=retry_count + 1)
 
 
 def interpret_llm_response(response: LLMResponse) -> Decision:

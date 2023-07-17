@@ -1,11 +1,12 @@
 import os
+import shlex
+import subprocess
 from typing import Type
 
-from langchain.tools.python.tool import sanitize_input
-from langchain.utilities import PythonREPL
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
+from beebot.utils import restrict_path
 
 PACK_NAME = "execute_python_file"
 
@@ -18,20 +19,13 @@ PACK_DESCRIPTION = (
 )
 
 
-def restrict_path(file_path: str, workspace_dir: str):
-    absolute_path = os.path.abspath(file_path)
-    relative_path = os.path.relpath(absolute_path, workspace_dir)
-
-    if relative_path.startswith("..") or "/../" in relative_path:
-        return None
-
-    return absolute_path
-
-
 class ExecutePythonFileArgs(BaseModel):
     file_path: str = Field(
         ...,
         description="Specifies the path to the Python file previously saved on disk.",
+    )
+    python_args: str = Field(
+        description="Arguments to be passed when executing the file", default=""
     )
 
 
@@ -40,7 +34,7 @@ class ExecutePythonFile(SystemBasePack):
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExecutePythonFileArgs
 
-    def _run(self, file_path: str) -> str:
+    def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
@@ -49,12 +43,24 @@ class ExecutePythonFile(SystemBasePack):
             if not abs_path:
                 return "Error: File not found"
 
-            with open(abs_path, "r") as f:
-                repl = PythonREPL(_globals=globals(), _locals=None)
-                sanitized_code = sanitize_input(f.read())
-                result = repl.run(sanitized_code)
+            args_list = shlex.split(python_args)
+            cmd = ["python", abs_path, *args_list]
+            process = subprocess.run(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                cwd=self.body.config.workspace_path,
+            )
+            output = "\n".join([process.stdout.strip(), process.stderr.strip()]).strip()
 
-                return f'Execution successful. Output of execution: "{result.strip()}"'
+            if process.returncode:
+                return f"Execution failed with exit code {process.returncode}. Output: {output}"
+
+            if output:
+                return f"Execution successful. Output: {output}"
+
+            return f"Execution successful."
 
         except Exception as e:
             return f"Error: {e}"

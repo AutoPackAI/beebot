@@ -2,6 +2,7 @@ import logging
 import os.path
 import re
 import subprocess
+from typing import Optional
 
 from autopack.pack import Pack
 from langchain.chat_models.base import BaseChatModel
@@ -10,7 +11,7 @@ from pydantic import ValidationError
 from statemachine import StateMachine, State
 
 from beebot.body.llm import call_llm, create_llm
-from beebot.body.pack_utils import all_packs, system_packs
+from beebot.body.pack_utils import all_packs, system_packs, functions_bulleted_list
 from beebot.config import Config
 from beebot.decider import Decider
 from beebot.executor import Executor
@@ -158,32 +159,12 @@ class Body:
             self.state.wait()
 
     def recommend_packs_for_current_plan(self) -> list[dict[str, str]]:
-        # TODO: This should probably be mostly, if not entirely, in some other place
-        functions_string = []
-        sorted_packs = sorted(all_packs(self).values(), key=lambda p: p.name)
-        for pack in sorted_packs:
-            args_signature = ", ".join(
-                [
-                    f"{arg.get('name')}: {arg.get('type')}"
-                    for arg in pack.run_args.values()
-                ]
-            )
-            args_descriptions = (
-                "; ".join(
-                    [
-                        f"{arg.get('name')} ({arg.get('type')}): {arg.get('description')}"
-                        for arg in pack.run_args.values()
-                    ]
-                )
-                or "None."
-            )
-            functions_string.append(
-                f"- {pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
-            )
-
         prompt = (
             initial_selection_template()
-            .format(task=self.task, functions_string="\n".join(functions_string))
+            .format(
+                task=self.task,
+                functions_string=functions_bulleted_list(all_packs(self).values()),
+            )
             .content
         )
         logger.info("=== Function request sent to LLM ===")
@@ -193,7 +174,12 @@ class Body:
         logger.info("=== Functions received from LLM ===")
         logger.info(response)
 
-        return [r.strip() for r in re.split(r",|\n", response)]
+        # 1. Split by commas (if preceded by a word character), and newlines.
+        # 2. Remove any arguments given if provided. The prompt says they shouldn't be there, but sometimes they are.
+        functions = [
+            r.split("(")[0].strip() for r in re.split(r"(?<=\w),|\n", response)
+        ]
+        return functions
 
     def revise_task(self):
         prompt = revise_task_prompt().format(task=self.initial_task).content
@@ -204,12 +190,19 @@ class Body:
         logger.info("=== Task Revised by LLM ===")
         logger.info(self.task)
 
-    def update_packs(self) -> list[Pack]:
+    def update_packs(self, new_packs: Optional[list[str]] = None) -> list[Pack]:
         available_packs = all_packs(self)
-        for pack_name in self.recommend_packs_for_current_plan():
+        if not new_packs:
+            new_packs = self.recommend_packs_for_current_plan()
+
+        for pack_name in new_packs:
             try:
                 pack = available_packs[pack_name]
                 self.packs[pack_name] = pack
+                if pack.depends_on:
+                    for dep in pack.depends_on:
+                        self.packs[dep] = available_packs[dep]
+
             except Exception as e:
                 # This is usually because we got a response with a made-up function.
                 logger.warning(f"Pack {pack_name} could not be initialized: {e}")

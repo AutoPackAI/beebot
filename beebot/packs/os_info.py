@@ -5,8 +5,10 @@ from pydantic import BaseModel
 
 from beebot.packs.system_base_pack import SystemBasePack
 
-PACK_NAME = "os_info"
-PACK_DESCRIPTION = "Get the current OS name and version information."
+PACK_NAME = "os_name_and_version"
+PACK_DESCRIPTION = (
+    "Get the name and version of the operating system you are running in."
+)
 
 
 class OSInfoArgs(BaseModel):

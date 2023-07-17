@@ -1,6 +1,8 @@
 from langchain.prompts import SystemMessagePromptTemplate
 
-TEMPLATE = """Given the task and the function list provided below, identify the functions that would be most suitable for completing every element of the task.
+TEMPLATE = """As The Tool Selector, you are responsible for choosing the most suitable functions (tools) that an autonomous AI agent can use to accomplish a given task.
+
+Keep in mind functions that may be able to accomplish the task indirectly or in combination with other tools.
 
 Task: {task}
 
@@ -11,21 +13,31 @@ You may only recommend functions from among this list of functions:
 Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
 """
 
-GET_MORE_TOOLS_TEMPLATE = """Given a functions request, the task, the plan and the function list provided below, identify the functions that would be most suitable for completing every element of the task.
+GET_MORE_TOOLS_TEMPLATE = """**Role: Tool Selector**
+As the Tool Selector, your responsibility is to identify the most suitable functions (tools) for an autonomous AI agent to accomplish a given task.
 
-Functions Request:
+Analyze the functions request below and determine the most suitable functions. Consider functions that can achieve the goal directly or indirectly, in combination with other tools.
+
+**Functions Request**
+```
 {functions_request}
+```
 
-Task: {task}
+**Task**
+To guide your selection, keep in mind the following task:
+```
+{task}
+```
 
-Plan:
-{plan}
-
-You may only recommend functions from among this list of functions:
-
+**Functions to Use**
+You may only recommend functions from the list below:
+```
 {functions_string}
+```
 
-Respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
+Please respond with a comma-separated list of function names, excluding parentheses and arguments. Do not include any other explanatory text.
+
+By providing more clarity and emphasizing the consideration of alternative functions, we can ensure better function recommendations that align with the given task.
 """
 
 

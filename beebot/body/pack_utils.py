@@ -72,25 +72,35 @@ def all_packs(body: "Body") -> dict[str, "Pack"]:
 def system_packs(body: "Body") -> dict[str, "Pack"]:
     from beebot.packs.exit import Exit
     from beebot.packs.get_more_tools import GetMoreTools
+    from beebot.packs.read_file import ReadFile
+    from beebot.packs.write_file import WriteFile
 
-    return {"exit": Exit(body=body), "get_more_tools": GetMoreTools(body=body)}
+    return {
+        "exit": Exit(body=body),
+        "get_more_tools": GetMoreTools(body=body),
+        "read_file": ReadFile(body=body),
+        "write_file": WriteFile(body=body),
+    }
 
 
-def pack_summaries(body: "Body") -> list[dict[str, Any]]:
-    summaries = []
-    for pack_name, pack in all_packs(body=body).items():
-        if not hasattr(pack, "__fields__"):
-            logger.warning(f"Pack {pack} is not a Pydantic model")
-            continue
-
-        pack_fields = pack.__fields__
-        description = pack_fields.get("description").default
-        run_args = pack_fields.get("run_args").default or {}
-        summaries.append(
-            {
-                "name": pack_name,
-                "description": description,
-                "arguments": run_args,
-            }
+def functions_bulleted_list(packs: list["Pack"]) -> str:
+    functions_string = []
+    sorted_packs = sorted(packs, key=lambda p: p.name)
+    for pack in sorted_packs:
+        args_signature = ", ".join(
+            [f"{arg.get('name')}: {arg.get('type')}" for arg in pack.run_args.values()]
         )
-    return summaries
+        args_descriptions = (
+            "; ".join(
+                [
+                    f"{arg.get('name')} ({arg.get('type')}): {arg.get('description')}"
+                    for arg in pack.run_args.values()
+                ]
+            )
+            or "None."
+        )
+        functions_string.append(
+            f"- {pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
+        )
+
+    return "\n".join(functions_string)

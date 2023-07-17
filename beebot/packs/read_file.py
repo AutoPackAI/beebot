@@ -1,4 +1,3 @@
-import json
 import os
 from typing import Type
 
@@ -33,7 +32,7 @@ class ReadFile(SystemBasePack):
 
             with open(file_path, "r") as f:
                 content = f.read()
-                return f'Contents of {filename}: "{json.dumps(content)}"'
+                return content
 
         except Exception as e:
             return f"Error: {e}"

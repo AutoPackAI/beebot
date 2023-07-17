@@ -35,14 +35,19 @@ class MemoryStorage:
         if not self.memories:
             return ""
 
+        # It's not seeing previous steps as being obsoleted
         memory_table = []
-        for memory in self.memories:
-            action_format = f"{memory.decision.tool_name}({memory.decision.tool_args})"
+        for i, memory in enumerate(self.memories):
+            # action_format = f"{memory.decision.tool_name}({memory.decision.tool_args})"
             outcome = (
                 json.dumps(memory.observation.response)
                 if memory.observation.success
                 else memory.observation.error_reason
             )
-            memory_table.append(f"- {action_format} -> {outcome}")
+            memory_table.append(
+                f"{i + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
+                f"{json.dumps(memory.decision.tool_args)}. The result was {outcome}."
+            )
+            # memory_table.append(f"- {action_format} -> {outcome}")
 
         return "\n".join(memory_table)

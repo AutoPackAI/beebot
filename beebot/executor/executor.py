@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
@@ -8,6 +9,8 @@ from beebot.models.observation import Observation
 
 if TYPE_CHECKING:
     from beebot.body import Body
+
+logger = logging.getLogger(__name__)
 
 
 class Executor:
@@ -31,6 +34,8 @@ class Executor:
             result = pack.run(tool_input=tool_args)
             return Observation(response=result)
         except ValidationError as e:
+            logger.error(f"Error on execution: {e}")
             return Observation(response=f"Error: {json.dumps(e.errors())}")
         except Exception as e:
+            logger.error(f"Error on execution: {e}")
             return Observation(response=f"Exception: {e}")

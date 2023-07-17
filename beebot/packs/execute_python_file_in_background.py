@@ -1,10 +1,13 @@
 import os
+import shlex
 import subprocess
+import time
 from typing import Type
 
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
+from beebot.utils import restrict_path
 
 PACK_NAME = "execute_python_file_in_background"
 
@@ -16,16 +19,7 @@ PACK_DESCRIPTION = (
     "background process. Make sure the Python file adheres to the restrictions of the environment and is available in "
     "the specified file path."
 )
-
-
-def restrict_path(file_path: str, workspace_dir: str):
-    absolute_path = os.path.abspath(file_path)
-    relative_path = os.path.relpath(absolute_path, workspace_dir)
-
-    if relative_path.startswith("..") or "/../" in relative_path:
-        return None
-
-    return absolute_path
+DEPENDS_ON = ["get_process_status"]
 
 
 class ExecutePythonFileInBackgroundArgs(BaseModel):
@@ -33,14 +27,18 @@ class ExecutePythonFileInBackgroundArgs(BaseModel):
         ...,
         description="Specifies the path to the Python file previously saved on disk.",
     )
+    python_args: str = Field(
+        description="Arguments to be passed when executing the file", default=""
+    )
 
 
 class ExecutePythonFileInBackground(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExecutePythonFileInBackgroundArgs
+    depends_on: list[str] = DEPENDS_ON
 
-    def _run(self, file_path: str) -> str:
+    def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
@@ -49,10 +47,27 @@ class ExecutePythonFileInBackground(SystemBasePack):
             if not abs_path:
                 return "Error: File not found"
 
-            cmd = ["python", abs_path]
-            self.body.processes.append(subprocess.Popen(cmd))
+            # TODO: Maybe we want to support passing args as well?
 
-            return f"Process started successfully."
+            args_list = shlex.split(python_args)
+            cmd = ["python", abs_path, *args_list]
+
+            process = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                universal_newlines=True,
+                cwd=self.body.config.workspace_path,
+            )
+
+            self.body.processes.append(process)
+            fake_pid = len(self.body.processes)
+
+            time.sleep(0.2)
+            if process.poll() is not None:
+                return f"Process started with PID {fake_pid}, but failed. Call get_process_status to get the output."
+
+            return f"Process started. It has been assigned PID {fake_pid}. Use this when calling `get_process_status`."
 
         except Exception as e:
             return f"Error: {e}"

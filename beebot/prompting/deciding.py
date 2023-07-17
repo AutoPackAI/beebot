@@ -10,9 +10,6 @@ Your original task, given by the human, is:
 Your high-level plan is:
 {plan}
 
-Here's the history of steps already executed, in order:
-{history}
-
 You have access to these files, but no others: {file_list}
 
 Follow these guidelines:
@@ -21,7 +18,7 @@ Follow these guidelines:
 3. Reevaluate your approach if such repetition occurs, potentially altering parameters or using a different function.
 4. Limit the use of ineffective functions or those not yielding new results. If necessary, acquire new functions. 
 
-Proceed with executing the next step from the plan. Use exactly one of the provided functions, indicated in the `function_call` parameter."""
+Proceed with executing the next step from the plan. Use exactly one of the provided functions through the `function_call` parameter of your response."""
 
 
 def decider_template() -> SystemMessagePromptTemplate:
