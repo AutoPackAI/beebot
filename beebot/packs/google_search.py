@@ -24,6 +24,15 @@ class GoogleSearch(SystemBasePack):
 
     def _run(self, query: str) -> list[str]:
         try:
-            return GoogleSerperAPIWrapper().results(query)
+
+            results = GoogleSerperAPIWrapper().results(query).get("organic", [])
+            formatted_results = []
+            for result in results:
+                formatted_results.append(
+                    f"{result.get('link')}: {result.get('snippet')}"
+                )
+
+            return f"Your search results are: {' | '.join(formatted_results)}"
+
         except Exception as e:
             return f"Error: {e}"

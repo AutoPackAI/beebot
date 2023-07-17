@@ -43,6 +43,6 @@ class WriteFile(SystemBasePack):
             with open(file_path, "w+") as f:
                 f.write(text_content)
             logger.info(f"Successfully wrote to {file_path}")
-            return f"Successfully wrote to {filename}"
+            return f"Successfully wrote {len(text_content.encode('utf-8'))} bytes to {filename}"
         except Exception as e:
             return f"Error: {e}"

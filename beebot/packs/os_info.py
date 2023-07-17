@@ -22,4 +22,4 @@ class OSInfo(SystemBasePack):
     categories: list[str] = ["System Info"]
 
     def _run(self) -> str:
-        return {"os_name": platform.system(), "os_version": platform.release()}
+        return f"OS Name {platform.system()}. OS Version: {platform.release()}."

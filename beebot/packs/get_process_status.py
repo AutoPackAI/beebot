@@ -42,11 +42,11 @@ class GetProcessStatus(SystemBasePack):
 
             return_code = process.returncode
 
-            return {
-                "status": "finished",
-                "success": return_code == 0,
-                "output": "\n".join([output, error]),
-            }
+            success_string = "successful" if return_code == 0 else "unsuccessful"
+            return (
+                f"The process has completed. Its exit code indicates it was {success_string}. Output: {output}. "
+                f"{error}"
+            )
 
         except IndexError:
             return {"error": "Process does not exist"}

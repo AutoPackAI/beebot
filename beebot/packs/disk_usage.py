@@ -26,9 +26,4 @@ class DiskUsage(SystemBasePack):
         total = round(usage.total / 1024 / 1024 / 1024, 2)
         free = round(usage.free / 1024 / 1024 / 1024, 2)
 
-        return {
-            "total": f"{total} GB",
-            "used": f"{used} GB",
-            "free": f"{free} GB",
-            "percent": usage.percent * 100,
-        }
+        return f"""Total: {total} GB. Used: {used} GB. Available: {free} GB". Percent Used: {usage.percent * 100}%"""

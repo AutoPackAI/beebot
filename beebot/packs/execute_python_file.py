@@ -59,9 +59,9 @@ class ExecutePythonFile(SystemBasePack):
                 return f"Execution failed with exit code {process.returncode}. Output: {output}"
 
             if output:
-                return f"Execution successful. Output: {output}"
+                return f"Execution complete. Output: {output}"
 
-            return "Execution successful."
+            return "Execution complete."
 
         except Exception as e:
             return f"Error: {e}"

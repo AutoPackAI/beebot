@@ -38,7 +38,7 @@ class ExecutePythonCode(SystemBasePack):
             sanitized_code = sanitize_input(code)
             result = repl.run(sanitized_code)
 
-            return f'Execution successful. Output of execution: "{result.strip()}"'
+            return f"Execution successful. Output: {result.strip()}"
 
         except Exception as e:
             return f"Error: {e}"
