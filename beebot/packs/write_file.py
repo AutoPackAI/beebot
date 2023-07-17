@@ -31,6 +31,8 @@ class WriteFile(SystemBasePack):
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = WriteFileArgs
     categories: list[str] = ["Files"]
+    # TODO: Make this reversible I guess by storing files in memory?
+    reversible = False
 
     def _run(self, filename: str, text_content: str):
         """Write a file to disk. If/when we do sandboxing this provides a convenient way to intervene"""

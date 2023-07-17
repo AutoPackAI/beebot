@@ -14,6 +14,7 @@ class SystemBasePack(BaseModel):
     args_schema: BaseModel = None
     depends_on: list[str] = Field(default_factory=list)
     categories: list[str] = Field(default_factory=list)
+    reversible: bool = True
     run_args: dict[str, dict[str, str]] = None
 
     def __init__(self, **kwargs):

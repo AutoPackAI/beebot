@@ -5,7 +5,6 @@ from typing import Optional
 
 from autopack.pack import Pack
 from langchain.chat_models.base import BaseChatModel
-from playwright.sync_api import Playwright, PlaywrightContextManager
 from pydantic import ValidationError
 from statemachine import StateMachine, State
 
@@ -56,7 +55,6 @@ class Body:
     state: BodyStateMachine
     packs: dict["Pack"]
     memories: MemoryStorage
-    playwright: Playwright
     processes: list[subprocess.Popen]
 
     llm: BaseChatModel
@@ -85,15 +83,6 @@ class Body:
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
-
-        try:
-            self.playwright = PlaywrightContextManager().start()
-        except Exception as e:
-            # TODO: Implement async playwright
-            logger.warning(
-                f"Playwright could not be started, likely because it needs to be async {e}"
-            )
-
         self.revise_task()
         self.packs = system_packs(self)
         self.update_packs()
@@ -132,6 +121,11 @@ class Body:
                 return
             return self.cycle(retry_count + 1)
 
+        # If the tool messed with memories (e.g. rewind) already we don't want to.
+        if self.memories.uncompleted_memory.decision is None:
+            self.memories.uncompleted_memory = Memory()
+            return self.memories.memories[-1]
+
         complete_memory = self.memories.finish()
         return complete_memory
 
@@ -167,6 +161,41 @@ class Body:
 
         logger.info("=== Task Revised by LLM ===")
         logger.info(self.task)
+
+    def rewind(self):
+        """
+        Serves as a control mechanism that allows it to revert its state to a previous checkpoint. The function is
+        designed to reverse actions wherever possible and reset the current memories and plan. It should be noted,
+        however, that actions with side effects, like sending emails or making API calls, cannot be reversed.
+        This is like a jank tree of thought because there's no analysis of the quality of different traversals.
+        """
+        memories = self.memories.memories
+        new_memories = []
+        for i in reversed(range(len(memories))):
+            if not memories[i].reversible:
+                new_memories = memories[: i + 1]
+
+        logger.info(
+            f"Rewinding from step {len(memories) + 1} to step {len(new_memories) + 1}"
+        )
+        self.memories.memories = new_memories
+        self.memories.old_memories = memories
+
+        self.memories.add_plan(Plan(plan_text="Call the rewind_actions function"))
+
+        decision = Decision(
+            reasoning=f"The plan requires that I call the rewind_actions function.",
+            tool_name="rewind_actions",
+            tool_args="",
+        )
+        self.memories.add_decision(decision)
+
+        observation = Observation(
+            success=True,
+            response="You have rewound your state to this point. Please take an unconventional approach this time.",
+        )
+        self.memories.add_observation(observation)
+        self.memories.finish()
 
     def update_packs(self, new_packs: Optional[list[str]] = None) -> list[Pack]:
         available_packs = all_packs(self)

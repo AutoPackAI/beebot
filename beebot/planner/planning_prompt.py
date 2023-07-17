@@ -42,13 +42,12 @@ You have access to these files, but no others:
 Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow these guidelines:
 
 1. Analyze the outcomes of past function executions, including the function used, the arguments used, and the results returned. Be alert to any repetitive function usage.
-2. If the AI Assistant appears to be making little progress and may be unable to proceed, reassess your function requirements and usage.
-3. Determine the next logical step towards the task goal, considering your current information, requirements, and available functions. Remember to be efficient, avoiding unnecessary steps like immediate verification of outcomes and repetitive function calls.
-4. Direct the execution of the next action using exactly one of the available functions. If the next action requires a tool that you do not have, instead instruct the AI Assistant to acquire it via `get_more_tools`.
+2. Determine the next logical step towards the task goal, considering your current information, requirements, and available functions. Remember to be efficient, avoiding unnecessary steps like immediate verification of outcomes and repetitive function calls.
+3. Direct the execution of the next action using exactly one of the available functions. If the next action requires a tool that you do not have, instead instruct the AI Assistant to acquire it via `get_more_tools`.
 
-If the AI Assistant appears to be making no progress and is unable to proceed, instruct it to call the `exit` function to indicate that assistance is needed.
+If the AI Assistant appears to be making little progress and may be unable to proceed, instruct it to call the `rewind_actions` function to try another approach.
 
-Once the original task has been successfully completed, instruct the AI Assistant to call the `exit` function.
+Once the original task has been successfully completed, instruct the AI Assistant to call the `exit` function to indicate the completion of the task.
 
 Please provide an analysis of the past history, followed by a concise summary of your plan, and end with one sentence describing the first action to be taken."""
 

@@ -19,6 +19,7 @@ class DelegateTask(SystemBasePack):
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = DelegateTaskArgs
     categories: list[str] = ["Delegation"]
+    reversible = False
 
     def _run(self, task: str) -> str:
         from beebot.body import Body

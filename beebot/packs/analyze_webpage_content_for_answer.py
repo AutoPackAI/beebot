@@ -1,6 +1,7 @@
 from typing import Type
 
 from bs4 import BeautifulSoup
+from playwright.sync_api import PlaywrightContextManager
 from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
@@ -44,7 +45,8 @@ class AnalyzeWebpageContentForAnswerSummary(SystemBasePack):
     categories: list[str] = ["Web"]
 
     def _run(self, url: str, question: str = "") -> str:
-        browser = self.body.playwright.chromium.launch()
+        playwright = PlaywrightContextManager().start()
+        browser = playwright.chromium.launch()
         page = browser.new_page()
 
         page.goto(url)

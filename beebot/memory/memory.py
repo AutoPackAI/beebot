@@ -7,3 +7,4 @@ class Memory:
     plan: Plan = None
     decision: Decision = None
     observation: Observation = None
+    reversible: bool = True

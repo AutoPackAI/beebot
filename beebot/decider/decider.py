@@ -30,11 +30,6 @@ class Decider:
 
     def decide(self, plan: Plan, disregard_cache: bool = False) -> Decision:
         """Take a Plan and send it to the LLM, returning it back to the Body"""
-        logger.info("=== Plan sent to LLM for Decision ===")
-        logger.info(plan.plan_text)
-        logger.info("")
-        logger.info(f"Functions provided: {[name for name in self.body.packs.keys()]}")
-
         template = (
             decider_template()
             .format(

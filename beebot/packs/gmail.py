@@ -117,6 +117,7 @@ class SendMessage(SystemBasePack):
     description: str = "Send an email with Gmail"
     args_schema: Type[BaseModel] = MessageSchema
     categories: list[str] = ["Email"]
+    reversible = False
 
     def _run(self, *args, **kwargs):
         if to_value := kwargs.get("to"):
