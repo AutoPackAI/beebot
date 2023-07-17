@@ -9,7 +9,7 @@ from beebot.body.pack_utils import (
     all_packs,
     functions_bulleted_list,
 )
-from beebot.packs.function_selection_prompt import get_more_tools_template
+from beebot.function_selection.function_selection_prompt import get_more_tools_template
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "get_more_tools"
@@ -32,6 +32,7 @@ class GetMoreTools(SystemBasePack):
     name: str = Meta.name
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = GetPacksArgs
+    categories: list[str] = ["System"]
 
     def _run(self, desired_functionality: str) -> list[str]:
         packs_to_summarize = [

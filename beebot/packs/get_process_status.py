@@ -23,6 +23,7 @@ class GetProcessStatus(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = GetProcessStatusArgs
+    categories: list[str] = ["Multiprocess"]
 
     def _run(self, pid: str) -> dict[str, str]:
         try:

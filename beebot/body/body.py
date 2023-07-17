@@ -1,6 +1,5 @@
 import logging
 import os.path
-import re
 import subprocess
 from typing import Optional
 
@@ -11,16 +10,16 @@ from pydantic import ValidationError
 from statemachine import StateMachine, State
 
 from beebot.body.llm import call_llm, create_llm
-from beebot.body.pack_utils import all_packs, system_packs, functions_bulleted_list
+from beebot.body.pack_utils import all_packs, system_packs
 from beebot.body.revising_prompt import revise_task_prompt
 from beebot.config import Config
 from beebot.decider import Decider
 from beebot.executor import Executor
+from beebot.function_selection.utils import recommend_packs_for_plan
 from beebot.memory import Memory
 from beebot.memory.memory_storage import MemoryStorage
 from beebot.models import Decision, Plan
 from beebot.models.observation import Observation
-from beebot.packs.function_selection_prompt import initial_selection_template
 from beebot.planner import Planner
 
 logger = logging.getLogger(__name__)
@@ -158,42 +157,21 @@ class Body:
         finally:
             self.state.wait()
 
-    def recommend_packs_for_current_plan(self) -> list[dict[str, str]]:
-        prompt = (
-            initial_selection_template()
-            .format(
-                task=self.task,
-                functions_string=functions_bulleted_list(all_packs(self).values()),
-            )
-            .content
-        )
-        logger.info("=== Function request sent to LLM ===")
-        logger.info(prompt)
-
-        response = call_llm(self, prompt).text
-        logger.info("=== Functions received from LLM ===")
-        logger.info(response)
-
-        # 1. Split by commas (if preceded by a word character), and newlines.
-        # 2. Remove any arguments given if provided. The prompt says they shouldn't be there, but sometimes they are.
-        functions = [
-            r.split("(")[0].strip() for r in re.split(r"(?<=\w),|\n", response)
-        ]
-        return functions
-
     def revise_task(self):
         prompt = revise_task_prompt().format(task=self.initial_task).content
         logger.info("=== Task Revision given to LLM ===")
         logger.info(self.task)
+
         response = call_llm(self, prompt, include_functions=False).text
         self.task = response
+
         logger.info("=== Task Revised by LLM ===")
         logger.info(self.task)
 
     def update_packs(self, new_packs: Optional[list[str]] = None) -> list[Pack]:
         available_packs = all_packs(self)
         if not new_packs:
-            new_packs = self.recommend_packs_for_current_plan()
+            new_packs = recommend_packs_for_plan(self)
 
         for pack_name in new_packs:
             try:

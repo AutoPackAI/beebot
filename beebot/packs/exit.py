@@ -34,6 +34,7 @@ class Exit(SystemBasePack):
     name: str = Meta.name
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExitArgs
+    categories: list[str] = ["System"]
 
     def _run(
         self,

@@ -17,6 +17,7 @@ class ListFiles(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ListFilesArgs
+    categories: list[str] = ["Files"]
 
     def _run(self):
         return list_files(self.body)

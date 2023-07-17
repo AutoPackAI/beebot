@@ -20,6 +20,7 @@ class GoogleSearch(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = GoogleSearchArgs
+    categories: list[str] = ["Web", "Information"]
 
     def _run(self, query: str) -> list[str]:
         try:

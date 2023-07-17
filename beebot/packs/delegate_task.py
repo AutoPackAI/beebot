@@ -2,7 +2,6 @@ from typing import Type
 
 from pydantic import BaseModel, Field
 
-from beebot.body import Body
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "delegate_task"
@@ -19,8 +18,11 @@ class DelegateTask(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = DelegateTaskArgs
+    categories: list[str] = ["Delegation"]
 
     def _run(self, task: str) -> str:
+        from beebot.body import Body
+
         try:
             subagent = Body(task)
             subagent.setup()

@@ -5,9 +5,10 @@ from subprocess import TimeoutExpired
 from typing import TYPE_CHECKING, Any
 
 from beebot.body.llm import call_llm, LLMResponse
+from beebot.body.pack_utils import functions_summary
 from beebot.decider.deciding_prompt import decider_template
 from beebot.models import Plan, Decision
-from beebot.utils import functions_summary, list_files
+from beebot.utils import list_files
 
 if TYPE_CHECKING:
     from beebot.body import Body

@@ -33,6 +33,7 @@ class Wikipedia(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = WikipediaArgs
+    categories: list[str] = ["Information"]
 
     def _run(
         self,

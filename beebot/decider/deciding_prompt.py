@@ -13,10 +13,10 @@ Your high-level plan is:
 You have access to these files, but no others: {file_list}
 
 Follow these guidelines:
-1. Analyze the outcomes of past function executions, including the function used, the parameters provided, and the results returned.
-2. Identify any repeated use of a function that yields identical results, as this may indicate lack of progress or new information.
-3. Reevaluate your approach if such repetition occurs, potentially altering parameters or using a different function.
-4. Limit the use of ineffective functions or those not yielding new results. If necessary, acquire new functions. 
+1. Study your high-level plan, and understand the next step in it.
+2. Implement the next action from the plan using exactly one of the provided functions.
+3. If the specified action in the plan seems ineffective or redundant, consult the high-level plan for a different action or consider acquiring a new function with get_more_tools().
+4. Focus on maintaining the efficiency, effectiveness, and adaptability of your execution process.
 
 Proceed with executing the next step from the plan. Use exactly one of the provided functions through the `function_call` parameter of your response."""
 

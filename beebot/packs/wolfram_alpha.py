@@ -20,6 +20,7 @@ class WolframAlpha(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = WolframAlphaArgs
+    categories: list[str] = ["Information", "Science and Math"]
 
     def _run(self, query: str) -> list[str]:
         return WolframAlphaAPIWrapper().run(query)

@@ -11,9 +11,9 @@ PACK_NAME = "execute_python_code"
 # IMPORTANT NOTE: This does NOT actually restrict the execution environment, it just nudges the AI to avoid doing
 # those things.
 PACK_DESCRIPTION = (
-    "Executes Python code in a restricted environment, prohibiting shell execution and filesystem "
-    "access. Returns the output of the execution as a string. Ensure that the provided Python code is safe and "
-    "adheres to the restrictions of the environment."
+    "Executes a string of Python code in a restricted environment, prohibiting shell execution and "
+    "filesystem access. Returns the output of the execution as a string. This function is useful for "
+    "executing small snippets of Python code without the need to save them to a file."
 )
 
 
@@ -28,6 +28,7 @@ class ExecutePythonCode(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExecutePythonCodeArgs
+    categories: list[str] = ["Programming"]
 
     def _run(self, code: str) -> str:
         if self.body.config.restrict_code_execution:

@@ -14,8 +14,8 @@ PACK_NAME = "execute_python_file"
 # those things.
 PACK_DESCRIPTION = (
     "Executes a Python file in a restricted environment, prohibiting shell execution and filesystem access. The "
-    "function executes the code in the file and returns the output of the execution as a string. Make sure the "
-    "Python file adheres to the restrictions of the environment and is available in the specified file path."
+    "function executes the code in the file and returns the output of the execution as a string. Make sure the Python "
+    "file adheres to the restrictions of the environment and is available in the specified file path."
 )
 
 
@@ -33,6 +33,7 @@ class ExecutePythonFile(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExecutePythonFileArgs
+    categories: list[str] = ["Programming", "Files"]
 
     def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)

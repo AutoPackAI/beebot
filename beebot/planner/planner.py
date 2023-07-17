@@ -4,12 +4,13 @@ from typing import TYPE_CHECKING
 from langchain.chat_models.base import BaseChatModel
 
 from beebot.body.llm import call_llm
+from beebot.body.pack_utils import functions_summary
 from beebot.models import Plan
 from beebot.planner.planning_prompt import (
     initial_prompt_template,
     planning_prompt_template,
 )
-from beebot.utils import list_files, functions_summary
+from beebot.utils import list_files
 
 if TYPE_CHECKING:
     from beebot.body import Body

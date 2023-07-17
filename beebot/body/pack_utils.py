@@ -85,22 +85,38 @@ def system_packs(body: "Body") -> dict[str, "Pack"]:
 
 def functions_bulleted_list(packs: list["Pack"]) -> str:
     functions_string = []
-    sorted_packs = sorted(packs, key=lambda p: p.name)
-    for pack in sorted_packs:
-        args_signature = ", ".join(
-            [f"{arg.get('name')}: {arg.get('type')}" for arg in pack.run_args.values()]
-        )
-        args_descriptions = (
-            "; ".join(
+    grouped_packs = {}
+    for pack in packs:
+        for category in pack.categories:
+            if category not in grouped_packs:
+                grouped_packs[category] = []
+            grouped_packs[category].append(pack)
+
+    for category, category_packs in grouped_packs.items():
+        functions_string.append(f"\n## {category}")
+        sorted_by_name = sorted(category_packs, key=lambda p: p.name)
+        for pack in sorted_by_name:
+            args_signature = ", ".join(
                 [
-                    f"{arg.get('name')} ({arg.get('type')}): {arg.get('description')}"
+                    f"{arg.get('name')}: {arg.get('type')}"
                     for arg in pack.run_args.values()
                 ]
             )
-            or "None."
-        )
-        functions_string.append(
-            f"- {pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
-        )
+            args_descriptions = (
+                "; ".join(
+                    [
+                        f"{arg.get('name')} ({arg.get('type')}): {arg.get('description')}"
+                        for arg in pack.run_args.values()
+                    ]
+                )
+                or "None."
+            )
+            functions_string.append(
+                f"- {pack.name}({args_signature}): {pack.description} | Arguments: {args_descriptions}"
+            )
 
     return "\n".join(functions_string)
+
+
+def functions_summary(body: "Body"):
+    return ", ".join([f"{name}" for name in body.packs.keys()])

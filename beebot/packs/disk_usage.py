@@ -17,6 +17,7 @@ class DiskUsage(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = DiskUsageArgs
+    categories: list[str] = ["System Info"]
 
     def _run(self):
         # Currently we will only support root directory

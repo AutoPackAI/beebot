@@ -40,6 +40,7 @@ class WebsiteTextSummary(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = WebsiteTextSummaryArgs
+    categories: list[str] = ["Web"]
 
     def _run(self, url: str, question: str = "") -> str:
         browser = self.body.playwright.chromium.launch()

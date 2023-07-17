@@ -30,6 +30,7 @@ class WriteFile(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = WriteFileArgs
+    categories: list[str] = ["Files"]
 
     def _run(self, filename: str, text_content: str):
         """Write a file to disk. If/when we do sandboxing this provides a convenient way to intervene"""

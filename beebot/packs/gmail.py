@@ -57,7 +57,7 @@ class MessageSchema(BaseModel):
     )
     bcc: str = Field(
         None,
-        description="The comma-separaated list of BCC recipients.",
+        description="The comma-separated list of BCC recipients.",
     )
 
 
@@ -65,6 +65,7 @@ class CreateDraft(SystemBasePack):
     name: str = "gmail_create_draft"
     description: str = "Use Gmail to create a draft email inside of Gmail."
     args_schema: Type[BaseModel] = MessageSchema
+    categories: list[str] = ["Email"]
 
     def _run(self, *args, **kwargs):
         if to_value := kwargs.get("to"):
@@ -82,6 +83,7 @@ class GetMessage(SystemBasePack):
     name: str = "gmail_get_message"
     description: str = "Get a Gmail message"
     args_schema: Type[BaseModel] = SearchArgsSchema
+    categories: list[str] = ["Email"]
 
     def _run(self, *args, **kwargs):
         tool = GetMessageTool(api_resource=api_resource(self.body.config))
@@ -92,6 +94,7 @@ class GetThread(SystemBasePack):
     name: str = "gmail_get_thread"
     description: str = "Get a Gmail thread"
     args_schema: Type[BaseModel] = GetThreadSchema
+    categories: list[str] = ["Email"]
 
     def _run(self, *args, **kwargs):
         tool = GetThreadTool(api_resource=api_resource(self.body.config))
@@ -102,6 +105,7 @@ class Search(SystemBasePack):
     name: str = "gmail_search"
     description: str = "Search for Gmail messages and threads"
     args_schema: Type[BaseModel] = SearchArgsSchema
+    categories: list[str] = ["Email"]
 
     def _run(self, *args, **kwargs):
         tool = SearchTool(api_resource=api_resource(self.body.config))
@@ -112,6 +116,7 @@ class SendMessage(SystemBasePack):
     name: str = "gmail_send_message"
     description: str = "Send an email with Gmail"
     args_schema: Type[BaseModel] = MessageSchema
+    categories: list[str] = ["Email"]
 
     def _run(self, *args, **kwargs):
         if to_value := kwargs.get("to"):

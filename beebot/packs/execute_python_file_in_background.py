@@ -37,6 +37,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExecutePythonFileInBackgroundArgs
     depends_on: list[str] = DEPENDS_ON
+    categories: list[str] = ["Programming", "Files", "Multiprocess"]
 
     def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)

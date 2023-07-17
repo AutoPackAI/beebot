@@ -20,6 +20,7 @@ class ReadFile(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ReadFileArgs
+    categories: list[str] = ["Files"]
 
     def _run(self, filename: str) -> str:
         """Read a file from disk. If/when we do sandboxing this provides a convenient way to intervene"""

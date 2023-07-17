@@ -19,6 +19,7 @@ class OSInfo(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = OSInfoArgs
+    categories: list[str] = ["System Info"]
 
     def _run(self) -> str:
         return {"os_name": platform.system(), "os_version": platform.release()}

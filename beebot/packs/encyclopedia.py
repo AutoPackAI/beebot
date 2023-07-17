@@ -20,6 +20,7 @@ class Encyclopedia(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = EncyclopediaArgs
+    categories: list[str] = ["Information"]
 
     def _run(self, query: str) -> str:
         try:
