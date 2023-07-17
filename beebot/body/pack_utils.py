@@ -72,13 +72,11 @@ def all_packs(body: "Body") -> dict[str, "Pack"]:
 def system_packs(body: "Body") -> dict[str, "Pack"]:
     from beebot.packs.exit import Exit
     from beebot.packs.get_more_tools import GetMoreTools
-    from beebot.packs.read_file import ReadFile
     from beebot.packs.write_file import WriteFile
 
     return {
         "exit": Exit(body=body),
         "get_more_tools": GetMoreTools(body=body),
-        "read_file": ReadFile(body=body),
         "write_file": WriteFile(body=body),
     }
 

@@ -4,13 +4,25 @@ TEMPLATE = """You are the Autonomous AI Assistant. Your role is to execute the s
 
 Your primary objective is efficiency, effectiveness, and adaptability.
 
+# Functions
+You have these functions at your disposal:
+{functions}.
+
+# Task
 Your original task, given by the human, is:
 {task}
 
+# Plan
 Your high-level plan is:
 {plan}
 
-You have access to these files, but no others: {file_list}
+# History
+You have a history of functions that the AI Assistant has already executed for this task. Here is the history, in order, starting with the first function executed:
+{history}
+
+# Files
+You have access to these files, but no others:
+{file_list}
 
 Follow these guidelines:
 1. Study your high-level plan, and understand the next step in it.

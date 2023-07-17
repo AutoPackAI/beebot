@@ -8,7 +8,7 @@ from beebot.body.llm import call_llm, LLMResponse
 from beebot.body.pack_utils import functions_summary
 from beebot.decider.deciding_prompt import decider_template
 from beebot.models import Plan, Decision
-from beebot.utils import list_files
+from beebot.utils import list_files, files_documents
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -34,14 +34,15 @@ class Decider:
         logger.info(plan.plan_text)
         logger.info("")
         logger.info(f"Functions provided: {[name for name in self.body.packs.keys()]}")
+
         template = (
             decider_template()
             .format(
                 plan=plan.plan_text,
                 task=self.body.task,
-                # history=self.body.memories.compile_history(),
+                history=self.body.memories.compile_history(),
                 functions=functions_summary(self.body),
-                file_list=", ".join(list_files(self.body)),
+                file_list=files_documents(list_files(self.body)),
             )
             .content
         )
@@ -68,9 +69,6 @@ class Decider:
         try:
             return self.decide(plan, disregard_cache=retry_count > 0)
         except ValueError:
-            import pdb
-
-            pdb.set_trace()
             logger.warning("Got invalid response from LLM, retrying...")
             if retry_count >= RETRY_LIMIT:
                 raise ValueError(f"Got invalid response {RETRY_LIMIT} times in a row")

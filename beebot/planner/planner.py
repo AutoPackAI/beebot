@@ -10,7 +10,7 @@ from beebot.planner.planning_prompt import (
     initial_prompt_template,
     planning_prompt_template,
 )
-from beebot.utils import list_files
+from beebot.utils import list_files, files_documents
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -34,7 +34,7 @@ class Planner:
                     task=task,
                     history=self.body.memories.compile_history(),
                     functions=functions_summary(self.body),
-                    file_list=", ".join(list_files(self.body)),
+                    file_list=files_documents(list_files(self.body)),
                 )
                 .content
             )
@@ -44,7 +44,7 @@ class Planner:
                 .format(
                     task=task,
                     functions=functions_summary(self.body),
-                    file_list=", ".join(list_files(self.body)),
+                    file_list=files_documents(list_files(self.body)),
                 )
                 .content
             )

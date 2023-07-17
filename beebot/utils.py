@@ -24,3 +24,17 @@ def restrict_path(file_path: str, workspace_dir: str):
         return None
 
     return absolute_path
+
+
+def files_documents(files: list[str]) -> str:
+    documents = []
+    for file in files:
+        file_details = f"## Contents of file {file}"
+        with open(os.path.join("workspace", file), "r+") as f:
+            file_contents = f.read()
+
+        documents.append(f"\n{file_details}\n{file_contents}")
+
+    if documents:
+        return "\n".join(documents)
+    return "There are no files available."

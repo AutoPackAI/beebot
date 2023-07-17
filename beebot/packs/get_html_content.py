@@ -8,7 +8,7 @@ from beebot.packs.system_base_pack import SystemBasePack
 PACK_NAME = "get_html_content"
 PACK_DESCRIPTION = (
     "Retrieves the HTML content of a specified webpage. It is useful when you specifically require access to the raw "
-    "HTML of a webpage, without the need for text analysis."
+    "HTML of a webpage, and are not interested in its text contents."
 )
 
 

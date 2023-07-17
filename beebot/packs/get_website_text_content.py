@@ -1,3 +1,4 @@
+import re
 from typing import Type
 
 import requests
@@ -29,4 +30,5 @@ class GetWebsiteTextContent(SystemBasePack):
     def _run(self, url: str) -> str:
         response = requests.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
-        return soup.get_text()
+        stripped_text = re.sub(r"\s+", " ", soup.get_text().strip())
+        return stripped_text
