@@ -9,7 +9,7 @@ packages = [{ include = "beebot" }]
 
 [tool.poetry.dependencies]
 # I hate this version specification but we can't use python-statemachine in 3.12
-python = ">=3.9,<3.12"
+python = ">=3.10,<3.12"
 autopack-tools = "^0.2.6"
 langchain = ">=0.0.215"
 openai = "^0.27.8"
@@ -26,6 +26,7 @@ wolframalpha = "^5.0.0"
 yoyo-migrations = "^8.2.0"
 peewee = "^3.16.2"
 psycopg2-binary = "^2.9.6"
+e2b-agent-protocol = "^0.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
