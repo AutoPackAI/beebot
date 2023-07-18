@@ -23,6 +23,9 @@ google-auth-httplib2 = "^0.1.0"
 google-auth-oauthlib = "^1.0.0"
 google-api-python-client = "^2.93.0"
 wolframalpha = "^5.0.0"
+yoyo-migrations = "^8.2.0"
+peewee = "^3.16.2"
+psycopg2-binary = "^2.9.6"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"

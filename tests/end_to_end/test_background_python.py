@@ -2,7 +2,7 @@ import os
 
 import pytest
 
-from beebot.body.body import BodyStateMachine
+from beebot.body.body_state_machine import BodyStateMachine
 from tests.conftest import init_body
 
 

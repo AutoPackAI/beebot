@@ -1,0 +1,28 @@
+--
+-- depends:
+
+CREATE TABLE body (
+  id SERIAL PRIMARY KEY,
+  initial_task TEXT NOT NULL,
+  current_task TEXT NOT NULL,
+  state TEXT NOT NULL DEFAULT 'setup',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE memory_chain (
+  id SERIAL PRIMARY KEY,
+  body_id INT REFERENCES body(id),
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE memory (
+  id SERIAL PRIMARY KEY,
+  memory_chain_id INT REFERENCES memory_chain(id),
+  plan JSONB,
+  decision JSONB,
+  observation JSONB,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);

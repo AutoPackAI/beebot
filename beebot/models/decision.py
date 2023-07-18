@@ -2,10 +2,9 @@ from pydantic import Field, BaseModel
 
 
 class Decision(BaseModel):
-    reasoning: str = Field()
     tool_name: str = Field(...)
     tool_args: dict = Field(default_factory=dict)
 
-    def compressed_dict(self):
-        """Return this output as a dict that is smaller so that it uses fewer tokens"""
-        return {"tool": self.tool_name, "args": self.tool_args}
+    @property
+    def persisted_dict(self):
+        return self.__dict__

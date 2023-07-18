@@ -1,10 +1,10 @@
 import os
 
 import pytest
-from tests.conftest import init_body
 
-from beebot.body.body import BodyStateMachine
+from beebot.body.body_state_machine import BodyStateMachine
 from beebot.config import Config
+from tests.conftest import init_body
 
 
 @pytest.fixture()

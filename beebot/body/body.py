@@ -5,9 +5,10 @@ from typing import Optional
 
 from autopack.pack import Pack
 from langchain.chat_models.base import BaseChatModel
+from peewee import Database
 from pydantic import ValidationError
-from statemachine import StateMachine, State
 
+from beebot.body.body_state_machine import BodyStateMachine
 from beebot.body.llm import call_llm, create_llm
 from beebot.body.pack_utils import all_packs, system_packs
 from beebot.body.revising_prompt import revise_task_prompt
@@ -16,8 +17,9 @@ from beebot.decider import Decider
 from beebot.executor import Executor
 from beebot.function_selection.utils import recommend_packs_for_plan
 from beebot.memory import Memory
-from beebot.memory.memory_storage import MemoryStorage
+from beebot.memory.memory_chain import MemoryChain
 from beebot.models import Decision, Plan
+from beebot.models.database_models import initialize_db, BodyModel
 from beebot.models.observation import Observation
 from beebot.planner import Planner
 
@@ -26,35 +28,13 @@ logger = logging.getLogger(__name__)
 RETRY_LIMIT = 3
 
 
-class BodyStateMachine(StateMachine):
-    setup = State(initial=True)
-    starting = State()
-    planning = State()
-    deciding = State()
-    executing = State()
-    waiting = State()
-    done = State(final=True)
-
-    start = setup.to(starting)
-    plan = starting.to(planning) | waiting.to(planning)
-    decide = waiting.to(deciding)
-    execute = waiting.to(executing)
-    wait = (
-        deciding.to(waiting)
-        | planning.to(waiting)
-        | executing.to(waiting)
-        | starting.to(waiting)
-    )
-    finish = waiting.to(done) | executing.to(done)
-
-
 class Body:
     initial_task: str
     task: str
     current_plan: Plan
     state: BodyStateMachine
     packs: dict["Pack"]
-    memories: MemoryStorage
+    memories: MemoryChain
     processes: list[subprocess.Popen]
 
     llm: BaseChatModel
@@ -63,13 +43,17 @@ class Body:
     decider: Decider
     config: Config
 
-    def __init__(self, initial_task: str):
+    database: Database = None
+    database_id: int = None
+    database_model: BodyModel = None
+
+    def __init__(self, initial_task: str, database_id: int = None):
         self.initial_task = initial_task
         self.task = initial_task
         self.current_plan = Plan(initial_task)
-        self.state = BodyStateMachine()
+        self.state = BodyStateMachine(self)
         self.config = Config.from_env()
-        self.memories = MemoryStorage()
+        self.memories = MemoryChain(self)
 
         self.llm = create_llm(self.config)
         self.planner = Planner(body=self)
@@ -78,40 +62,48 @@ class Body:
         self.packs = {}
         self.processes = []
 
+        self.database_id = database_id
+
         if not os.path.exists(self.config.workspace_path):
             os.makedirs(self.config.workspace_path, exist_ok=True)
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
+        if self.config.persistence_enabled:
+            self.database = initialize_db(self.config.database_url)
+            if self.database_id:
+                self.database_model = BodyModel.get_by_id(self.database_id)
+            else:
+                self.database_model = BodyModel(
+                    initial_task=self.initial_task, current_task=self.task
+                )
+                self.database_model.save()
+                self.database_id = self.database_model.id
+
         self.revise_task()
         self.packs = system_packs(self)
         self.update_packs()
 
         self.state.start()
 
-    def plan(self):
-        """Turn the initial task into a plan"""
-        self.state.plan()
-        try:
-            self.current_plan = self.planner.plan()
-        finally:
-            self.state.wait()
-
-    def cycle(self, retry_count: int = 0) -> Memory:
+    def cycle(self) -> Memory:
         """Step through one plan-decide-execute loop"""
         if self.state.current_state == BodyStateMachine.done:
             return
 
         self.plan()
+        self.execute(decision=self.decide())
 
-        self.memories.add_plan(plan=self.plan)
+        complete_memory = self.memories.finish()
+        return complete_memory
 
-        decision = self.decide()
-        self.memories.add_decision(decision=decision)
-
+    def execute(self, decision: Decision, retry_count: int = 0) -> Observation:
+        """Execute a Decision and keep track of state"""
+        self.state.execute()
         try:
-            observation = self.execute(decision=decision)
-            self.memories.add_observation(observation)
+            result = self.executor.execute(decision=decision)
+            self.memories.add_observation(result)
+            return result
         except ValidationError as e:
             # It's likely the AI just sent bad arguments, try again.
             logger.warning(
@@ -119,22 +111,7 @@ class Body:
             )
             if retry_count >= RETRY_LIMIT:
                 return
-            return self.cycle(retry_count + 1)
-
-        # If the tool messed with memories (e.g. rewind) already we don't want to.
-        if self.memories.uncompleted_memory.decision is None:
-            self.memories.uncompleted_memory = Memory()
-            return self.memories.memories[-1]
-
-        complete_memory = self.memories.finish()
-        return complete_memory
-
-    def execute(self, decision: Decision) -> Observation:
-        """Execute a Decision and keep track of state"""
-        self.state.execute()
-        try:
-            result = self.executor.execute(decision=decision)
-            return result
+            return self.execute(decision, retry_count + 1)
         finally:
             # If the action resulted in status change (e.g. task complete) don't do anything
             if self.state.current_state == self.state.executing:
@@ -146,12 +123,26 @@ class Body:
         plan = plan or self.current_plan
 
         try:
+            decision = self.decider.decide_with_retry(plan=plan)
+            self.memories.add_decision(decision)
+
+            return decision
+        finally:
+            self.state.wait()
+
+    def plan(self):
+        """Take the current task and history and develop a plan"""
+        self.state.plan()
+        try:
+            plan = self.planner.plan()
             self.memories.add_plan(plan)
-            return self.decider.decide_with_retry(plan=plan)
+            self.current_plan = plan
+            return plan
         finally:
             self.state.wait()
 
     def revise_task(self):
+        """Turn the initial task into a task that is easier for AI to more consistently understand"""
         prompt = revise_task_prompt().format(task=self.initial_task).content
         logger.info("=== Task Revision given to LLM ===")
         logger.info(self.task)
@@ -178,6 +169,7 @@ class Body:
         logger.info(
             f"Rewinding from step {len(memories) + 1} to step {len(new_memories) + 1}"
         )
+        # TODO: Create a new chain
         self.memories.memories = new_memories
         self.memories.old_memories = memories
 

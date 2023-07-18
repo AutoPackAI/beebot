@@ -6,6 +6,8 @@ credentials.json
 token.json
 .DS_STORE
 agbenchmark/
+workspace/
+postgres-data/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

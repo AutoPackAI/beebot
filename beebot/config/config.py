@@ -27,6 +27,7 @@ class Config(BaseModel):
     llm_model: str = IDEAL_MODEL
     gmail_credentials_file: str = "credentials.json"
     restrict_code_execution: bool = False
+    database_url: str = ""
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -53,6 +54,8 @@ class Config(BaseModel):
             kwargs["openai_api_base"] = openai_api_base
         if (credentials_file := os.getenv("DEFAULT_CLIENT_SECRETS_FILE")) is not None:
             kwargs["gmail_credentials_file"] = credentials_file
+        if (database_url := os.getenv("DATABASE_URL")) is not None:
+            kwargs["database_url"] = database_url
         if (
             restrict_code_execution := os.getenv("RESTRICT_CODE_EXECUTION")
         ) is not None:
@@ -82,3 +85,7 @@ class Config(BaseModel):
                 file_handler,
             ],
         )
+
+    @property
+    def persistence_enabled(self):
+        return self.database_url != ""

@@ -1,19 +1,25 @@
 import json
+from typing import TYPE_CHECKING
 
 from beebot.memory import Memory
 from beebot.models import Plan, Observation
+from beebot.models.database_models import MemoryChainModel, MemoryModel
+
+if TYPE_CHECKING:
+    from beebot.body import Body
 
 
-class MemoryStorage:
+class MemoryChain:
     """Generic memory storage model. This class will decide _where_ the memory is stored. But for now just in RAM"""
 
+    body: "Body"
+    model_object: MemoryChainModel = None
     memories: list[Memory]
-    old_memories: list[list[Memory]]
     uncompleted_memory: Memory
 
-    def __init__(self):
+    def __init__(self, body: "Body"):
+        self.body = body
         self.memories = []
-        self.old_memories = []
         self.uncompleted_memory = Memory()
 
     def add_plan(self, plan: Plan):
@@ -25,12 +31,35 @@ class MemoryStorage:
     def add_observation(self, observation: Observation):
         self.uncompleted_memory.observation = observation
 
-    def finish(self):
+    def finish(self) -> Memory:
         # TODO: Store this in a db or whatever
         completed_memory = self.uncompleted_memory
+
+        # If the tool messed with memories (e.g. rewind) already we don't want to store it
+        if self.uncompleted_memory.decision is None:
+            self.uncompleted_memory = Memory()
+            return self.uncompleted_memory
+
         self.uncompleted_memory = Memory()
         self.memories.append(completed_memory)
+        self.persist_memory()
         return completed_memory
+
+    def persist_memory(self):
+        if not self.model_object:
+            chain_model = MemoryChainModel(body=self.body.database_model)
+            chain_model.save()
+            self.model_object = chain_model
+
+        for memory in self.memories:
+            if not memory.model_object:
+                memory_model = MemoryModel(
+                    plan=memory.plan.persisted_dict,
+                    decision=memory.decision.persisted_dict,
+                    observation=memory.observation.persisted_dict,
+                )
+                memory_model.save()
+                memory.model_object = memory_model
 
     def compile_history(self) -> str:
         if not self.memories:
