@@ -24,6 +24,13 @@ cd beebot
 poetry install
 ```
 
+### Persistence
+
+If you would like to enable persistence, start a Postgres database (or use your own), with `docker compose up -d`.
+
+Then, set the `DATABASE_URL` environment variable in your .env file. If you're using docker, you can set this
+to `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres`.
+
 ## Running
 
 Currently, you can only run BeeBot using the CLI:
