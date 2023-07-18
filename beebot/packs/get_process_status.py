@@ -26,6 +26,7 @@ class GetProcessStatus(SystemBasePack):
     categories: list[str] = ["Multiprocess"]
 
     def _run(self, pid: str) -> dict[str, str]:
+        # TODO: Support for daemonized processes
         try:
             try:
                 process = self.body.processes[int(pid) - 1]

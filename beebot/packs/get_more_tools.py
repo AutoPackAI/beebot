@@ -13,7 +13,9 @@ from beebot.function_selection.function_selection_prompt import get_more_tools_t
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "get_more_tools"
-PACK_DESCRIPTION = "Requests a tool necessary for task fulfillment."
+PACK_DESCRIPTION = (
+    "Requests a tool necessary for task fulfillment. Does not install Python packages."
+)
 
 logger = logging.getLogger(__name__)
 

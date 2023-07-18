@@ -15,7 +15,7 @@ Focus on ensuring that the human's task will be fully completed by clearly speci
 You are provided the following task by a human user:
 {task}
 
-Now, generate the overall goal summary for this task, including the exit conditions. Respond with only the goal summary and no other explanatory text."""
+Now, generate a concise overall goal summary for this task, including the exit conditions, in paragraph format."""
 
 
 def revise_task_prompt() -> SystemMessagePromptTemplate:

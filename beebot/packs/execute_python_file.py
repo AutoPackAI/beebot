@@ -13,9 +13,9 @@ PACK_NAME = "execute_python_file"
 # IMPORTANT NOTE: This does NOT actually restrict the execution environment, it just nudges the AI to avoid doing
 # those things.
 PACK_DESCRIPTION = (
-    "Executes a Python file in a restricted environment, prohibiting shell execution and filesystem access. The "
-    "function executes the code in the file and returns the output of the execution as a string. Make sure the Python "
-    "file adheres to the restrictions of the environment and is available in the specified file path."
+    "Executes a Python file in a restricted environment, prohibiting shell execution and filesystem access. Returns "
+    "the output of the execution as a string. Ensure file adherence to restrictions and availability in the specified "
+    "path. (Packages managed by Poetry.)"
 )
 
 
@@ -34,6 +34,7 @@ class ExecutePythonFile(SystemBasePack):
     description: str = PACK_DESCRIPTION
     args_schema: Type[BaseModel] = ExecutePythonFileArgs
     categories: list[str] = ["Programming", "Files"]
+    depends_on: list[str] = ["install_python_package"]
 
     def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)
@@ -45,7 +46,7 @@ class ExecutePythonFile(SystemBasePack):
                 return "Error: File not found"
 
             args_list = shlex.split(python_args)
-            cmd = ["python", abs_path, *args_list]
+            cmd = ["poetry", "run", "python", abs_path, *args_list]
             process = subprocess.run(
                 cmd,
                 stdout=subprocess.PIPE,

@@ -176,7 +176,7 @@ class Body:
         self.memories.add_plan(Plan(plan_text="Call the rewind_actions function"))
 
         decision = Decision(
-            reasoning=f"The plan requires that I call the rewind_actions function.",
+            reasoning="The plan requires that I call the rewind_actions function.",
             tool_name="rewind_actions",
             tool_args="",
         )
