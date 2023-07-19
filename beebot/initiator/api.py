@@ -1,28 +1,28 @@
+from dotenv import load_dotenv
+
 from beebot.body import Body
 
 from agent_protocol import (
     Agent,
-    AgentTaskInput,
-    AgentStepInput,
-    AgentStepResult,
-    AgentStepHandler,
-    Agent,
+    StepResult,
+    StepHandler,
 )
 
-
-async def task_handler(task: AgentTaskInput | None) -> AgentStepHandler:
-    print(f"task: {task}")
-    body = Body(initial_task=task)
+async def task_handler(task_input) -> StepHandler:
+    print(f"Created task: {task_input}")
+    body = Body(initial_task=task_input)
     body.setup()
 
-    async def step_handler(step: AgentStepInput | None):
-        print(f"step: {step}")
+    async def step_handler(step_input):
+        print(f"Executing step for task {task_input}")
         output = body.cycle()
-        return AgentStepResult(
+        return StepResult(
             output=output,
         )
 
     return step_handler
 
 
-Agent.handle_task(task_handler).start()
+if __name__ == "__main__":
+    load_dotenv()
+    Agent.handle_task(task_handler).start()

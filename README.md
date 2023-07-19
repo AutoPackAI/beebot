@@ -33,16 +33,44 @@ to `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres`.
 
 ## Running
 
-Currently, you can only run BeeBot using the CLI:
-
+### CLI
+To use the CLI run:
 ```bash
 python beebot/initiator/cli.py --task "Write 'hello world' to hi.txt"
 ```
 
-Please note that while the CLI is the only available method at this time, there are future plans:
+### API (via [e2b](https://www.e2b.dev/))
+To start the server run:
+```bash
+python beebot/initiator/api.py
+```
 
-- API: Will probably use [e2b](https://www.e2b.dev/).
-- Web Interface: We are working on a web interface using Node.js (Remix)
+and then you can call the API using the following commands:
+
+To **create a task** run:
+```bash
+curl --request POST \
+  --url http://localhost:8000/agent/tasks \
+  --header 'Content-Type: application/json' \
+  --data '{
+	"input": "Write '\''hello world'\'' to hi.txt"
+}'
+```
+
+You will get a response like this:
+```json
+{"input":"Write 'hello world' to hi.txt","task_id":"e6d768bb-4c50-4007-9853-aeffb46c77be","artifacts":[]}
+```
+
+Then to **execute one step of the task** copy the `task_id` you got from the previous request and run:
+
+```bash
+curl --request POST \
+  --url http://localhost:8000/agent/tasks/<task-id>/steps
+```
+
+### Web Interface
+We are working on a web interface using Node.js (Remix)
 
 ## Philosophy
 
