@@ -11,7 +11,10 @@ from .get_process_status import GetProcessStatus
 from .get_website_text_content import GetWebsiteTextContent
 from .gmail import CreateDraft, GetMessage, GetThread, Search, SendMessage
 from .google_search import GoogleSearch
+from .http_request import HttpRequest
 from .install_python_package import InstallPythonPackage
+from .kill_process import KillProcess
+from .list_processes import ListProcesses
 from .os_info import OSInfo
 from .read_file import ReadFile
 from .rewind_actions import RewindActions
@@ -40,9 +43,12 @@ __all__ = [
     "GetThread",
     "GetWebsiteTextContent",
     "GoogleSearch",
+    "HttpRequest",
     "InstallPythonPackage",
+    "KillProcess",
     # Disabled because the file list is included in its entirety in the prompt and it doesn't know how to use it.
     # "ListFiles",
+    "ListProcesses",
     "OSInfo",
     "ReadFile",
     "RewindActions",

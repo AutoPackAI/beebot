@@ -35,7 +35,7 @@ class Body:
     state: BodyStateMachine
     packs: dict["Pack"]
     memories: MemoryChain
-    processes: list[subprocess.Popen]
+    processes: dict[str, subprocess.Popen]
 
     llm: BaseChatModel
     planner: Planner
@@ -60,7 +60,7 @@ class Body:
         self.decider = Decider(body=self)
         self.executor = Executor(body=self)
         self.packs = {}
-        self.processes = []
+        self.processes = {}
 
         self.database_id = database_id
 
