@@ -1,4 +1,4 @@
-from .analyze_webpage_content_for_answer import AnalyzeWebpageContentForAnswerSummary
+from .analyze_webpage_content import AnalyzeWebpageContent
 from .delegate_task import DelegateTask
 from .disk_usage import DiskUsage
 from .encyclopedia import Encyclopedia
@@ -24,7 +24,7 @@ from .write_file import WriteFile
 from .write_python_file import WritePythonFile
 
 __all__ = [
-    "AnalyzeWebpageContentForAnswerSummary",
+    "AnalyzeWebpageContent",
     "CreateDraft",
     "DelegateTask",
     # Disabled because we can't trust the AI to delete files. It can clean up after itself, deleting its own work.
@@ -41,7 +41,8 @@ __all__ = [
     "GetMoreTools",
     "GetProcessStatus",
     "GetThread",
-    "GetWebsiteTextContent",
+    # Disabled because I don't think it's ever used correctly. It can use HttpRequest or AnalyzeWebpageContent
+    # "GetWebsiteTextContent",
     "GoogleSearch",
     "HttpRequest",
     "InstallPythonPackage",

@@ -7,10 +7,10 @@ from pydantic import BaseModel, Field
 from beebot.body.llm import call_llm
 from beebot.packs.system_base_pack import SystemBasePack
 
-PACK_NAME = "analyze_webpage_content_for_answer"
+PACK_NAME = "analyze_webpage_content"
 PACK_DESCRIPTION = (
-    "Retrieves and analyzes the content of a given URL, and attempts to provide an answer to the provided question "
-    "based on that content."
+    "Retrieves and analyzes the content of a given URL, and answers the given question based on the contents of that "
+    "webpage"
 )
 
 PROMPT_TEMPLATE = """Please provide a summary of the following content, which was gathered from the website {url}:
@@ -28,7 +28,7 @@ Answer:
 """
 
 
-class AnalyzeWebpageContentForAnswerSummaryArgs(BaseModel):
+class AnalyzeWebpageContentArgs(BaseModel):
     url: str = Field(
         ..., description="A full and valid URL of the webpage to be analyzed."
     )
@@ -38,10 +38,10 @@ class AnalyzeWebpageContentForAnswerSummaryArgs(BaseModel):
     )
 
 
-class AnalyzeWebpageContentForAnswerSummary(SystemBasePack):
+class AnalyzeWebpageContent(SystemBasePack):
     name: str = PACK_NAME
     description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = AnalyzeWebpageContentForAnswerSummaryArgs
+    args_schema: Type[BaseModel] = AnalyzeWebpageContentArgs
     categories: list[str] = ["Web"]
 
     def _run(self, url: str, question: str = "") -> str:
