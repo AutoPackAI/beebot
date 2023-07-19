@@ -26,7 +26,9 @@ wolframalpha = "^5.0.0"
 yoyo-migrations = "^8.2.0"
 peewee = "^3.16.2"
 psycopg2-binary = "^2.9.6"
-e2b-agent-protocol = "^0.0.1"
+agent-protocol = "^0.0.3"
+beautifulsoup4 = "^4.12.2"
+psutil = "^5.9.5"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
