@@ -8,7 +8,7 @@ from beebot.body.llm import call_llm, LLMResponse
 from beebot.body.pack_utils import functions_summary
 from beebot.decider.deciding_prompt import decider_template
 from beebot.models import Plan, Decision
-from beebot.utils import list_files, files_documents
+from beebot.utils import list_files, document_contents
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -37,19 +37,18 @@ class Decider:
                 task=self.body.task,
                 history=self.body.memories.compile_history(),
                 functions=functions_summary(self.body),
-                file_list=files_documents(list_files(self.body)),
+                file_list=document_contents(list_files(self.body)),
             )
             .content
         )
 
         response = call_llm(self.body, template, disregard_cache=disregard_cache)
+
         logger.info("=== Decision received from LLM ===")
         if response:
             logger.info(response.text)
-            logger.info("")
-
         logger.info(json.dumps(response.function_call, indent=4))
-        logger.info("")
+
         return interpret_llm_response(response)
 
     def decide_with_retry(self, plan: Plan, retry_count: int = 0) -> Decision:

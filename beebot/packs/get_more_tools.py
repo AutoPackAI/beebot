@@ -46,7 +46,7 @@ class GetMoreTools(SystemBasePack):
             get_more_tools_template()
             .format(
                 task=self.body.task,
-                functions_string=functions_bulleted_list(packs_to_summarize),
+                functions=functions_bulleted_list(packs_to_summarize),
                 functions_request=desired_functionality,
             )
             .content
@@ -55,7 +55,9 @@ class GetMoreTools(SystemBasePack):
         response = call_llm(self.body, prompt, include_functions=False).text
 
         functions = [r.split("(")[0].strip() for r in re.split(r",|\n", response)]
-        added_packs = [name for name in functions if name not in self.body.packs]
+        all_existing_packs = all_packs(self.body)
+        installed_packs = self.body.packs
+        added_packs = [name for name in functions if name in all_existing_packs and name not in installed_packs]
 
         if not added_packs:
             return (

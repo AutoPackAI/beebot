@@ -10,7 +10,7 @@ from beebot.planner.planning_prompt import (
     initial_prompt_template,
     planning_prompt_template,
 )
-from beebot.utils import list_files, files_documents
+from beebot.utils import list_files, document_contents
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -27,27 +27,26 @@ class Planner:
 
     def plan(self) -> Plan:
         task = self.body.task
-        if self.body.memories.memories:
+        history = self.body.memories.compile_history()
+        file_list = (document_contents(list_files(self.body)),)
+        functions = functions_summary(self.body)
+        if history:
             formatted_prompt = (
                 planning_prompt_template()
                 .format(
-                    task=task,
-                    history=self.body.memories.compile_history(),
-                    functions=functions_summary(self.body),
-                    file_list=files_documents(list_files(self.body)),
+                    task=task, history=history, functions=functions, file_list=file_list
                 )
                 .content
             )
         else:
             formatted_prompt = (
                 initial_prompt_template()
-                .format(
-                    task=task,
-                    functions=functions_summary(self.body),
-                    file_list=files_documents(list_files(self.body)),
-                )
+                .format(task=task, functions=functions, file_list=file_list)
                 .content
             )
+
+        logger.info("=== Plan Request ===")
+        logger.info(history)
 
         response = call_llm(
             self.body,
@@ -56,8 +55,6 @@ class Planner:
         )
         planned = response
 
-        logger.info("=== Plan Request ===")
-        logger.info(formatted_prompt)
         logger.info("=== Plan Created ===")
         logger.info(planned.text)
 

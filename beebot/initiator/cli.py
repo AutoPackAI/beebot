@@ -31,8 +31,9 @@ def main():
     body = Body(initial_task=task)
     body.setup()
     while output := body.cycle():
-        print("=== Cycle Output ===")
-        print(output.observation.response)
+        if output.observation:
+            print("=== Cycle Output ===")
+            print(output.observation.response)
 
 
 if __name__ == "__main__":

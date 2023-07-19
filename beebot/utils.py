@@ -28,7 +28,7 @@ def restrict_path(file_path: str, workspace_dir: str):
     return absolute_path
 
 
-def files_documents(files: list[str]) -> str:
+def document_contents(files: list[str]) -> str:
     documents = []
     for file in files:
         file_details = f"## Contents of file {file}"

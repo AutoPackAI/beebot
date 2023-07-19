@@ -45,9 +45,10 @@ class InstallPythonPackage(SystemBasePack):
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
             )
-            output = "\n".join([process.stdout.strip(), process.stderr.strip()]).strip()
+            if process.returncode:
+                return f"Error: {process.stdout}. {process.stderr}."
 
-            return output
+            return f"{package_name} installed successfully."
 
         except Exception as e:
             return f"Error: {e}"

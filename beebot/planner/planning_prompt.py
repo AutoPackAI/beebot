@@ -49,7 +49,7 @@ If the AI Assistant appears to be making little progress and may be unable to pr
 
 Once the original task has been successfully completed, instruct the AI Assistant to call the `exit` function to indicate the completion of the task.
 
-Please provide an analysis of the past history, followed by a concise summary of your plan, and end with one sentence describing the first action to be taken."""
+Please provide an analysis of the past history, followed by a concise summary of your plan going forward, and end with one sentence describing the first action to be taken."""
 
 
 def initial_prompt_template() -> SystemMessagePromptTemplate:
