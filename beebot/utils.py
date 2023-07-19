@@ -4,16 +4,18 @@ from typing import TYPE_CHECKING
 if TYPE_CHECKING:
     from beebot.body import Body
 
+IGNORE_FILES = ["pyproject.toml", "poetry.lock"]
+
 
 def list_files(body: "Body") -> list[str]:
-    """List a file from disk. If/when we do sandboxing this provides a convenient way to intervene"""
+    """Lists files in the workspace."""
     directory = body.config.workspace_path
     file_basenames = [
         os.path.basename(file)
         for file in os.listdir(directory)
         if os.path.isfile(os.path.join(directory, file))
     ]
-    return file_basenames
+    return [basename for basename in file_basenames if basename not in IGNORE_FILES]
 
 
 def restrict_path(file_path: str, workspace_dir: str):

@@ -46,6 +46,9 @@ class MemoryChain:
         return completed_memory
 
     def persist_memory(self):
+        if not self.body.config.persistence_enabled:
+            return
+
         if not self.model_object:
             chain_model = MemoryChainModel(body=self.body.database_model)
             chain_model.save()
