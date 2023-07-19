@@ -1,12 +1,12 @@
 import logging
 import os
 import shlex
-import subprocess
 import time
 from typing import Type
 
 from pydantic import BaseModel, Field
 
+from beebot.executor.background_process import BackgroundProcess
 from beebot.packs.system_base_pack import SystemBasePack
 from beebot.utils import restrict_path
 
@@ -49,7 +49,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
     categories: list[str] = ["Programming", "Files", "Multiprocess"]
 
     def _run(
-            self, file_path: str, python_args: str = "", daemonize: str = "false"
+        self, file_path: str, python_args: str = "", daemonize: str = "false"
     ) -> str:
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
@@ -64,21 +64,16 @@ class ExecutePythonFileInBackground(SystemBasePack):
 
         args_list = shlex.split(python_args)
         cmd = ["poetry", "run", "python", abs_path, *args_list]
-
-        process = subprocess.Popen(
-            cmd,
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            universal_newlines=True,
-            cwd=self.body.config.workspace_path,
-            start_new_session=daemonize.lower() == "true",
-        )
-
-        self.body.processes[str(process.pid)] = process
+        process = BackgroundProcess(body=self.body, cmd=cmd, daemonize=True)
+        process.run()
 
         time.sleep(0.2)
         if process.poll() is not None:
             stdout, stderr = process.communicate()
+
+            import pdb
+
+            pdb.set_trace()
             output = stdout.strip()
             error = stderr.strip()
             return (

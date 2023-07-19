@@ -22,8 +22,7 @@ class GetProcessStatus(SystemBasePack):
     categories: list[str] = ["Multiprocess"]
 
     def _run(self, pid: str) -> str:
-        # TODO: Support for daemonized processes
-        process = self.body.processes.get(pid)
+        process = self.body.processes.get(int(pid))
         if not process:
             return f"Error: Process {pid} does not exist"
 

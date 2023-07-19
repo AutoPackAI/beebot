@@ -35,7 +35,7 @@ class Body:
     state: BodyStateMachine
     packs: dict["Pack"]
     memories: MemoryChain
-    processes: dict[str, subprocess.Popen]
+    processes: dict[int, subprocess.Popen]
 
     llm: BaseChatModel
     planner: Planner

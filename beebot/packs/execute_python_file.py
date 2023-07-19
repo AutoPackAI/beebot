@@ -1,7 +1,8 @@
 import os
 import shlex
 import subprocess
-from typing import Type
+import time
+from typing import Type, Optional
 
 from pydantic import BaseModel, Field
 
@@ -17,6 +18,34 @@ PACK_DESCRIPTION = (
     "the output of the execution as a string. Ensure file adherence to restrictions and availability in the specified "
     "path. (Packages managed by Poetry.)"
 )
+
+
+class TimedOutSubprocess:
+    """A convenience class to allow creating a subprocess with a timeout while capturing its output"""
+
+    cmd: list[str]
+    process: Optional[subprocess.Popen[str]]
+
+    def __init__(self, cmd: list[str]) -> None:
+        self.cmd = cmd
+        self.process = None
+
+    def run(self, timeout: int, **kwargs) -> None:
+        self.process = subprocess.Popen(self.cmd, universal_newlines=True, **kwargs)
+
+        start_time = time.time()
+        while self.process.poll() is None:  # None means the process hasn't finished
+            if time.time() - start_time > timeout:
+                self.process.terminate()  # Kill the process
+                break
+
+            time.sleep(1)
+
+        if self.process.returncode is not None and self.process.returncode != 0:
+            print(f"The agent exited with return code {self.process.returncode}")
+
+        output, error = self.process.communicate()
+        return "\n".join([output.strip(), error.strip()]).strip()
 
 
 class ExecutePythonFileArgs(BaseModel):
@@ -47,17 +76,21 @@ class ExecutePythonFile(SystemBasePack):
 
             args_list = shlex.split(python_args)
             cmd = ["poetry", "run", "python", abs_path, *args_list]
-            process = subprocess.run(
-                cmd,
+            process = TimedOutSubprocess(cmd)
+            process.run(
+                timeout=self.body.config.process_timeout,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                universal_newlines=True,
                 cwd=self.body.config.workspace_path,
             )
-            output = "\n".join([process.stdout.strip(), process.stderr.strip()]).strip()
+            import pdb
 
-            if process.returncode:
-                return f"Execution failed with exit code {process.returncode}. Output: {output}"
+            pdb.set_trace()
+            os_subprocess = process.process
+            output, error = os_subprocess.communicate()
+
+            if os_subprocess.returncode:
+                return f"Execution failed with exit code {os_subprocess.returncode}. Output: {output}. {error}"
 
             if output:
                 return f"Execution complete. Output: {output}"

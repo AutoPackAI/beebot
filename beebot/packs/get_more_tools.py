@@ -14,7 +14,9 @@ from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "get_more_tools"
 PACK_DESCRIPTION = (
-    "Requests a tool necessary for task fulfillment. Does not install Python packages."
+    "Requests a tool necessary for task fulfillment with the given desired functionality, which is a detailed English "
+    "sentence. Does not install Python packages. Cannot be used to create tools, functions, or files which do not"
+    "already exist."
 )
 
 logger = logging.getLogger(__name__)
@@ -57,7 +59,11 @@ class GetMoreTools(SystemBasePack):
         functions = [r.split("(")[0].strip() for r in re.split(r",|\n", response)]
         all_existing_packs = all_packs(self.body)
         installed_packs = self.body.packs
-        added_packs = [name for name in functions if name in all_existing_packs and name not in installed_packs]
+        added_packs = [
+            name
+            for name in functions
+            if name in all_existing_packs and name not in installed_packs
+        ]
 
         if not added_packs:
             return (

@@ -54,10 +54,9 @@ class Exit(SystemBasePack):
         logger.info(f"- Conclusion: {conclusion}")
         logger.info(f"- Function Summary: {function_summary}")
 
-        if self.body.processes:
-            logger.info("\n=== Killing subprocesses ===")
-            for process in self.body.processes:
-                process.kill()
+        for pid, process in self.body.processes.items():
+            logger.info(f"\n=== Killing subprocess {pid} ===")
+            process.kill()
 
         if self.body.config.hard_exit:
             exit()

@@ -21,7 +21,7 @@ class KillProcess(SystemBasePack):
 
     def _run(self, pid: str) -> dict[str, str]:
         # TODO: Support for daemonized processes from previous runs
-        process = self.body.processes.get(pid)
+        process = self.body.processes.get(int(pid))
         if not process:
             return "Error: Process does not exist"
 

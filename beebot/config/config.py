@@ -28,6 +28,7 @@ class Config(BaseModel):
     gmail_credentials_file: str = "credentials.json"
     restrict_code_execution: bool = False
     database_url: str = ""
+    process_timeout: int = 5
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -54,6 +55,8 @@ class Config(BaseModel):
             kwargs["openai_api_base"] = openai_api_base
         if (credentials_file := os.getenv("DEFAULT_CLIENT_SECRETS_FILE")) is not None:
             kwargs["gmail_credentials_file"] = credentials_file
+        if (process_timeout := os.getenv("PROCESS_TIMEOUT")) is not None:
+            kwargs["process_timeout"] = int(process_timeout)
         if (database_url := os.getenv("DATABASE_URL")) is not None:
             kwargs["database_url"] = database_url
         if (
