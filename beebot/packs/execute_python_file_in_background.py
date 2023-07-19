@@ -71,9 +71,6 @@ class ExecutePythonFileInBackground(SystemBasePack):
         if process.poll() is not None:
             stdout, stderr = process.communicate()
 
-            import pdb
-
-            pdb.set_trace()
             output = stdout.strip()
             error = stderr.strip()
             return (

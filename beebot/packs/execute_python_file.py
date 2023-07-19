@@ -83,9 +83,6 @@ class ExecutePythonFile(SystemBasePack):
                 stderr=subprocess.PIPE,
                 cwd=self.body.config.workspace_path,
             )
-            import pdb
-
-            pdb.set_trace()
             os_subprocess = process.process
             output, error = os_subprocess.communicate()
 
