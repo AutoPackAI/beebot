@@ -34,4 +34,4 @@ class GetWebsiteTextContent(SystemBasePack):
         response = requests.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
         stripped_text = re.sub(r"\s+", " ", soup.get_text().strip())
-        return filter_long_documents(stripped_text)
+        return filter_long_documents(self.body, stripped_text)

@@ -28,4 +28,4 @@ class GetHtmlContent(SystemBasePack):
 
     def _run(self, url: str) -> str:
         response = requests.get(url)
-        return filter_long_documents(response.text)
+        return filter_long_documents(self.body, response.text)

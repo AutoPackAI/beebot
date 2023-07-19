@@ -28,7 +28,7 @@ class Config(BaseModel):
     gmail_credentials_file: str = "credentials.json"
     restrict_code_execution: bool = False
     database_url: str = ""
-    process_timeout: int = 5
+    process_timeout: int = 30
 
     @classmethod
     def from_env(cls) -> "Config":
