@@ -7,6 +7,10 @@ license = "MIT"
 readme = "README.md"
 packages = [{ include = "beebot" }]
 
+[tool.poetry.scripts]
+beebot = 'beebot.initiator.cli:main'
+beebot_api = 'beebot.initiator.api:main'
+
 [tool.poetry.dependencies]
 # I hate this version specification but we can't use python-statemachine in 3.12
 python = ">=3.10,<3.12"

@@ -1,12 +1,14 @@
-from dotenv import load_dotenv
-
-from beebot.body import Body
+import asyncio
 
 from agent_protocol import (
     Agent,
     StepResult,
     StepHandler,
 )
+from dotenv import load_dotenv
+
+from beebot.body import Body
+
 
 async def task_handler(task_input) -> StepHandler:
     print(f"Created task: {task_input}")
@@ -23,6 +25,10 @@ async def task_handler(task_input) -> StepHandler:
     return step_handler
 
 
-if __name__ == "__main__":
+def main():
     load_dotenv()
-    Agent.handle_task(task_handler).start()
+    asyncio.run(Agent.handle_task(task_handler).start())
+
+
+if __name__ == "__main__":
+    main()

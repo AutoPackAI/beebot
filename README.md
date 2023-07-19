@@ -21,8 +21,11 @@ These instructions may vary depending on your local development environment.
 ```bash
 git clone https://github.com/AutoPackAI/beebot.git
 cd beebot
-poetry install
+./setup.sh
 ```
+
+Windows is officially unsupported but it may work. PRs are welcome for Windows compatibility but will not be a primary
+focus.
 
 ### Persistence
 
@@ -34,20 +37,25 @@ to `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres`.
 ## Running
 
 ### CLI
+
 To use the CLI run:
+
 ```bash
-python beebot/initiator/cli.py --task "Write 'hello world' to hi.txt"
+poetry run beebot
 ```
 
 ### API (via [e2b](https://www.e2b.dev/))
+
 To start the server run:
+
 ```bash
-python beebot/initiator/api.py
+poetry run beebot_api
 ```
 
 and then you can call the API using the following commands:
 
 To **create a task** run:
+
 ```bash
 curl --request POST \
   --url http://localhost:8000/agent/tasks \
@@ -58,8 +66,13 @@ curl --request POST \
 ```
 
 You will get a response like this:
+
 ```json
-{"input":"Write 'hello world' to hi.txt","task_id":"e6d768bb-4c50-4007-9853-aeffb46c77be","artifacts":[]}
+{
+  "input": "Write 'hello world' to hi.txt",
+  "task_id": "e6d768bb-4c50-4007-9853-aeffb46c77be",
+  "artifacts": []
+}
 ```
 
 Then to **execute one step of the task** copy the `task_id` you got from the previous request and run:
@@ -70,6 +83,7 @@ curl --request POST \
 ```
 
 ### Web Interface
+
 We are working on a web interface using Node.js (Remix)
 
 ## Philosophy
