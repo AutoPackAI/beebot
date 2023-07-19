@@ -6,6 +6,7 @@ from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
+from beebot.tool_filters import filter_long_documents
 
 PACK_NAME = "get_website_text_content"
 PACK_DESCRIPTION = (
@@ -33,8 +34,4 @@ class GetWebsiteTextContent(SystemBasePack):
         response = requests.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
         stripped_text = re.sub(r"\s+", " ", soup.get_text().strip())
-
-        if len(stripped_text) > TEXT_LIMIT:
-            return f"Too much text returned, partial contents are: {stripped_text[:TEXT_LIMIT]}..."
-
-        return stripped_text
+        return filter_long_documents(stripped_text)

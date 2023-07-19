@@ -4,6 +4,7 @@ import requests
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
+from beebot.tool_filters import filter_long_documents
 
 PACK_NAME = "get_html_content"
 PACK_DESCRIPTION = (
@@ -27,4 +28,4 @@ class GetHtmlContent(SystemBasePack):
 
     def _run(self, url: str) -> str:
         response = requests.get(url)
-        return response.text
+        return filter_long_documents(response.text)

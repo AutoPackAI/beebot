@@ -6,7 +6,11 @@ from beebot.body.llm import call_llm
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "encyclopedia"
-PACK_DESCRIPTION = "A comprehensive factual resource for general knowledge. Does not provide personalized or up-to-date information. This tool does not provide operational guidance, programming advice, or actionable strategies."
+PACK_DESCRIPTION = (
+    "A comprehensive factual resource for general knowledge. Does not provide personalized or "
+    "up-to-date information. This tool does not provide operational guidance, programming advice, "
+    "or actionable strategies."
+)
 
 
 class EncyclopediaArgs(BaseModel):
