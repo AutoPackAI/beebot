@@ -5,7 +5,6 @@ tmp/
 credentials.json
 token.json
 .DS_STORE
-agbenchmark/
 workspace/
 postgres-data/
 
