@@ -23,11 +23,11 @@ class KillProcess(SystemBasePack):
         # TODO: Support for daemonized processes from previous runs
         process = self.body.processes.get(pid)
         if not process:
-            return f"Error: Process does not exist"
+            return "Error: Process does not exist"
 
         status = process.poll()
         if status is not None:
-            return f"Process had already been killed."
+            return "Process had already been killed."
 
         output = ""
         error = ""
