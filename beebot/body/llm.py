@@ -1,3 +1,4 @@
+import json
 import logging
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
@@ -55,6 +56,8 @@ def call_llm(
     if disregard_cache:
         output_kwargs["headers"] = {"Helicone-Cache-Enabled": "false"}
 
+    logger.debug(f"~~ LLM Request ~~\n{message}")
+    logger.debug(json.dumps(output_kwargs))
     try:
         response = llm.generate(
             messages=[[SystemMessage(content=message)]], **output_kwargs
@@ -79,4 +82,6 @@ def call_llm(
     ):
         function_called = generation.message.additional_kwargs.get("function_call", {})
 
+    logger.debug(f"~~ LLM Response ~~\n{generation.text}")
+    logger.debug(json.dumps(function_called))
     return LLMResponse(text=generation.text, function_call=function_called)

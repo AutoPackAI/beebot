@@ -20,7 +20,7 @@ class ListProcesses(SystemBasePack):
 
     def _run(self) -> str:
         running_processes = [
-            f"PID {pid}: active."
+            f"PID {pid}: running."
             for (pid, process) in self.body.processes.items()
             if process.poll() is None
         ]
@@ -28,4 +28,4 @@ class ListProcesses(SystemBasePack):
         if running_processes:
             return " ".join(running_processes)
 
-        return "No processes active"
+        return "No processes running"

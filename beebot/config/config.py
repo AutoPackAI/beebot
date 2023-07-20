@@ -1,11 +1,15 @@
 import logging
 import os
 
+import coloredlogs
 from pydantic import BaseModel
 
 # IDEAL_MODEL = "gpt-4-0613"
 FALLBACK_MODEL = "gpt-3.5-turbo-16k-0613"
 IDEAL_MODEL = FALLBACK_MODEL
+LOG_FORMAT = (
+    "%(levelname)s %(asctime)s.%(msecs)03d %(filename)s:%(lineno)d- %(message)s"
+)
 
 TRUEISH = [
     "True",
@@ -46,7 +50,7 @@ class Config(BaseModel):
         ) is not None:
             kwargs["auto_install_dependencies"] = auto_install_dependencies in TRUEISH
         if (log_level := os.getenv("LOG_LEVEL")) is not None:
-            kwargs["log_level"] = log_level
+            kwargs["log_level"] = log_level.upper()
         if (workspace_path := os.getenv("WORKSPACE_PATH")) is not None:
             kwargs["workspace_path"] = os.path.abspath(workspace_path)
         if (helicone_key := os.getenv("HELICONE_KEY")) is not None:
@@ -72,21 +76,25 @@ class Config(BaseModel):
         os.makedirs("logs", exist_ok=True)
         console_handler = logging.StreamHandler()
         console_handler.setLevel(self.log_level)
-        console_handler.setFormatter(logging.Formatter("%(message)s"))
 
         file_handler = logging.FileHandler("logs/debug.log")
         file_handler.setLevel("DEBUG")
-        file_handler.setFormatter(
-            logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
-        )
+        file_handler.setFormatter(logging.Formatter(LOG_FORMAT))
 
         logging.basicConfig(
             level=self.log_level,
-            format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+            format=LOG_FORMAT,
+            datefmt="%H:%M:%S",
             handlers=[
                 console_handler,
                 file_handler,
             ],
+        )
+
+        coloredlogs.install(
+            level=self.log_level,
+            fmt=LOG_FORMAT,
+            datefmt="%H:%M:%S",
         )
 
     @property

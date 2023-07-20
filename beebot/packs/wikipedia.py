@@ -7,7 +7,11 @@ from beebot.body.llm import call_llm
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "wikipedia"
-PACK_DESCRIPTION = "Retrieve information from Wikipedia based on a given search query and question. It provides a summary of the relevant Wikipedia page based on a given question, enabling quick access to factual knowledge."
+PACK_DESCRIPTION = (
+    "Retrieve information from Wikipedia based on a given search query and question. It provides a "
+    "summary of the relevant Wikipedia page based on a given question, enabling quick access to "
+    "factual knowledge."
+)
 
 PROMPT_TEMPLATE = """Given the following pages from Wikipedia, provide an answer to the following question:
 

@@ -1,7 +1,5 @@
 from typing import TYPE_CHECKING
 
-from langchain.schema import SystemMessage
-
 from beebot.body.llm import call_llm
 from beebot.packs.summarization_prompt import summarization_prompt_template
 
@@ -15,8 +13,7 @@ def filter_long_documents(body: "Body", document: str) -> str:
         summary_prompt = (
             summarization_prompt_template().format(long_text=document[:8000]).content
         )
-        message = SystemMessage(content=summary_prompt)
-        summarization = call_llm(body, message)
+        summarization = call_llm(body, summary_prompt)
         return f"The response was summarized as: {summarization.text}"
 
     return document

@@ -28,7 +28,7 @@ class GetProcessStatus(SystemBasePack):
 
         status = process.poll()
         if status is None:
-            return f"Process {pid} is active"
+            return f"Process {pid} is running"
 
         stdout, stderr = process.communicate()
         output = stdout.strip()

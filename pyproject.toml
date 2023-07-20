@@ -31,11 +31,13 @@ psycopg2-binary = "^2.9.6"
 agent-protocol = "^0.0.3"
 beautifulsoup4 = "^4.12.2"
 psutil = "^5.9.5"
+coloredlogs = "^15.0.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
 ruff = "^0.0.276"
 pytest = "^7.4.0"
+colorama = "^0.4.6"
 
 [build-system]
 requires = ["poetry-core"]

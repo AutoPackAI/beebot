@@ -45,7 +45,7 @@ class Decider:
         response = call_llm(self.body, template, disregard_cache=disregard_cache)
 
         logger.info("=== Decision received from LLM ===")
-        if response:
+        if response and response.text:
             logger.info(response.text)
         logger.info(json.dumps(response.function_call, indent=4))
 
