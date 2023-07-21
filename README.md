@@ -49,7 +49,13 @@ poetry run beebot
 To start the server run:
 
 ```bash
-python beebot/initiator/api.py
+uvicorn beebot.initiator.api:create_app --factory --timeout-keep-alive=300
+```
+
+If you're doing development on BeeBot itself, you may want to use this command:
+
+```bash
+uvicorn beebot.initiator.api:create_app --factory --reload  --timeout-graceful-shutdown=3 --timeout-keep-alive=300
 ```
 
 and then you can call the API using the following commands:
@@ -70,7 +76,7 @@ You will get a response like this:
 ```json
 {
   "input": "Write 'hello world' to hi.txt",
-  "task_id": "e6d768bb-4c50-4007-9853-aeffb46c77be",
+  "task_id": "103",
   "artifacts": []
 }
 ```
@@ -81,6 +87,12 @@ Then to **execute one step of the task** copy the `task_id` you got from the pre
 curl --request POST \
   --url http://localhost:8000/agent/tasks/<task-id>/steps
 ```
+
+### Websocket Connection
+
+To receive a stream of changes to all the data models in BeeBot, you can subscribe to the websocket connection at
+the `/notifications` endpoint with the same host/port as the web api, e.g. ws://localhost:8000/notifications. Use your
+favorite websocket testing tool to try it out. (I like [Insomnia](https://insomnia.rest/))
 
 ### Web Interface
 
