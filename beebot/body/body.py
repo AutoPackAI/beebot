@@ -84,14 +84,15 @@ class Body:
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
-        if self.config.persistence_enabled and not self.database:
-            self.database = initialize_db(self.config.database_url)
+        if self.config.persistence_enabled:
+            if not not self.database:
+                self.database = initialize_db(self.config.database_url)
 
-        if not self.model_object:
-            self.model_object = BodyModel(
-                initial_task=self.initial_task, current_task=self.task
-            )
-            self.model_object.save()
+            if not self.model_object:
+                self.model_object = BodyModel(
+                    initial_task=self.initial_task, current_task=self.task
+                )
+                self.model_object.save()
 
         self.revise_task()
         self.packs = system_packs(self)
