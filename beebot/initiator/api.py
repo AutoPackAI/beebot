@@ -18,10 +18,15 @@ from beebot.models.database_models import initialize_db
 logger = logging.getLogger(__name__)
 
 
-def create_app():
+def create_app() -> FastAPI:
     load_dotenv()
     config = Config.from_env()
     config.setup_logging()
+    config.hard_exit = False
+    if not config.persistence_enabled:
+        logger.error("The API Requires persistence to be enabled")
+        exit()
+
     initialize_db(config.database_url)
 
     app = FastAPI(
