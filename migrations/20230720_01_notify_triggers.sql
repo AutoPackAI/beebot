@@ -4,7 +4,7 @@
 
 CREATE OR REPLACE FUNCTION body_notify_trigger() RETURNS trigger AS $$
 BEGIN
-  PERFORM pg_notify('body_changes', TG_OP || ': ' || NEW::text);
+  PERFORM pg_notify('beebot_notifications', '{"type": "body", "data": ' || row_to_json(NEW)::text || '}');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -16,7 +16,7 @@ FOR EACH ROW EXECUTE PROCEDURE body_notify_trigger();
 
 CREATE OR REPLACE FUNCTION memory_chain_notify_trigger() RETURNS trigger AS $$
 BEGIN
-  PERFORM pg_notify('memory_chain_changes', TG_OP || ': ' || NEW::text);
+  PERFORM pg_notify('beebot_notifications', '{"type": "memory_chain", "data": ' || row_to_json(NEW)::text || '}');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
@@ -28,7 +28,7 @@ FOR EACH ROW EXECUTE PROCEDURE memory_chain_notify_trigger();
 
 CREATE OR REPLACE FUNCTION memory_notify_trigger() RETURNS trigger AS $$
 BEGIN
-  PERFORM pg_notify('memory_changes', TG_OP || ': ' || NEW::text);
+  PERFORM pg_notify('beebot_notifications', '{"type": "memory", "data": ' || row_to_json(NEW)::text || '}');
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql;
