@@ -17,10 +17,20 @@ class MemoryChain:
     memories: list[Memory]
     uncompleted_memory: Memory
 
-    def __init__(self, body: "Body"):
+    def __init__(self, body: "Body", model_object: MemoryModel = None):
         self.body = body
         self.memories = []
+        self.model_object = model_object
         self.uncompleted_memory = Memory()
+
+    @classmethod
+    def from_model(cls, body: "Body", chain_model: MemoryChainModel):
+        chain = cls(body, model_object=chain_model)
+
+        for memory_model in chain_model.memories:
+            chain.memories.append(Memory.from_model(memory_model))
+
+        return chain
 
     def add_plan(self, plan: Plan):
         self.uncompleted_memory.plan = plan
@@ -50,13 +60,14 @@ class MemoryChain:
             return
 
         if not self.model_object:
-            chain_model = MemoryChainModel(body=self.body.database_model)
+            chain_model = MemoryChainModel(body=self.body.model_object)
             chain_model.save()
             self.model_object = chain_model
 
         for memory in self.memories:
             if not memory.model_object:
                 memory_model = MemoryModel(
+                    memory_chain=self.model_object,
                     plan=memory.plan.persisted_dict,
                     decision=memory.decision.persisted_dict,
                     observation=memory.observation.persisted_dict,

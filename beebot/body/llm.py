@@ -34,7 +34,8 @@ def create_llm(config: Config):
 
     llm = ChatOpenAI(
         model_name=config.llm_model,
-        model_kwargs={"top_p": 0.2, "headers": headers},
+        temperature=0,
+        model_kwargs={"headers": headers},
     )
     return llm
 

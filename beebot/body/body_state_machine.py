@@ -36,6 +36,7 @@ class BodyStateMachine(StateMachine):
         Whenever state changes persist the state change (if enabled)
         This is a lot of law of demeter violations but this is the easiest place to put it
         """
-        if self.body.database_model and self.body.config.persistence_enabled:
-            self.body.database_model.state = state
-            self.body.database_model.save()
+        if self.body.model_object and self.body.config.persistence_enabled:
+            self.body.model_object.state = state.value
+            self.body.model_object.packs = self.body.packs.keys()
+            self.body.model_object.save()

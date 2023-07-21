@@ -49,7 +49,7 @@ poetry run beebot
 To start the server run:
 
 ```bash
-poetry run beebot_api
+python beebot/initiator/api.py
 ```
 
 and then you can call the API using the following commands:

@@ -1,34 +1,41 @@
-import asyncio
+import logging
 
-from agent_protocol import (
-    Agent,
-    StepResult,
-    StepHandler,
-)
 from dotenv import load_dotenv
+from fastapi import FastAPI
 
-from beebot.body import Body
+from beebot.api.routes import (
+    create_agent_task,
+    execute_agent_task_step,
+    agent_task_ids,
+    get_agent_task,
+    list_agent_task_steps,
+    get_agent_task_step,
+)
+from beebot.api.websocket import websocket_endpoint
+from beebot.config import Config
+from beebot.models.database_models import initialize_db
 
-
-async def task_handler(task_input) -> StepHandler:
-    print(f"Created task: {task_input}")
-    body = Body(initial_task=task_input)
-    body.setup()
-
-    async def step_handler(step_input):
-        print(f"Executing step for task {task_input}")
-        output = body.cycle()
-        return StepResult(
-            output=output,
-        )
-
-    return step_handler
+logger = logging.getLogger(__name__)
 
 
-def main():
+def create_app():
     load_dotenv()
-    asyncio.run(Agent.handle_task(task_handler).start())
+    config = Config.from_env()
+    config.setup_logging()
+    initialize_db(config.database_url)
 
-
-if __name__ == "__main__":
-    main()
+    app = FastAPI(
+        title="BeeBot Agent Communication Protocol",
+        description="",
+        version="v1",
+    )
+    app.add_websocket_route("/notifications", websocket_endpoint)
+    app.add_route("/agent/tasks", create_agent_task, methods=["POST"])
+    app.add_route(
+        "/agent/tasks/{task_id}/steps", execute_agent_task_step, methods=["POST"]
+    )
+    app.add_route("/agent/tasks", agent_task_ids)
+    app.add_route("/agent/tasks/{task_id}", get_agent_task)
+    app.add_route("/agent/tasks/{task_id}/steps", list_agent_task_steps)
+    app.add_route("/agent/tasks/{task_id}/steps/{step_id}", get_agent_task_step)
+    return app

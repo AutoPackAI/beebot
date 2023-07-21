@@ -33,7 +33,7 @@ class Body:
     task: str
     current_plan: Plan
     state: BodyStateMachine
-    packs: dict["Pack"]
+    packs: dict[str, "Pack"]
     memories: MemoryChain
     processes: dict[int, subprocess.Popen]
 
@@ -44,10 +44,9 @@ class Body:
     config: Config
 
     database: Database = None
-    database_id: int = None
-    database_model: BodyModel = None
+    model_object: BodyModel = None
 
-    def __init__(self, initial_task: str, database_id: int = None):
+    def __init__(self, initial_task: str = ""):
         self.initial_task = initial_task
         self.task = initial_task
         self.current_plan = Plan(initial_task)
@@ -62,23 +61,37 @@ class Body:
         self.packs = {}
         self.processes = {}
 
-        self.database_id = database_id
-
         if not os.path.exists(self.config.workspace_path):
             os.makedirs(self.config.workspace_path, exist_ok=True)
 
+    @classmethod
+    def from_model(cls, body_model: BodyModel, db: Database = None):
+        body = cls(initial_task=body_model.initial_task)
+        body.database = db or BodyModel._meta.database
+        body.task = body_model.current_task
+        body.model_object = body_model
+        body.update_packs(body_model.packs)
+
+        if body_model.state == BodyStateMachine.setup.value:
+            body.setup()
+        else:
+            body.state.current_state = BodyStateMachine.states_map[body_model.state]
+
+        for chain_model in body_model.memory_chains:
+            body.memories = MemoryChain.from_model(body, chain_model)
+
+        return body
+
     def setup(self):
         """These are here instead of init because they involve network requests"""
-        if self.config.persistence_enabled:
+        if self.config.persistence_enabled and not self.database:
             self.database = initialize_db(self.config.database_url)
-            if self.database_id:
-                self.database_model = BodyModel.get_by_id(self.database_id)
-            else:
-                self.database_model = BodyModel(
-                    initial_task=self.initial_task, current_task=self.task
-                )
-                self.database_model.save()
-                self.database_id = self.database_model.id
+
+        if not self.model_object:
+            self.model_object = BodyModel(
+                initial_task=self.initial_task, current_task=self.task
+            )
+            self.model_object.save()
 
         self.revise_task()
         self.packs = system_packs(self)

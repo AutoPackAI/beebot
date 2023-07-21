@@ -6,7 +6,7 @@ from peewee import (
     Database,
 )
 from playhouse.db_url import connect
-from playhouse.postgres_ext import JSONField
+from playhouse.postgres_ext import JSONField, ArrayField
 from yoyo import get_backend
 from yoyo import read_migrations
 
@@ -27,6 +27,7 @@ class BodyModel(BaseModel):
     initial_task = TextField()
     current_task = TextField()
     state = TextField()
+    packs = ArrayField(TextField)
     created_at = DateTimeField()
     updated_at = DateTimeField()
 

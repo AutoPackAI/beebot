@@ -33,6 +33,9 @@ class Config(BaseModel):
     restrict_code_execution: bool = False
     database_url: str = ""
     process_timeout: int = 30
+    webserver_port: int = 8000
+    host: str = "localhost"
+    development_mode: bool = False
 
     @classmethod
     def from_env(cls) -> "Config":
@@ -43,6 +46,8 @@ class Config(BaseModel):
             kwargs["hard_exit"] = hard_exit in TRUEISH
         if (openai_api_key := os.getenv("OPENAI_API_KEY")) is not None:
             kwargs["openai_api_key"] = openai_api_key
+        if (development_mode := os.getenv("DEVELOPMENT_MODE")) is not None:
+            kwargs["development_mode"] = development_mode in TRUEISH
         if (auto_install_packs := os.getenv("AUTO_INSTALL_PACKS")) is not None:
             kwargs["auto_install_packs"] = auto_install_packs in TRUEISH
         if (
@@ -61,6 +66,10 @@ class Config(BaseModel):
             kwargs["gmail_credentials_file"] = credentials_file
         if (process_timeout := os.getenv("PROCESS_TIMEOUT")) is not None:
             kwargs["process_timeout"] = int(process_timeout)
+        if (host := os.getenv("HOST")) is not None:
+            kwargs["host"] = host
+        if (webserver_port := os.getenv("WEBSERVER_HOST")) is not None:
+            kwargs["webserver_port"] = webserver_port
         if (database_url := os.getenv("DATABASE_URL")) is not None:
             kwargs["database_url"] = database_url
         if (
