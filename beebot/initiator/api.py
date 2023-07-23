@@ -1,7 +1,9 @@
 import logging
+import os
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
+from starlette.middleware.cors import CORSMiddleware
 
 from beebot.api.routes import (
     create_agent_task,
@@ -17,12 +19,16 @@ from beebot.models.database_models import initialize_db
 
 logger = logging.getLogger(__name__)
 
+ORIGINS = [
+    "http://localhost:3000",
+]
+
 
 def create_app() -> FastAPI:
     load_dotenv()
+    os.environ["HARD_EXIT"] = "False"
     config = Config.from_env()
     config.setup_logging()
-    config.hard_exit = False
     if not config.persistence_enabled:
         logger.error("The API Requires persistence to be enabled")
         exit()
@@ -43,4 +49,13 @@ def create_app() -> FastAPI:
     app.add_route("/agent/tasks/{task_id}", get_agent_task)
     app.add_route("/agent/tasks/{task_id}/steps", list_agent_task_steps)
     app.add_route("/agent/tasks/{task_id}/steps/{step_id}", get_agent_task_step)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=ORIGINS,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     return app

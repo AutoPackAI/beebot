@@ -1,6 +1,5 @@
 import os
 import subprocess
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -31,10 +30,11 @@ class WritePythonFileArgs(BaseModel):
 
 
 class WritePythonFile(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = WritePythonFileArgs
-    categories: list[str] = ["Programming", "Files"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = WritePythonFileArgs
+    categories = ["Programming", "Files"]
+    reversible = False
 
     def _run(self, file_name: str, code: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_name)

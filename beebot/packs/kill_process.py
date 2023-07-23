@@ -1,5 +1,4 @@
 from subprocess import TimeoutExpired
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -14,10 +13,10 @@ class KillProcessArgs(BaseModel):
 
 
 class KillProcess(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = KillProcessArgs
-    categories: list[str] = ["Multiprocess"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = KillProcessArgs
+    categories = ["Multiprocess"]
 
     def _run(self, pid: str) -> dict[str, str]:
         # TODO: Support for daemonized processes from previous runs

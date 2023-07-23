@@ -1,5 +1,4 @@
 import subprocess
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -20,10 +19,10 @@ class InstallPythonPackageArgs(BaseModel):
 
 
 class InstallPythonPackage(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = InstallPythonPackageArgs
-    categories: list[str] = ["Programming"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = InstallPythonPackageArgs
+    categories = ["Programming"]
 
     def _run(self, package_name: str) -> str:
         if self.body.config.restrict_code_execution:

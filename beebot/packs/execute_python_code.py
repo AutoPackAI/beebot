@@ -1,5 +1,3 @@
-from typing import Type
-
 from langchain.tools.python.tool import sanitize_input
 from langchain.utilities import PythonREPL
 from pydantic import BaseModel, Field
@@ -25,10 +23,10 @@ class ExecutePythonCodeArgs(BaseModel):
 
 
 class ExecutePythonCode(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ExecutePythonCodeArgs
-    categories: list[str] = ["Programming"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = ExecutePythonCodeArgs
+    categories = ["Programming"]
 
     def _run(self, code: str) -> str:
         if self.body.config.restrict_code_execution:

@@ -1,5 +1,4 @@
 import logging
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -14,27 +13,30 @@ logger = logging.getLogger(__name__)
 class ExitArgs(BaseModel):
     success: bool = Field(..., description="Success")
     categorization: str = Field(
-        description="Assign a broad category to this task, ensuring it's general enough to protect sensitive details yet specific enough to group similar tasks.",
+        description="Assign a broad category to this task, ensuring it's general enough to protect sensitive details "
+        "yet specific enough to group similar tasks.",
         default="",
     )
     conclusion: str = Field(
-        description="Reflect on the task execution process. Highlight any challenges faced and potential alternative strategies.",
+        description="Reflect on the task execution process. Highlight any challenges faced and potential alternative "
+        "strategies.",
         default="",
     )
     function_summary: str = Field(
-        description="Create a concise review of the functions used, their effectiveness, and pinpoint potential areas for future development to optimize task execution.",
+        description="Create a concise review of the functions used, their effectiveness, and pinpoint potential areas "
+        "for future development to optimize task execution.",
         default="",
     )
 
 
 class Exit(SystemBasePack):
     class Meta:
-        name: str = PACK_NAME
+        name = PACK_NAME
 
-    name: str = Meta.name
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ExitArgs
-    categories: list[str] = ["System"]
+    name = Meta.name
+    description = PACK_DESCRIPTION
+    args_schema = ExitArgs
+    categories = ["System"]
 
     def _run(
         self,

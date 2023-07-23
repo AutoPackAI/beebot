@@ -4,6 +4,8 @@ import argparse
 from dotenv import load_dotenv
 
 from beebot.body import Body
+from beebot.config import Config
+from beebot.models.database_models import initialize_db
 
 
 def parse_args():
@@ -28,7 +30,10 @@ def main():
         print("> ", end="")
         task = input()
 
-    body = Body(initial_task=task)
+    config = Config.from_env()
+    config.setup_logging()
+    initialize_db(config.database_url)
+    body = Body(initial_task=task, config=config)
     body.setup()
     while output := body.cycle():
         if output.observation:

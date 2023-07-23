@@ -1,5 +1,3 @@
-from typing import Type
-
 from langchain.tools.gmail.create_draft import (
     GmailCreateDraft as CreateDraftTool,
 )
@@ -62,10 +60,10 @@ class MessageSchema(BaseModel):
 
 
 class CreateDraft(SystemBasePack):
-    name: str = "gmail_create_draft"
-    description: str = "Use Gmail to create a draft email inside of Gmail."
-    args_schema: Type[BaseModel] = MessageSchema
-    categories: list[str] = ["Email"]
+    name = "gmail_create_draft"
+    description = "Use Gmail to create a draft email inside of Gmail."
+    args_schema = MessageSchema
+    categories = ["Email"]
 
     def _run(self, *args, **kwargs):
         if to_value := kwargs.get("to"):
@@ -80,10 +78,11 @@ class CreateDraft(SystemBasePack):
 
 
 class GetMessage(SystemBasePack):
-    name: str = "gmail_get_message"
-    description: str = "Get a Gmail message"
-    args_schema: Type[BaseModel] = SearchArgsSchema
-    categories: list[str] = ["Email"]
+    name = "gmail_get_message"
+    description = "Get a Gmail message"
+    args_schema = SearchArgsSchema
+    categories = ["Email"]
+    depends_on = ["gmail_get_thread", "gmail_search"]
 
     def _run(self, *args, **kwargs):
         tool = GetMessageTool(api_resource=api_resource(self.body.config))
@@ -91,10 +90,11 @@ class GetMessage(SystemBasePack):
 
 
 class GetThread(SystemBasePack):
-    name: str = "gmail_get_thread"
-    description: str = "Get a Gmail thread"
-    args_schema: Type[BaseModel] = GetThreadSchema
-    categories: list[str] = ["Email"]
+    name = "gmail_get_thread"
+    description = "Get a Gmail thread"
+    args_schema = GetThreadSchema
+    categories = ["Email"]
+    depends_on = ["gmail_get_message", "gmail_search"]
 
     def _run(self, *args, **kwargs):
         tool = GetThreadTool(api_resource=api_resource(self.body.config))
@@ -102,10 +102,11 @@ class GetThread(SystemBasePack):
 
 
 class Search(SystemBasePack):
-    name: str = "gmail_search"
-    description: str = "Search for Gmail messages and threads"
-    args_schema: Type[BaseModel] = SearchArgsSchema
-    categories: list[str] = ["Email"]
+    name = "gmail_search"
+    description = "Search for Gmail messages and threads"
+    args_schema = SearchArgsSchema
+    categories = ["Email"]
+    depends_on = ["gmail_get_thread", "gmail_get_message"]
 
     def _run(self, *args, **kwargs):
         tool = SearchTool(api_resource=api_resource(self.body.config))
@@ -113,10 +114,11 @@ class Search(SystemBasePack):
 
 
 class SendMessage(SystemBasePack):
-    name: str = "gmail_send_message"
-    description: str = "Send an email with Gmail"
-    args_schema: Type[BaseModel] = MessageSchema
-    categories: list[str] = ["Email"]
+    name = "gmail_send_message"
+    description = "Send an email with Gmail"
+    args_schema = MessageSchema
+    categories = ["Email"]
+
     reversible = False
 
     def _run(self, *args, **kwargs):

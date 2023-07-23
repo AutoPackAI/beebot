@@ -1,5 +1,3 @@
-from typing import Type
-
 from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
@@ -21,10 +19,10 @@ class EncyclopediaArgs(BaseModel):
 
 
 class Encyclopedia(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = EncyclopediaArgs
-    categories: list[str] = ["Information"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = EncyclopediaArgs
+    categories = ["Information"]
 
     def _run(self, query: str) -> str:
         try:

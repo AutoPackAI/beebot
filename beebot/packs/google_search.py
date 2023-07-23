@@ -1,5 +1,3 @@
-from typing import Type
-
 from langchain import GoogleSerperAPIWrapper
 from pydantic import BaseModel, Field
 
@@ -17,14 +15,13 @@ class GoogleSearchArgs(BaseModel):
 
 
 class GoogleSearch(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = GoogleSearchArgs
-    categories: list[str] = ["Web", "Information"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = GoogleSearchArgs
+    categories = ["Web", "Information"]
 
     def _run(self, query: str) -> list[str]:
         try:
-
             results = GoogleSerperAPIWrapper().results(query).get("organic", [])
             formatted_results = []
             for result in results:

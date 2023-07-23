@@ -1,29 +1,26 @@
-from typing import Any
-
-from pydantic import BaseModel, Field
+from autopack import Pack
+from autopack.utils import run_args_from_args_schema
 
 from beebot.body import Body
+from beebot.body.pack_utils import llm_wrapper
 
 
-class SystemBasePack(BaseModel):
-    class Config:
-        arbitrary_types_allowed = True
+class SystemBasePack(Pack):
+    arbitrary_types_allowed = True
 
     body: Body
-    dependencies: list[str] = Field(default_factory=list)
-    args_schema: BaseModel = None
-    depends_on: list[str] = Field(default_factory=list)
-    categories: list[str] = Field(default_factory=list)
-    reversible: bool = True
-    run_args: dict[str, dict[str, str]] = None
 
     def __init__(self, **kwargs):
-        from beebot.body.pack_utils import run_args_from_args_schema
+        llm = llm_wrapper(kwargs.get("body"))
 
-        super().__init__(**kwargs)
-        self.run_args = run_args_from_args_schema(self.args_schema)
+        run_args = {}
+        if args_schema := kwargs.get("args_schema"):
+            run_args = run_args_from_args_schema(args_schema)
 
-    def run(self, tool_input: dict[str, Any]) -> Any:
-        if hasattr(self, "_run"):
-            return self._run(**tool_input)
+        super().__init__(llm=llm, run_args=run_args, **kwargs)
+
+    def _run(self, *args, **kwargs):
+        raise NotImplementedError
+
+    def _arun(self, *args, **kwargs):
         raise NotImplementedError

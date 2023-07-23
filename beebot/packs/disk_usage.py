@@ -1,5 +1,3 @@
-from typing import Type
-
 import psutil
 from pydantic import BaseModel
 
@@ -14,10 +12,10 @@ class DiskUsageArgs(BaseModel):
 
 
 class DiskUsage(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = DiskUsageArgs
-    categories: list[str] = ["System Info"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = DiskUsageArgs
+    categories = ["System Info"]
 
     def _run(self):
         # Currently we will only support root directory

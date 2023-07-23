@@ -1,5 +1,4 @@
 import os
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -17,10 +16,10 @@ class ReadFileArgs(BaseModel):
 
 
 class ReadFile(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ReadFileArgs
-    categories: list[str] = ["Files"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = ReadFileArgs
+    categories = ["Files"]
 
     def _run(self, filename: str) -> str:
         """Read a file from disk. If/when we do sandboxing this provides a convenient way to intervene"""

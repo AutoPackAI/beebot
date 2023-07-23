@@ -1,5 +1,4 @@
 import json
-from typing import Type
 
 import requests
 from pydantic import BaseModel, Field
@@ -24,10 +23,10 @@ class HttpRequestArgs(BaseModel):
 
 
 class HttpRequest(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = HttpRequestArgs
-    categories: list[str] = ["Files"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = HttpRequestArgs
+    categories = ["Files"]
 
     def _run(
         self, url: str, method: str = "GET", data: str = None, headers: str = None

@@ -1,13 +1,12 @@
 import logging
 import re
-from typing import Type
 
+from autopack.utils import functions_bulleted_list
 from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
 from beebot.body.pack_utils import (
     all_packs,
-    functions_bulleted_list,
 )
 from beebot.function_selection.function_selection_prompt import get_more_tools_template
 from beebot.packs.system_base_pack import SystemBasePack
@@ -31,12 +30,12 @@ class GetPacksArgs(BaseModel):
 
 class GetMoreTools(SystemBasePack):
     class Meta:
-        name: str = PACK_NAME
+        name = PACK_NAME
 
-    name: str = Meta.name
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = GetPacksArgs
-    categories: list[str] = ["System"]
+    name = Meta.name
+    description = PACK_DESCRIPTION
+    args_schema = GetPacksArgs
+    categories = ["System"]
 
     def _run(self, desired_functionality: str) -> list[str]:
         packs_to_summarize = [

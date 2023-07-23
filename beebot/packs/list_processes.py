@@ -1,5 +1,3 @@
-from typing import Type
-
 from pydantic import BaseModel
 
 from beebot.packs.system_base_pack import SystemBasePack
@@ -13,10 +11,10 @@ class ListProcessesArgs(BaseModel):
 
 
 class ListProcesses(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ListProcessesArgs
-    categories: list[str] = ["Multiprocess"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = ListProcessesArgs
+    categories = ["Multiprocess"]
 
     def _run(self) -> str:
         running_processes = [

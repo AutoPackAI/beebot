@@ -13,7 +13,6 @@ beebot = 'beebot.initiator.cli:main'
 [tool.poetry.dependencies]
 # I hate this version specification but we can't use python-statemachine in 3.12
 python = ">=3.10,<3.12"
-autopack-tools = "^0.2.6"
 langchain = ">=0.0.215"
 openai = "^0.27.8"
 python-dotenv = "^1.0.0"
@@ -32,6 +31,8 @@ psutil = "^5.9.5"
 coloredlogs = "^15.0.1"
 uvicorn = { extras = ["standard"], version = "^0.23.1" }
 fastapi = "^0.100.0"
+wikipedia = "^1.4.0"
+autopack-tools = "^0.3.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"

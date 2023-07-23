@@ -1,6 +1,5 @@
 import logging
 import os
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -27,10 +26,11 @@ class WriteFileArgs(BaseModel):
 
 
 class WriteFile(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = WriteFileArgs
-    categories: list[str] = ["Files"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = WriteFileArgs
+    categories = ["Files"]
+
     # TODO: Make this reversible I guess by storing files in memory?
     reversible = False
 

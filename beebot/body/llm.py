@@ -4,11 +4,11 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 import openai
+from autopack.utils import format_packs_to_openai_functions
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage
 from openai import InvalidRequestError
 
-from beebot.body.pack_utils import format_packs_to_openai_functions
 from beebot.config.config import FALLBACK_MODEL, Config
 
 logger = logging.getLogger(__name__)
@@ -51,7 +51,9 @@ def call_llm(
     output_kwargs = {}
 
     if include_functions:
-        output_kwargs["functions"] = format_packs_to_openai_functions(body.packs)
+        output_kwargs["functions"] = format_packs_to_openai_functions(
+            body.packs.values()
+        )
         output_kwargs["function_call"] = function_call
 
     if disregard_cache:

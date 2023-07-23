@@ -1,5 +1,3 @@
-from typing import Type
-
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
@@ -16,10 +14,10 @@ class GetProcessStatusArgs(BaseModel):
 
 
 class GetProcessStatus(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = GetProcessStatusArgs
-    categories: list[str] = ["Multiprocess"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = GetProcessStatusArgs
+    categories = ["Multiprocess"]
 
     def _run(self, pid: str) -> str:
         process = self.body.processes.get(int(pid))

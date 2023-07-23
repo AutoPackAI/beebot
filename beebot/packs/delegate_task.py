@@ -1,5 +1,3 @@
-from typing import Type
-
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
@@ -15,10 +13,11 @@ class DelegateTaskArgs(BaseModel):
 
 
 class DelegateTask(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = DelegateTaskArgs
-    categories: list[str] = ["Delegation"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = DelegateTaskArgs
+    categories = ["Delegation"]
+
     reversible = False
 
     def _run(self, task: str) -> str:

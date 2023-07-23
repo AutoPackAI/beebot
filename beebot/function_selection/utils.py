@@ -2,8 +2,10 @@ import logging
 import re
 from typing import TYPE_CHECKING
 
+from autopack.utils import functions_bulleted_list
+
 from beebot.body.llm import call_llm
-from beebot.body.pack_utils import functions_bulleted_list, all_packs
+from beebot.body.pack_utils import all_packs
 from beebot.function_selection.function_selection_prompt import (
     initial_selection_template,
 )

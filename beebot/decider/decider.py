@@ -4,8 +4,9 @@ from json import JSONDecodeError
 from subprocess import TimeoutExpired
 from typing import TYPE_CHECKING, Any
 
+from autopack.utils import functions_summary
+
 from beebot.body.llm import call_llm, LLMResponse
-from beebot.body.pack_utils import functions_summary
 from beebot.decider.deciding_prompt import decider_template
 from beebot.models import Plan, Decision
 from beebot.utils import list_files, document_contents
@@ -36,7 +37,7 @@ class Decider:
                 plan=plan.plan_text,
                 task=self.body.task,
                 history=self.body.memories.compile_history(),
-                functions=functions_summary(self.body),
+                functions=functions_summary(self.body.packs.values()),
                 file_list=document_contents(list_files(self.body)),
             )
             .content

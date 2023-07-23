@@ -1,5 +1,4 @@
 import re
-from typing import Type
 
 import requests
 from bs4 import BeautifulSoup
@@ -25,10 +24,10 @@ class GetWebsiteTextContentArgs(BaseModel):
 
 
 class GetWebsiteTextContent(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = GetWebsiteTextContentArgs
-    categories: list[str] = ["Web"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = GetWebsiteTextContentArgs
+    categories = ["Web"]
 
     def _run(self, url: str) -> str:
         response = requests.get(url)

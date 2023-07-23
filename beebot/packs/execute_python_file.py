@@ -2,7 +2,7 @@ import os
 import shlex
 import subprocess
 import time
-from typing import Type, Optional
+from typing import Optional
 
 from pydantic import BaseModel, Field
 
@@ -59,11 +59,11 @@ class ExecutePythonFileArgs(BaseModel):
 
 
 class ExecutePythonFile(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ExecutePythonFileArgs
-    categories: list[str] = ["Programming", "Files"]
-    depends_on: list[str] = ["install_python_package"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = ExecutePythonFileArgs
+    categories = ["Programming", "Files"]
+    depends_on = ["install_python_package"]
 
     def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)

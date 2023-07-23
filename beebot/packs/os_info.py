@@ -1,5 +1,4 @@
 import platform
-from typing import Type
 
 from pydantic import BaseModel
 
@@ -16,10 +15,10 @@ class OSInfoArgs(BaseModel):
 
 
 class OSInfo(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = OSInfoArgs
-    categories: list[str] = ["System Info"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = OSInfoArgs
+    categories = ["System Info"]
 
     def _run(self) -> str:
         return f"OS Name {platform.system()}. OS Version: {platform.release()}."

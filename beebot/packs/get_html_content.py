@@ -1,5 +1,3 @@
-from typing import Type
-
 import requests
 from pydantic import BaseModel, Field
 
@@ -21,10 +19,10 @@ class GetHtmlContentArgs(BaseModel):
 
 
 class GetHtmlContent(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = GetHtmlContentArgs
-    categories: list[str] = ["Web"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = GetHtmlContentArgs
+    categories = ["Web"]
 
     def _run(self, url: str) -> str:
         response = requests.get(url)

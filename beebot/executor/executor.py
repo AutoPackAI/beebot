@@ -31,7 +31,7 @@ class Executor:
 
         tool_args = decision.tool_args or {}
         try:
-            result = pack.run(tool_input=tool_args)
+            result = pack.run(**tool_args)
             return Observation(response=result)
         except ValidationError as e:
             logger.error(f"Error on execution: {e}")

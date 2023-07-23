@@ -1,5 +1,3 @@
-from typing import Type
-
 from bs4 import BeautifulSoup
 from playwright.sync_api import PlaywrightContextManager
 from pydantic import BaseModel, Field
@@ -39,10 +37,10 @@ class AnalyzeWebpageContentArgs(BaseModel):
 
 
 class AnalyzeWebpageContent(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = AnalyzeWebpageContentArgs
-    categories: list[str] = ["Web"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = AnalyzeWebpageContentArgs
+    categories = ["Web"]
 
     def _run(self, url: str, question: str = "") -> str:
         playwright = PlaywrightContextManager().start()

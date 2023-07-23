@@ -2,7 +2,6 @@ import logging
 import os
 import shlex
 import time
-from typing import Type
 
 from pydantic import BaseModel, Field
 
@@ -37,16 +36,16 @@ class ExecutePythonFileInBackgroundArgs(BaseModel):
 
 
 class ExecutePythonFileInBackground(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ExecutePythonFileInBackgroundArgs
-    depends_on: list[str] = [
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = ExecutePythonFileInBackgroundArgs
+    depends_on = [
         "install_python_package",
         "get_process_status",
         "list_processes",
         "kill_process",
     ]
-    categories: list[str] = ["Programming", "Files", "Multiprocess"]
+    categories = ["Programming", "Files", "Multiprocess"]
 
     def _run(
         self, file_path: str, python_args: str = "", daemonize: str = "false"

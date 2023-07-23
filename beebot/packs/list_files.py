@@ -1,5 +1,3 @@
-from typing import Type
-
 from pydantic import BaseModel
 
 from beebot.packs.system_base_pack import SystemBasePack
@@ -14,10 +12,10 @@ class ListFilesArgs(BaseModel):
 
 
 class ListFiles(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = ListFilesArgs
-    categories: list[str] = ["Files"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = ListFilesArgs
+    categories = ["Files"]
 
     def _run(self):
         return list_files(self.body)

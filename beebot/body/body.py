@@ -46,12 +46,12 @@ class Body:
     database: Database = None
     model_object: BodyModel = None
 
-    def __init__(self, initial_task: str = ""):
+    def __init__(self, initial_task: str = "", config: Config = None):
         self.initial_task = initial_task
         self.task = initial_task
         self.current_plan = Plan(initial_task)
         self.state = BodyStateMachine(self)
-        self.config = Config.from_env()
+        self.config = config or Config.from_env()
         self.memories = MemoryChain(self)
 
         self.llm = create_llm(self.config)
@@ -70,7 +70,6 @@ class Body:
         body.database = db or BodyModel._meta.database
         body.task = body_model.current_task
         body.model_object = body_model
-        body.update_packs(body_model.packs)
 
         if body_model.state == BodyStateMachine.setup.value:
             body.setup()
@@ -80,6 +79,7 @@ class Body:
         for chain_model in body_model.memory_chains:
             body.memories = MemoryChain.from_model(body, chain_model)
 
+        body.update_packs(body_model.packs)
         return body
 
     def setup(self):

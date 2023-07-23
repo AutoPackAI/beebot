@@ -1,5 +1,3 @@
-from typing import Type
-
 from langchain import WikipediaAPIWrapper
 from pydantic import BaseModel, Field
 
@@ -34,14 +32,15 @@ class WikipediaArgs(BaseModel):
 
 
 class Wikipedia(SystemBasePack):
-    name: str = PACK_NAME
-    description: str = PACK_DESCRIPTION
-    args_schema: Type[BaseModel] = WikipediaArgs
-    categories: list[str] = ["Information"]
+    name = PACK_NAME
+    description = PACK_DESCRIPTION
+    args_schema = WikipediaArgs
+    dependencies = ["wikipedia"]
+    categories = ["Information"]
 
     def _run(
         self,
-        query: str,
+        query: str = "",
         question: str = "Provide me with a general summary of the pages below.",
     ) -> list[str]:
         try:
