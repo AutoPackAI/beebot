@@ -10,7 +10,8 @@ if TYPE_CHECKING:
 
 
 class MemoryChain:
-    """Generic memory storage model. This class will decide _where_ the memory is stored. But for now just in RAM"""
+    """Generic memory storage model. Note that this is only internal memory of actions performed and should not be
+    conflated with the concept of "memory" as defined in the vector memory space."""
 
     body: "Body"
     model_object: MemoryChainModel = None
@@ -42,7 +43,6 @@ class MemoryChain:
         self.uncompleted_memory.observation = observation
 
     def finish(self) -> Memory:
-        # TODO: Store this in a db or whatever
         completed_memory = self.uncompleted_memory
 
         # If the tool messed with memories (e.g. rewind) already we don't want to store it

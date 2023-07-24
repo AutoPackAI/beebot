@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "disk_usage"
-PACK_DESCRIPTION = "Get the current OS name and version information."
+PACK_DESCRIPTION = "Get disk usage information for this computer"
 
 
 class DiskUsageArgs(BaseModel):
