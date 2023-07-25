@@ -46,7 +46,7 @@ class Planner:
             )
 
         logger.info("=== Plan Request ===")
-        logger.info(history)
+        logger.info(formatted_prompt)
 
         response = call_llm(
             self.body,
