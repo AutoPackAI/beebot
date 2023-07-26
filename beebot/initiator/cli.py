@@ -32,7 +32,9 @@ def main():
 
     config = Config.from_env()
     config.setup_logging()
-    initialize_db(config.database_url)
+    if config.persistence_enabled:
+        initialize_db(config.database_url)
+
     body = Body(initial_task=task, config=config)
     body.setup()
     while output := body.cycle():
