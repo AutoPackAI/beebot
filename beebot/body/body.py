@@ -1,16 +1,19 @@
 import logging
 import os.path
 import subprocess
-from typing import Optional
+from typing import Optional, Union
 
+from autopack.errors import AutoPackError
+from autopack.installation import install_pack
 from autopack.pack import Pack
+from autopack.pack_response import PackResponse
 from langchain.chat_models.base import BaseChatModel
 from peewee import Database
 from pydantic import ValidationError
 
 from beebot.body.body_state_machine import BodyStateMachine
 from beebot.body.llm import call_llm, create_llm
-from beebot.body.pack_utils import all_packs, system_packs
+from beebot.body.pack_utils import all_local_packs, system_packs
 from beebot.body.revising_prompt import revise_task_prompt
 from beebot.config import Config
 from beebot.decider import Decider
@@ -203,19 +206,27 @@ class Body:
         self.memories.add_observation(observation)
         self.memories.finish()
 
-    def update_packs(self, new_packs: Optional[list[str]] = None) -> list[Pack]:
-        available_packs = all_packs(self)
+    def update_packs(
+        self, new_packs: Optional[list[Union[Pack, PackResponse]]] = None
+    ) -> list[Pack]:
+        available_packs = all_local_packs(self)
         if not new_packs:
             new_packs = recommend_packs_for_plan(self)
 
-        for pack_name in new_packs:
+        for pack in new_packs:
             try:
-                pack = available_packs[pack_name]
-                self.packs[pack_name] = pack
-                if pack.depends_on:
-                    for dep in pack.depends_on:
+                installed_pack = available_packs.get(pack.name)
+                if not installed_pack:
+                    installed_pack = install_pack(pack.pack_id)(llm=self.llm)
+
+                if not installed_pack:
+                    logger.warning(f"Pack {pack.name} could not be installed")
+
+                self.packs[pack.name] = installed_pack
+                if installed_pack.depends_on:
+                    for dep in installed_pack.depends_on:
                         self.packs[dep] = available_packs[dep]
 
-            except Exception as e:
+            except AutoPackError as e:
                 # This is usually because we got a response with a made-up function.
-                logger.warning(f"Pack {pack_name} could not be initialized: {e}")
+                logger.warning(f"Pack {pack.name} could not be initialized: {e}")

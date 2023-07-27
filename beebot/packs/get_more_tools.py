@@ -40,7 +40,7 @@ class GetMoreTools(SystemBasePack):
     def _run(self, desired_functionality: str) -> list[str]:
         packs_to_summarize = [
             pack
-            for pack in all_packs(self.body).values()
+            for pack in all_local_packs(self.body).values()
             if pack.name not in self.body.packs
         ]
         prompt = (
@@ -56,12 +56,12 @@ class GetMoreTools(SystemBasePack):
         response = call_llm(self.body, prompt, include_functions=False).text
 
         functions = [r.split("(")[0].strip() for r in re.split(r",|\n", response)]
-        all_existing_packs = all_packs(self.body)
+        packs_by_name = {pack.name: pack for pack in get_all_pack_info()}
         installed_packs = self.body.packs
         added_packs = [
-            name
+            packs_by_name[name]
             for name in functions
-            if name in all_existing_packs and name not in installed_packs
+            if name in packs_by_name and name not in installed_packs
         ]
 
         if not added_packs:
@@ -72,4 +72,4 @@ class GetMoreTools(SystemBasePack):
 
         self.body.update_packs(added_packs)
 
-        return f"Functions added: {', '.join(added_packs)}"
+        return f"Functions added: {', '.join([p.name for p in added_packs])}"

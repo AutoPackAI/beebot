@@ -30,6 +30,8 @@ class Config(BaseSettings):
     process_timeout: int = 30
     auto_install_packs: bool = True
     auto_install_dependencies: bool = True
+    file_manager: str = "workspace"
+    auto_include_packs: list[str] = ["read_file", "write_file"]
 
     _global_config: ClassVar["Config"] = None
 
@@ -47,7 +49,32 @@ class Config(BaseSettings):
 
     def __init__(self, **kwargs) -> "Config":
         super().__init__(**kwargs)
+        self.configure_autopack()
         self.setup_logging()
+
+    def configure_autopack(self):
+        if self.auto_install_packs and self.auto_install_dependencies:
+            installer_style = InstallerStyle.automatic
+        elif self.auto_install_packs:
+            installer_style = InstallerStyle.semiautomatic
+        else:
+            installer_style = InstallerStyle.manual
+
+        if self.file_manager == "filesystem":
+            file_manager_class = FileSystemManager
+        elif self.file_manager == "ram":
+            file_manager_class = RAMFileManager
+        else:
+            file_manager_class = WorkspaceFileManager
+
+        pack_config = PackConfig(
+            workspace_path=self.workspace_path,
+            restrict_code_execution=self.restrict_code_execution,
+            installer_style=installer_style,
+        )
+        pack_config.init_filesystem_manager(file_manager_class)
+
+        PackConfig.set_global_config(pack_config)
 
     def setup_logging(self) -> logging.Logger:
         os.makedirs("logs", exist_ok=True)
