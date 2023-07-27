@@ -3,6 +3,7 @@ import os
 from typing import ClassVar
 
 import coloredlogs
+from openai.util import logger
 from pydantic import BaseSettings
 
 # IDEAL_MODEL = "gpt-4-0613"
@@ -72,6 +73,7 @@ class Config(BaseSettings):
             fmt=LOG_FORMAT,
             datefmt="%H:%M:%S",
         )
+        logger.propagate = False
 
     @property
     def persistence_enabled(self):

@@ -18,8 +18,13 @@ class HttpRequestArgs(BaseModel):
         description="The HTTP method to use for the request (e.g., GET, POST). Defaults to GET.",
         default="GET",
     )
-    data: str = Field(description="Data to send with the request (for POST requests).")
-    headers: str = Field(description="JSON Encoded headers to include in the request.")
+    data: str = Field(
+        description="Data to send with the request (for POST requests).", default=""
+    )
+    headers: str = Field(
+        description="JSON Encoded headers to include in the request.",
+        default_factory=dict,
+    )
 
 
 class HttpRequest(SystemBasePack):
