@@ -3,10 +3,13 @@ import os
 from typing import ClassVar
 
 import coloredlogs
-from openai.util import logger
-from pydantic import BaseSettings
+from autopack.filesystem_emulation.filesystem_file_manager import FileSystemManager
+from autopack.filesystem_emulation.ram_file_manager import RAMFileManager
+from autopack.filesystem_emulation.workspace_file_manager import WorkspaceFileManager
+from autopack.pack_config import PackConfig, InstallerStyle
+from openai.util import logger as openai_logger
+from pydantic import BaseSettings  # IDEAL_MODEL = "gpt-4-0613"
 
-# IDEAL_MODEL = "gpt-4-0613"
 FALLBACK_MODEL = "gpt-3.5-turbo-16k-0613"
 IDEAL_MODEL = FALLBACK_MODEL
 LOG_FORMAT = (
@@ -100,7 +103,9 @@ class Config(BaseSettings):
             fmt=LOG_FORMAT,
             datefmt="%H:%M:%S",
         )
-        logger.propagate = False
+        # OpenAI will log a jsonified version of each request/response to `logger.debug` and we have our own logs
+        # which are better formatted
+        openai_logger.propagate = False
 
     @property
     def persistence_enabled(self):

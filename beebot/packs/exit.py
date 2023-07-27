@@ -23,8 +23,7 @@ class ExitArgs(BaseModel):
         default="",
     )
     function_summary: str = Field(
-        description="Create a concise review of the functions used, their effectiveness, and pinpoint potential areas "
-        "for future development to optimize task execution.",
+        description="Create a concise review of each function that you used.",
         default="",
     )
 

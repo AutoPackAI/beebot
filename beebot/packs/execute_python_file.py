@@ -72,7 +72,9 @@ class ExecutePythonFile(SystemBasePack):
         try:
             abs_path = restrict_path(file_path, self.body.config.workspace_path)
             if not abs_path:
-                return "Error: File not found"
+                return (
+                    f"Error: File {file_path} does not exist. You must create it first."
+                )
 
             args_list = shlex.split(python_args)
             cmd = ["poetry", "run", "python", abs_path, *args_list]

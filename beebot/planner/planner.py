@@ -28,7 +28,7 @@ class Planner:
     def plan(self) -> Plan:
         task = self.body.task
         history = self.body.memories.compile_history()
-        file_list = (document_contents(list_files(self.body)),)
+        file_list = document_contents(list_files(self.body))
         functions = functions_summary(self.body.packs.values())
         if history:
             formatted_prompt = (
@@ -53,9 +53,8 @@ class Planner:
             message=formatted_prompt,
             function_call="none",
         )
-        planned = response
 
         logger.info("=== Plan Created ===")
-        logger.info(planned.text)
+        logger.info(response.text)
 
-        return Plan(plan_text=planned.text)
+        return Plan(plan_text=response.text)

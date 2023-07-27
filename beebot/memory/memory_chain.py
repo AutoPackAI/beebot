@@ -106,7 +106,7 @@ class MemoryChain:
             )
             memory_table.append(
                 f"{i + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
-                f"{json.dumps(memory.decision.tool_args)}. The result was {outcome}."
+                f"{json.dumps(memory.decision.tool_args)}: {outcome}."
             )
 
         return "\n".join(memory_table)

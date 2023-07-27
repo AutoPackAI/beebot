@@ -34,8 +34,8 @@ def create_llm(config: Config):
 
     llm = ChatOpenAI(
         model_name=config.llm_model,
-        temperature=0,
-        model_kwargs={"headers": headers},
+        # temperature=0,
+        model_kwargs={"headers": headers, "top_p": 0.1},
     )
     return llm
 
@@ -60,7 +60,6 @@ def call_llm(
         output_kwargs["headers"] = {"Helicone-Cache-Enabled": "false"}
 
     logger.debug(f"~~ LLM Request ~~\n{message}")
-    logger.debug(json.dumps(output_kwargs))
     try:
         response = llm.generate(
             messages=[[SystemMessage(content=message)]], **output_kwargs

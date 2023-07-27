@@ -40,6 +40,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
     description = PACK_DESCRIPTION
     args_schema = ExecutePythonFileInBackgroundArgs
     depends_on = [
+        "write_python_code",
         "install_python_package",
         "get_process_status",
         "list_processes",
@@ -55,11 +56,11 @@ class ExecutePythonFileInBackground(SystemBasePack):
 
         file_path = os.path.join(self.body.config.workspace_path, file_path)
         if not os.path.exists(file_path):
-            return "Error: File not found"
+            return f"Error: File {file_path} does not exist. You must create it first."
 
         abs_path = restrict_path(file_path, self.body.config.workspace_path)
         if not abs_path:
-            return "Error: File not found"
+            return f"Error: File {file_path} does not exist. You must create it first."
 
         args_list = shlex.split(python_args)
         cmd = ["poetry", "run", "python", abs_path, *args_list]

@@ -9,7 +9,7 @@ downloading and executing remote code."""
 
 PACK_NAME = "install_python_package"
 
-PACK_DESCRIPTION = "Installs Python packages using Poetry."
+PACK_DESCRIPTION = "Installs Python packages from PyPi using Poetry."
 
 
 class InstallPythonPackageArgs(BaseModel):
@@ -47,7 +47,7 @@ class InstallPythonPackage(SystemBasePack):
             if process.returncode:
                 return f"Error: {process.stdout}. {process.stderr}."
 
-            return f"{package_name} installed successfully."
+            return f"{package_name} is installed."
 
         except Exception as e:
             return f"Error: {e}"

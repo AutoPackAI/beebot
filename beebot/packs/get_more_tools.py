@@ -1,19 +1,20 @@
 import logging
 import re
 
+from autopack.get_pack import get_all_pack_info
 from autopack.utils import functions_bulleted_list
 from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
 from beebot.body.pack_utils import (
-    all_packs,
+    all_local_packs,
 )
 from beebot.function_selection.function_selection_prompt import get_more_tools_template
 from beebot.packs.system_base_pack import SystemBasePack
 
 PACK_NAME = "get_more_tools"
 PACK_DESCRIPTION = (
-    "Requests a tool necessary for task fulfillment with the given desired functionality, which is a detailed English "
+    "Requests a tool necessary for task fulfillment with the given desired functionality. which is a detailed English "
     "sentence. Does not install Python packages. Cannot be used to create tools, functions, or files which do not"
     "already exist."
 )
