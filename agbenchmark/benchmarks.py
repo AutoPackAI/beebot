@@ -4,7 +4,14 @@ import sys
 
 
 def run_specific_agent(task: str) -> None:
-    command = ["poetry", "run", "python", "-m", "beebot.initiator.benchmark_entrypoint", task]
+    command = [
+        "poetry",
+        "run",
+        "python",
+        "-m",
+        "beebot.initiator.benchmark_entrypoint",
+        task,
+    ]
     subprocess.run(command, text=True)
 
 

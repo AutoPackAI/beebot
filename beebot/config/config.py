@@ -78,7 +78,7 @@ class Config(BaseSettings):
         return self.database_url != ""
 
     @classmethod
-    def set_global_config(cls, config_obj: "PackConfig" = None) -> "PackConfig":
+    def set_global_config(cls, config_obj: "Config" = None) -> "Config":
         """
         Optionally set a global config object that can be used anywhere (You can still attach a separate instance to
         each Body)
@@ -87,5 +87,5 @@ class Config(BaseSettings):
         return cls._global_config
 
     @classmethod
-    def global_config(cls) -> "PackConfig":
+    def global_config(cls) -> "Config":
         return cls._global_config or cls.set_global_config()
