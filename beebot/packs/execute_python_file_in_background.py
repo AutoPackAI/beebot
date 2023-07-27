@@ -30,8 +30,9 @@ class ExecutePythonFileInBackgroundArgs(BaseModel):
     python_args: str = Field(
         description="Arguments to be passed when executing the file", default=""
     )
-    daemonize: str = Field(
-        description="Daemonize the process, detaching it from the current process."
+    daemonize: bool = Field(
+        description="Daemonize the process, detaching it from the current process.",
+        default=False,
     )
 
 
@@ -49,7 +50,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
     categories = ["Programming", "Files", "Multiprocess"]
 
     def _run(
-        self, file_path: str, python_args: str = "", daemonize: str = "false"
+        self, file_path: str, python_args: str = "", daemonize: bool = False
     ) -> str:
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
@@ -64,7 +65,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
 
         args_list = shlex.split(python_args)
         cmd = ["poetry", "run", "python", abs_path, *args_list]
-        process = BackgroundProcess(body=self.body, cmd=cmd, daemonize=True)
+        process = BackgroundProcess(body=self.body, cmd=cmd, daemonize=daemonize)
         process.run()
 
         time.sleep(0.2)
