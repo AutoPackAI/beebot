@@ -1,5 +1,3 @@
-from subprocess import TimeoutExpired
-
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
@@ -22,21 +20,12 @@ class KillProcess(SystemBasePack):
         # TODO: Support for daemonized processes from previous runs
         process = self.body.processes.get(int(pid))
         if not process:
-            return "Error: Process does not exist"
+            return "Error: Process does not exist."
 
         status = process.poll()
-        if status is not None:
-            return "Process had already been killed."
+        if status is None:
+            process.kill()
 
-        output = ""
-        error = ""
-        try:
-            stdout, stderr = process.communicate(timeout=1)
-            output = stdout.strip()
-            error = stderr.strip()
-        except TimeoutExpired:
-            pass
-
-        process.kill()
-
-        return f"The process has been killed. Output: {output}. {error}"
+        return (
+            f"The process has been killed. Output: {process.stdout}. {process.stderr}"
+        )

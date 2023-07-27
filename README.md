@@ -7,11 +7,16 @@ autonomously.
 <img src="https://eriklp.com/mascot.png" alt="BeeBot Mascot"  align="center" />
 </p>
 
-## Status
+## Features
 
-BeeBot is currently a work in progress and should be treated as an early stage research project. Its focus is not on
-production usage at this time. Please be patient as the foundations are still constantly shifting. The world of AI moves
-fast, and this project needs to move fast to keep up.
+- Tool selection via [AutoPack](https://autopack.ai) and the ability to acquire more tools during task execution
+- Built-in persistence
+- REST API conforming to the [e2b](https://www.e2b.dev/) standard.
+- A websocket server to publish all events that occur within BeeBot
+- Swappable filesystem emulation so that files can be stored in-memory, on-disk, or in a database
+- A Web UI for managing your tasks (coming very soon)
+- Dynamic manipulation of history during task execution
+- Built-in caching with [Helicone](https://www.helicone.ai/) if enabled.
 
 ## Installation
 
@@ -118,7 +123,7 @@ The development of BeeBot is driven by the following priorities, always in this 
 To achieve these priorities, BeeBot follows the following principles:
 
 - Tool-focused: BeeBot carefully selects and describes tools, ensuring their reliable use by LLMs. It
-  will utilize [AutoPack](https://autopack.ai) as the package manager for its tools.
+  uses [AutoPack](https://autopack.ai) as the package manager for its tools.
 - LLM specialization: BeeBot will leverage a variety of LLMs best suited for different tasks, while OpenAI remains the
   primary LLM for planning and decision-making.
 - Functionality and flexibility first: BeeBot prioritizes functionality and flexibility over developer quality-of-life,

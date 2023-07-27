@@ -28,14 +28,10 @@ class GetProcessStatus(SystemBasePack):
         if status is None:
             return f"Process {pid} is running"
 
-        stdout, stderr = process.communicate()
-        output = stdout.strip()
-        error = stderr.strip()
-
         return_code = process.returncode
 
         success_string = "successful" if return_code == 0 else "unsuccessful"
         return (
-            f"The process has completed. Its exit code indicates it was {success_string}. Output: {output}. "
-            f"{error}"
+            f"The process has completed. Its exit code indicates it was {success_string}. Output: {process.stdout}. "
+            f"{process.stderr}"
         )

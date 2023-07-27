@@ -68,13 +68,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
 
         time.sleep(0.2)
         if process.poll() is not None:
-            stdout, stderr = process.communicate()
-
-            output = stdout.strip()
-            error = stderr.strip()
-            return (
-                f"Process {process.pid} started, but failed. Output: {output}. {error}"
-            )
+            return f"Process {process.pid} started, but failed. Output: {process.stdout}. {process.stderr}"
 
         return (
             f"Process started. It has been assigned PID {process.pid}. Use this when calling "
