@@ -1,7 +1,6 @@
 import json
 import logging
 from json import JSONDecodeError
-from subprocess import TimeoutExpired
 from typing import TYPE_CHECKING, Any
 
 from autopack.utils import functions_summary
@@ -96,6 +95,3 @@ def parse_function_call_args(
         return tool_name, parsed_tool_args
     except JSONDecodeError:
         return tool_name, {"output": function_call_args.get("arguments")}
-
-
-TimeoutExpired

@@ -51,7 +51,7 @@ class Body:
         self.task = initial_task
         self.current_plan = Plan(initial_task)
         self.state = BodyStateMachine(self)
-        self.config = config or Config.from_env()
+        self.config = config or Config.global_config()
         self.memories = MemoryChain(self)
 
         self.llm = create_llm(self.config)

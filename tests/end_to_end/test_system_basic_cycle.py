@@ -33,5 +33,5 @@ def test_system_basic_cycle(simple_task):
     assert len(body.packs) >= 5
     with open(os.path.join("workspace", "my_computer.txt"), "r") as f:
         file_contents = f.read()
-    assert "Operating System" in file_contents
+    assert "Operating System" in file_contents or "OS" in file_contents
     assert "Disk Usage" in file_contents

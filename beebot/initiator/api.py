@@ -27,7 +27,7 @@ ORIGINS = [
 def create_app() -> FastAPI:
     load_dotenv()
     os.environ["HARD_EXIT"] = "False"
-    config = Config.from_env()
+    config = Config.global_config()
     config.setup_logging()
     if not config.persistence_enabled:
         logger.error("The API Requires persistence to be enabled")

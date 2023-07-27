@@ -29,7 +29,7 @@ async def producer(conn: connection) -> dict[str, dict[str, Any]]:
 
 async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
-    config = Config.from_env()
+    config = Config.global_config()
     conn = psycopg2.connect(config.database_url)
     conn.set_isolation_level(psycopg2.extensions.ISOLATION_LEVEL_AUTOCOMMIT)
 

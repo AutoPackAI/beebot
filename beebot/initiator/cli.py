@@ -30,7 +30,7 @@ def main():
         print("> ", end="")
         task = input()
 
-    config = Config.from_env()
+    config = Config.global_config()
     config.setup_logging()
     if config.persistence_enabled:
         initialize_db(config.database_url)
