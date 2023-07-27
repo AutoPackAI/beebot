@@ -4,8 +4,6 @@ TEMPLATE = """As the AI Tool Selector your responsibility is to identify functio
 
 Analyze the task and available functions, and determine which functions could be useful. Consider functions that can achieve the goal directly or indirectly, in combination with other tools.
 
-When a task involves coding, prioritize tools that can execute code. Also, keep an eye on functions that, even if not explicitly coding-related, may indirectly aid in achieving the task objectives when combined with other tools.
-
 Only recommend programming functions if the task explicitly requires programming.
 
 Task:
