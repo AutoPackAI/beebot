@@ -185,13 +185,13 @@ tests-no-zope = ["cloudpickle", "hypothesis", "mypy (>=1.1.1)", "pympler", "pyte
 
 [[package]]
 name = "autopack-tools"
-version = "0.4.3"
+version = "0.4.4"
 description = "Package Manager for AI Agent tools"
 optional = false
 python-versions = ">=3.8.1,<4.0"
 files = [
-    {file = "autopack_tools-0.4.3-py3-none-any.whl", hash = "sha256:b0dc601539d2afb8d2d4b5314c39b09763cd931145f6dd54bf7bd54c1c1066cf"},
-    {file = "autopack_tools-0.4.3.tar.gz", hash = "sha256:d5f5a9cd95e9b66ea932f41025f151f4e8c69774e60241fe5572ffe593d63678"},
+    {file = "autopack_tools-0.4.4-py3-none-any.whl", hash = "sha256:ac14cf34e77f2a2c11406c147bf03ccd1ed219c2724b05ed0afab74afc0a405b"},
+    {file = "autopack_tools-0.4.4.tar.gz", hash = "sha256:de487e968a30930a995eeae43056bba7436ee2793797c9f0ab44032c8d20097f"},
 ]
 
 [package.dependencies]
