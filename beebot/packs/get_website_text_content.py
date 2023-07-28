@@ -5,15 +5,13 @@ from bs4 import BeautifulSoup
 from pydantic import BaseModel, Field
 
 from beebot.packs.system_base_pack import SystemBasePack
-from beebot.tool_filters import filter_long_documents
+from beebot.tool_filters.filter_long_documents import filter_long_documents
 
 PACK_NAME = "get_website_text_content"
 PACK_DESCRIPTION = (
     "Retrieves the text content of a specified webpage. It is useful when you want to obtain the textual information "
     "from a webpage without the need for in-depth analysis."
 )
-
-TEXT_LIMIT = 1600
 
 
 class GetWebsiteTextContentArgs(BaseModel):

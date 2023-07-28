@@ -12,13 +12,13 @@ You have these functions at your disposal:
 Your original task, given by the human, is:
 {task}
 
-# Plan
-Your high-level plan is:
-{plan}
-
 # History
 You have a history of functions that the AI Assistant has already executed for this task. Here is the history, in order, starting with the first function executed:
 {history}
+
+# Plan
+The analysis of this history and the plan going forward:
+{plan}
 
 # Files
 You have access to these files, but no others:

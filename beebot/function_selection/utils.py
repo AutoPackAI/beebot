@@ -39,4 +39,4 @@ def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
     functions = [r.split("(")[0].strip() for r in re.split(r"(?<=\w),|\n", response)]
     functions += body.config.auto_include_packs
     packs = all_packs(body)
-    return [packs[function] for function in functions]
+    return [packs[function] for function in functions if function in packs]

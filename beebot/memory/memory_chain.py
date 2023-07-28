@@ -81,6 +81,7 @@ class MemoryChain:
 
         memories_to_compile = list(self.memories)
         memory_table = []
+        memory_outputs = {}
 
         # If the first memory is to rewind it meant that we started over, add some text to indicate that
         if self.memories[0].decision.tool_name == "rewind_actions":
@@ -104,9 +105,21 @@ class MemoryChain:
                 if memory.observation.success
                 else memory.observation.error_reason
             )
-            memory_table.append(
+            formatted_outcome = (
                 f"{i + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
                 f"{json.dumps(memory.decision.tool_args)}: {outcome}."
             )
+            if first_outcome_step := memory_outputs.get(formatted_outcome):
+                import pdb
+
+                pdb.set_trace()
+                formatted_outcome = (
+                    f"{i + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
+                    f"{json.dumps(memory.decision.tool_args)} and the results were the same as #{first_outcome_step}."
+                )
+            else:
+                memory_outputs[formatted_outcome] = i + 1
+
+            memory_table.append(formatted_outcome)
 
         return "\n".join(memory_table)
