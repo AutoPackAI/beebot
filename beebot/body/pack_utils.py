@@ -3,6 +3,7 @@ import logging
 from typing import TYPE_CHECKING, Union
 
 from autopack.get_pack import get_all_installed_packs, get_all_pack_info
+from autopack.installation import install_pack
 from autopack.pack import Pack
 from autopack.pack_response import PackResponse
 
@@ -65,3 +66,14 @@ def llm_wrapper(body: "Body") -> str:
         return call_llm(body, prompt).text
 
     return llm
+
+
+def get_or_install_pack(body: "Body", pack_name) -> Pack:
+    available_packs = {pack.name: pack for pack in get_all_pack_info()}
+    installed_pack = all_local_packs(body).get(pack_name)
+
+    if not installed_pack:
+        pack_info = available_packs.get(pack_name)
+        installed_pack = install_pack(pack_info.pack_id)(llm=body.llm)
+
+    return installed_pack

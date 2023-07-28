@@ -110,9 +110,6 @@ class MemoryChain:
                 f"{json.dumps(memory.decision.tool_args)}: {outcome}."
             )
             if first_outcome_step := memory_outputs.get(formatted_outcome):
-                import pdb
-
-                pdb.set_trace()
                 formatted_outcome = (
                     f"{i + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
                     f"{json.dumps(memory.decision.tool_args)} and the results were the same as #{first_outcome_step}."

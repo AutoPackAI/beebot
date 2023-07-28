@@ -7,7 +7,7 @@ from autopack.pack_response import PackResponse
 from autopack.utils import functions_bulleted_list
 
 from beebot.body.llm import call_llm
-from beebot.body.pack_utils import all_local_packs, all_packs
+from beebot.body.pack_utils import all_packs
 from beebot.function_selection.function_selection_prompt import (
     initial_selection_template,
 )
@@ -23,7 +23,7 @@ def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
         initial_selection_template()
         .format(
             task=body.task,
-            functions=functions_bulleted_list(all_local_packs(body).values()),
+            functions=functions_bulleted_list(all_packs(body).values()),
         )
         .content
     )

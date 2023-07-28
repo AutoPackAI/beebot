@@ -4,7 +4,6 @@ import subprocess
 from typing import Optional, Union
 
 from autopack.errors import AutoPackError
-from autopack.installation import install_pack
 from autopack.pack import Pack
 from autopack.pack_response import PackResponse
 from langchain.chat_models.base import BaseChatModel
@@ -13,7 +12,7 @@ from pydantic import ValidationError
 
 from beebot.body.body_state_machine import BodyStateMachine
 from beebot.body.llm import call_llm, create_llm
-from beebot.body.pack_utils import all_local_packs, system_packs
+from beebot.body.pack_utils import system_packs, get_or_install_pack
 from beebot.body.revising_prompt import revise_task_prompt
 from beebot.config import Config
 from beebot.decider import Decider
@@ -209,23 +208,33 @@ class Body:
     def update_packs(
         self, new_packs: Optional[list[Union[Pack, PackResponse]]] = None
     ) -> list[Pack]:
-        available_packs = all_local_packs(self)
         if not new_packs:
             new_packs = recommend_packs_for_plan(self)
 
         for pack in new_packs:
-            try:
-                installed_pack = available_packs.get(pack.name)
-                if not installed_pack:
-                    installed_pack = install_pack(pack.pack_id)(llm=self.llm)
+            if pack.name in self.packs:
+                continue
 
+            try:
+                installed_pack = get_or_install_pack(self, pack.name)
                 if not installed_pack:
                     logger.warning(f"Pack {pack.name} could not be installed")
 
                 self.packs[pack.name] = installed_pack
+
                 if installed_pack.depends_on:
-                    for dep in installed_pack.depends_on:
-                        self.packs[dep] = available_packs[dep]
+                    for dep_name in installed_pack.depends_on:
+                        if dep_name in self.packs:
+                            continue
+
+                        installed_dep = get_or_install_pack(self, dep_name)
+                        if not installed_dep:
+                            logger.warning(
+                                f"Pack {dep_name}, a dependency of {pack.name} could not be installed"
+                            )
+                            continue
+
+                        self.packs[dep_name] = installed_dep
 
             except AutoPackError as e:
                 # This is usually because we got a response with a made-up function.

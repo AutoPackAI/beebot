@@ -7,7 +7,7 @@ from pydantic import BaseModel, Field
 
 from beebot.body.llm import call_llm
 from beebot.body.pack_utils import (
-    all_local_packs,
+    all_local_packs, all_packs,
 )
 from beebot.function_selection.function_selection_prompt import get_more_tools_template
 from beebot.packs.system_base_pack import SystemBasePack
@@ -48,7 +48,7 @@ class GetMoreTools(SystemBasePack):
             get_more_tools_template()
             .format(
                 task=self.body.task,
-                functions=functions_bulleted_list(packs_to_summarize),
+                functions=functions_bulleted_list(all_packs(self.body).values()),
                 functions_request=desired_functionality,
             )
             .content
