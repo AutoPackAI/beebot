@@ -15,6 +15,9 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+# TODO: This should be a Packfile
+SUPPRESSED_PACKS = ["read_file"]
+
 
 def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
     """Merge locally-installed and system packs into one list"""
@@ -22,7 +25,8 @@ def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
     local_packs = all_local_packs(body)
     remote_packs = get_all_pack_info()
     for pack in remote_packs:
-        all_pack_data[pack.name] = pack
+        if pack.name not in SUPPRESSED_PACKS:
+            all_pack_data[pack.name] = pack
 
     for pack in local_packs.values():
         all_pack_data[pack.name] = pack

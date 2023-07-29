@@ -6,7 +6,7 @@ from beebot.packs.system_base_pack import SystemBasePack
 PACK_NAME = "encyclopedia"
 PACK_DESCRIPTION = (
     "The best comprehensive factual resource for general knowledge. Does not provide personalized or "
-    "information from the two past years. This tool does not provide operational guidance, programming advice, "
+    "or real-time data. This tool does not provide operational guidance, programming advice, "
     "or actionable strategies."
 )
 
@@ -22,7 +22,7 @@ class Encyclopedia(SystemBasePack):
     name = PACK_NAME
     description = PACK_DESCRIPTION
     args_schema = EncyclopediaArgs
-    categories = ["Information"]
+    categories = ["Information", "Science and Math"]
 
     def _run(self, query: str) -> str:
         try:

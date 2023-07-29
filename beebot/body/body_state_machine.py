@@ -37,6 +37,7 @@ class BodyStateMachine(StateMachine):
         This is a lot of law of demeter violations but this is the easiest place to put it
         """
         if self.body.model_object and self.body.config.persistence_enabled:
+            self.body.model_object.current_task = self.body.task
             self.body.model_object.state = state.value
             self.body.model_object.packs = self.body.packs.keys()
             self.body.model_object.save()

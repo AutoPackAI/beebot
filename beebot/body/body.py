@@ -52,9 +52,9 @@ class Body:
         self.initial_task = initial_task
         self.task = initial_task
         self.current_plan = Plan(initial_task)
-        self.state = BodyStateMachine(self)
         self.config = config or Config.global_config()
         self.memories = MemoryChain(self)
+        self.state = BodyStateMachine(self)
 
         self.llm = create_llm(self.config)
         self.planner = Planner(body=self)
@@ -88,12 +88,8 @@ class Body:
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
-        self.revise_task()
-        self.packs = system_packs(self)
-        self.update_packs()
-
         if self.config.persistence_enabled:
-            if not not self.database:
+            if not self.database:
                 self.database = initialize_db(self.config.database_url)
 
             if not self.model_object:
@@ -101,6 +97,10 @@ class Body:
                     initial_task=self.initial_task, current_task=self.task
                 )
                 self.model_object.save()
+
+        self.revise_task()
+        self.packs = system_packs(self)
+        self.update_packs()
 
         self.state.start()
 
@@ -116,6 +116,8 @@ class Body:
         self.execute(decision=self.decide())
 
         complete_memory = self.memories.finish()
+        if self.model_object:
+            self.model_object.save()
         return complete_memory
 
     def execute(self, decision: Decision, retry_count: int = 0) -> Observation:
@@ -166,7 +168,7 @@ class Body:
         """Turn the initial task into a task that is easier for AI to more consistently understand"""
         prompt = revise_task_prompt().format(task=self.initial_task).content
         logger.info("=== Task Revision given to LLM ===")
-        logger.info(self.task)
+        logger.info(prompt)
 
         response = call_llm(self, prompt, include_functions=False).text
         self.task = response
