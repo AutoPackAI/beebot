@@ -81,11 +81,17 @@ class Body:
         for chain_model in body_model.memory_chains:
             body.memories = MemoryChain.from_model(body, chain_model)
 
-        body.update_packs(body_model.packs)
+        body.update_packs(
+            [get_or_install_pack(body, pack) for pack in body_model.packs]
+        )
         return body
 
     def setup(self):
         """These are here instead of init because they involve network requests"""
+        self.revise_task()
+        self.packs = system_packs(self)
+        self.update_packs()
+
         if self.config.persistence_enabled:
             if not not self.database:
                 self.database = initialize_db(self.config.database_url)
@@ -96,16 +102,15 @@ class Body:
                 )
                 self.model_object.save()
 
-        self.revise_task()
-        self.packs = system_packs(self)
-        self.update_packs()
-
         self.state.start()
 
     def cycle(self) -> Memory:
         """Step through one plan-decide-execute loop"""
         if self.state.current_state == BodyStateMachine.done:
             return
+
+        if self.state.current_state == BodyStateMachine.setup:
+            self.setup()
 
         self.plan()
         self.execute(decision=self.decide())

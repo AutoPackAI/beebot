@@ -26,7 +26,7 @@ ORIGINS = [
 
 def create_app() -> FastAPI:
     load_dotenv()
-    os.environ["HARD_EXIT"] = "False"
+    os.environ["BEEBOT_HARD_EXIT"] = "False"
     config = Config.global_config()
     config.setup_logging()
     if not config.persistence_enabled:

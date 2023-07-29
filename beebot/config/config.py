@@ -25,10 +25,10 @@ class Config(BaseSettings):
     openai_api_base: str = None
     gmail_credentials_file: str = "credentials.json"
     llm_model: str = IDEAL_MODEL
+    database_url: str = ""
 
     workspace_path: str = "workspace"
     hard_exit: bool = False
-    database_url: str = ""
     restrict_code_execution: bool = False
     process_timeout: int = 30
     auto_install_packs: bool = True
@@ -41,13 +41,12 @@ class Config(BaseSettings):
     class Config:
         env_prefix = "beebot_"
         fields = {
-            "log_level": {
-                "env": "log_level",
-            },
-            "openai_api_key": {"env": "openai_api_key"},
-            "helicone_key": {"env": "helicone_key"},
-            "openai_api_base": {"env": "openai_api_base"},
+            "database_url": {"env": "database_url"},
             "gmail_credentials_file": {"env": "gmail_credentials_file"},
+            "helicone_key": {"env": "helicone_key"},
+            "log_level": {"env": "log_level"},
+            "openai_api_base": {"env": "openai_api_base"},
+            "openai_api_key": {"env": "openai_api_key"},
         }
 
     def __init__(self, **kwargs) -> "Config":
