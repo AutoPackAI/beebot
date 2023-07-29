@@ -9,10 +9,10 @@ from tests.conftest import init_body
 @pytest.fixture()
 def task() -> str:
     return (
-        "Create a python file named 'sleepy.py' that sleeps for a number of seconds according to its argv and writes "
-        "that number into the file 'sleepy.txt' after it has finished sleeping. At the end of the program output a "
-        "success message. Execute sleepy.py in the background with an argument of 10, check the status of the program "
-        "until it's done, and then exit."
+        "Create a python file named 'sleepy.py' that sleeps for a number of seconds according to its arguments and "
+        "writes that number into the file 'sleepy.txt' after it has finished sleeping. At the end of the program "
+        "output a success message. Execute sleepy.py in the background with an argument of 10, check the status of "
+        "the program until it's done, and then exit."
     )
 
 

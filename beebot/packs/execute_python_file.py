@@ -6,6 +6,7 @@ from typing import Optional
 
 from pydantic import BaseModel, Field
 
+from beebot.body.pack_utils import init_workspace_poetry
 from beebot.packs.system_base_pack import SystemBasePack
 from beebot.utils import restrict_path
 
@@ -63,7 +64,7 @@ class ExecutePythonFile(SystemBasePack):
     description = PACK_DESCRIPTION
     args_schema = ExecutePythonFileArgs
     categories = ["Programming", "Files"]
-    depends_on = ["install_python_package"]
+    depends_on = ["install_python_package", "write_python_code"]
 
     def _run(self, file_path: str, python_args: str = "") -> str:
         file_path = os.path.join(self.body.config.workspace_path, file_path)
@@ -76,6 +77,7 @@ class ExecutePythonFile(SystemBasePack):
                     f"Error: File {file_path} does not exist. You must create it first."
                 )
 
+            init_workspace_poetry(self.config.workspace_path)
             args_list = shlex.split(python_args)
             cmd = ["poetry", "run", "python", abs_path, *args_list]
             process = TimedOutSubprocess(cmd)

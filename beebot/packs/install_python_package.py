@@ -2,6 +2,7 @@ import subprocess
 
 from pydantic import BaseModel, Field
 
+from beebot.body.pack_utils import init_workspace_poetry
 from beebot.packs.system_base_pack import SystemBasePack
 
 """This will use a poetry venv specifically for the beebot workspace. However, all normal caveats apply regarding
@@ -29,12 +30,7 @@ class InstallPythonPackage(SystemBasePack):
             return "Error: Installing Python packages is not allowed"
         try:
             # Make sure poetry is init'd in the workspace. This errors if it's already init'd so yolo
-            subprocess.run(
-                ["poetry", "init", "--name", "beebot_workspace", "-n"],
-                cwd=self.body.config.workspace_path,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-            )
+            init_workspace_poetry(self.config.workspace_path)
             cmd = ["poetry", "add", package_name]
 
             process = subprocess.run(

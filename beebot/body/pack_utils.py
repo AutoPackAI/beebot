@@ -1,5 +1,6 @@
 import inspect
 import logging
+import subprocess
 from typing import TYPE_CHECKING, Union
 
 from autopack.get_pack import get_all_installed_packs, get_all_pack_info
@@ -77,3 +78,14 @@ def get_or_install_pack(body: "Body", pack_name) -> Pack:
         installed_pack = install_pack(pack_info.pack_id)(llm=body.llm)
 
     return installed_pack
+
+
+def init_workspace_poetry(workspace_path: str):
+    """Make sure poetry is init'd in the workspace. The command errors if it is already init'd so just swallow the
+    errors"""
+    subprocess.run(
+        ["poetry", "init", "--name", "beebot_workspace", "-n"],
+        cwd=workspace_path,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )

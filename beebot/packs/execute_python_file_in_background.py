@@ -5,6 +5,7 @@ import time
 
 from pydantic import BaseModel, Field
 
+from beebot.body.pack_utils import init_workspace_poetry
 from beebot.executor.background_process import BackgroundProcess
 from beebot.packs.system_base_pack import SystemBasePack
 from beebot.utils import restrict_path
@@ -63,6 +64,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
         if not abs_path:
             return f"Error: File {file_path} does not exist. You must create it first."
 
+        init_workspace_poetry(self.config.workspace_path)
         args_list = shlex.split(python_args)
         cmd = ["poetry", "run", "python", abs_path, *args_list]
         process = BackgroundProcess(body=self.body, cmd=cmd, daemonize=daemonize)
