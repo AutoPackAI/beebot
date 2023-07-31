@@ -15,8 +15,8 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
-# TODO: This should be a Packfile
-SUPPRESSED_PACKS = ["read_file"]
+# TODO: This should be a config value?
+SUPPRESSED_PACKS = ["read_file", "list_files", "delete_file"]
 
 
 def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
@@ -25,13 +25,12 @@ def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
     local_packs = all_local_packs(body)
     remote_packs = get_all_pack_info()
     for pack in remote_packs:
-        if pack.name not in SUPPRESSED_PACKS:
-            all_pack_data[pack.name] = pack
+        all_pack_data[pack.name] = pack
 
     for pack in local_packs.values():
         all_pack_data[pack.name] = pack
 
-    return all_pack_data
+    return {k: v for k, v in all_pack_data.items() if k not in SUPPRESSED_PACKS}
 
 
 def all_local_packs(body: "Body") -> dict[str, Pack]:
@@ -54,16 +53,6 @@ def all_local_packs(body: "Body") -> dict[str, Pack]:
         return_packs[pack.name] = pack(llm=wrapper)
 
     return return_packs
-
-
-def system_packs(body: "Body") -> dict[str, Pack]:
-    from beebot.packs import Exit, GetMoreTools, RewindActions
-
-    return {
-        "exit": Exit(body=body),
-        "get_more_tools": GetMoreTools(body=body),
-        "rewind_actions": RewindActions(body=body),
-    }
 
 
 def llm_wrapper(body: "Body") -> str:

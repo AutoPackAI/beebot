@@ -12,7 +12,7 @@ from pydantic import ValidationError
 
 from beebot.body.body_state_machine import BodyStateMachine
 from beebot.body.llm import call_llm, create_llm
-from beebot.body.pack_utils import system_packs, get_or_install_pack
+from beebot.body.pack_utils import get_or_install_pack
 from beebot.body.revising_prompt import revise_task_prompt
 from beebot.config import Config
 from beebot.decider import Decider
@@ -99,7 +99,6 @@ class Body:
                 self.model_object.save()
 
         self.revise_task()
-        self.packs = system_packs(self)
         self.update_packs()
 
         self.state.start()
@@ -218,16 +217,18 @@ class Body:
         if not new_packs:
             new_packs = recommend_packs_for_plan(self)
 
-        for pack in new_packs:
-            if pack.name in self.packs:
+        pack_names = [pack.name for pack in new_packs]
+        pack_names += self.config.auto_include_packs
+        for pack_name in pack_names:
+            if pack_name in self.packs:
                 continue
 
             try:
-                installed_pack = get_or_install_pack(self, pack.name)
+                installed_pack = get_or_install_pack(self, pack_name)
                 if not installed_pack:
-                    logger.warning(f"Pack {pack.name} could not be installed")
+                    logger.warning(f"Pack {pack_name} could not be installed")
 
-                self.packs[pack.name] = installed_pack
+                self.packs[pack_name] = installed_pack
 
                 if installed_pack.depends_on:
                     for dep_name in installed_pack.depends_on:
@@ -237,7 +238,7 @@ class Body:
                         installed_dep = get_or_install_pack(self, dep_name)
                         if not installed_dep:
                             logger.warning(
-                                f"Pack {dep_name}, a dependency of {pack.name} could not be installed"
+                                f"Pack {dep_name}, a dependency of {pack_name} could not be installed"
                             )
                             continue
 
@@ -245,4 +246,4 @@ class Body:
 
             except AutoPackError as e:
                 # This is usually because we got a response with a made-up function.
-                logger.warning(f"Pack {pack.name} could not be initialized: {e}")
+                logger.warning(f"Pack {pack_name} could not be initialized: {e}")

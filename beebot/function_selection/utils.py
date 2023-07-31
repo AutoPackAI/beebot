@@ -19,13 +19,15 @@ logger = logging.getLogger(__name__)
 
 
 def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
-    prompt = (
-        initial_selection_template()
-        .format(
-            task=body.task,
-            functions=functions_bulleted_list(all_packs(body).values()),
-        )
-        .content
+    packs_for_recommendation = [
+        pack
+        for pack in all_packs(body).values()
+        if pack.name not in body.config.auto_include_packs
+    ]
+    functions_list = functions_bulleted_list(packs_for_recommendation)
+
+    prompt = initial_selection_template().format(
+        task=body.task, functions=functions_list
     )
     logger.info("=== Function request sent to LLM ===")
     logger.info(prompt)
@@ -34,9 +36,17 @@ def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
     logger.info("=== Functions received from LLM ===")
     logger.info(response)
 
-    # 1. Split by commas (if preceded by a word character), and newlines.
-    # 2. Remove any arguments given if provided. The prompt says they shouldn't be there, but sometimes they are.
-    functions = [r.split("(")[0].strip() for r in re.split(r"(?<=\w),|\n", response)]
+    # Split the response into function names and explanation.
+    response_parts = response.split("###")
+    # TODO: Do something with the explanation
+    function_part, _explanation_part = response_parts
+
+    # Split by commas (if preceded by a word character), and newlines.
+    # Remove any arguments given if provided. The prompt says they shouldn't be there, but sometimes they are.
+    functions = [
+        r.split("(")[0].strip() for r in re.split(r"(?<=\w),|\n", function_part)
+    ]
+
     functions += body.config.auto_include_packs
     packs = all_packs(body)
     return [packs[function] for function in functions if function in packs]

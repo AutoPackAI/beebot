@@ -50,7 +50,7 @@ def call_llm(
     llm = body.llm
     output_kwargs = {}
 
-    if include_functions:
+    if include_functions and body.packs:
         output_kwargs["functions"] = format_packs_to_openai_functions(
             body.packs.values()
         )

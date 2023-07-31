@@ -34,7 +34,12 @@ class Config(BaseSettings):
     auto_install_packs: bool = True
     auto_install_dependencies: bool = True
     file_manager: str = "workspace"
-    auto_include_packs: list[str] = ["read_file", "write_file"]
+    auto_include_packs: list[str] = [
+        "write_file",
+        "exit",
+        "rewind_actions",
+        "get_more_tools",
+    ]
 
     _global_config: ClassVar["Config"] = None
 
