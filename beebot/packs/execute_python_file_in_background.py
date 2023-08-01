@@ -56,6 +56,8 @@ class ExecutePythonFileInBackground(SystemBasePack):
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
 
+        self.body.file_manager.flush_to_directory()
+
         file_path = os.path.join(self.body.config.workspace_path, file_path)
         if not os.path.exists(file_path):
             return f"Error: File {file_path} does not exist. You must create it first."
