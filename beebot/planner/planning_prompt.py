@@ -23,7 +23,7 @@ Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow
 1. Independently estimate the number of steps the original task should take. Use this estimate as the basis of your plan.
 2. Identify the initial function that should be executed to kick-start the task. Keep in mind the requirements of the task and the available functions when making this decision.
 3. Develop a step-by-step plan of action that logically leads towards the task goal, considering your current information, requirements, and available functions. Remember to be efficient, avoiding unnecessary actions like immediate verification of outcomes.
-4. Direct the execution of the first action using exactly one of the available functions. If the first action requires a function that you do not have, instead instruct the AI Assistant to acquire it via `get_more_tools`.
+4. Direct the execution of the first action using exactly one of the available functions.
 
 Please provide, in paragraph format, an initial assessment of the task requirements, followed by a step-by-step summary of your plan going forward, and end with one sentence describing the first action to be taken."""
 
@@ -52,7 +52,7 @@ Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow
 1. Independently estimate the number of steps the original task should take. Compare this estimate with your progress so far, and use this comparison in analyzing your outcomes and developing your plan.
 2. Analyze the outcomes of past function executions, including the function used, the arguments used, and the results returned. Be alert to any repetitive function usage, such as writing the same content to the same file. Be vigilant to ensure that you are interpreting the execution history correctly while considering the order of execution.
 3. Determine the next logical step towards the task goal, considering your current information, requirements, and available functions. Remember to be efficient, avoiding steps like immediate verification of outcomes (e.g. using `read_file` to verify that `write_file` worked).
-4. Direct the execution of the immediate next action using exactly one of the available functions. If the next action requires a function that you do not have, instead instruct the AI Assistant to acquire it via `get_more_tools`.
+4. Direct the execution of the immediate next action using exactly one of the available functions.
 
 Please provide, in paragraph format, an analysis of the past history, followed by a step-by-step summary of your plan going forward, and end with one sentence describing the immediate next action to be taken."""
 

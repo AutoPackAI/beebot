@@ -13,12 +13,13 @@ if TYPE_CHECKING:
 
 logger = logging.getLogger(__name__)
 
+IGNORE_FILES = ["poetry.lock", "pyproject.toml", "__pycache__"]
+
 
 class DatabaseFileManager(FileManager):
     """
     This class emulates a filesystem in Postgres, storing files in a simple `document` table with a many-to-many
     relationship with `memory`. Recommended unless you specifically need to access the documents in the filesystem.
-    TODO: Include some sort of `flush` system to write the documents to the workspace
     """
 
     def __init__(
@@ -40,7 +41,11 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: The content of the file. If the file does not exist, returns an error message.
         """
-        if document := DocumentModel.select().where(name=file_path).get():
+        if (
+            document := DocumentModel.select()
+            .where(DocumentModel.name == file_path)
+            .get()
+        ):
             return document.content
         else:
             return "Error: File not found"
@@ -142,8 +147,13 @@ class DatabaseFileManager(FileManager):
             directory = self.body.config.workspace_path
 
         for file in os.listdir(directory):
-            with open(os.path.join(directory, file.replace("/", "_")), "w+") as f:
-                self.write_file(file, f.read())
+            abs_path = os.path.abspath(os.path.join(directory, file.replace("/", "_")))
+            if not os.path.isdir(abs_path) and file not in IGNORE_FILES:
+                with open(abs_path, "w+") as f:
+                    import pdb
+
+                    pdb.set_trace()
+                    self.write_file(file, f.read())
 
     def flush_to_directory(self, directory: str = None):
         if not directory:

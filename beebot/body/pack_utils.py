@@ -16,7 +16,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 # TODO: This should be a config value?
-SUPPRESSED_PACKS = ["read_file", "list_files", "delete_file"]
+SUPPRESSED_PACKS = ["list_files", "delete_file"]
 
 
 def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
