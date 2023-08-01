@@ -1,9 +1,11 @@
 import json
+import os
 from typing import TYPE_CHECKING
 
 from beebot.memory import Memory
 from beebot.models import Plan, Observation
 from beebot.models.database_models import MemoryChainModel, MemoryModel
+from beebot.utils import list_files
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -68,9 +70,9 @@ class MemoryChain:
             if not memory.model_object:
                 memory_model = MemoryModel(
                     memory_chain=self.model_object,
-                    plan=memory.plan.persisted_dict,
-                    decision=memory.decision.persisted_dict,
-                    observation=memory.observation.persisted_dict,
+                    plan=memory.plan.__dict__,
+                    decision=memory.decision.__dict__,
+                    observation=memory.observation.__dict__,
                 )
                 memory_model.save()
                 memory.model_object = memory_model

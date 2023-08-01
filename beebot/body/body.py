@@ -186,6 +186,7 @@ class Body:
         designed to reverse actions wherever possible and reset the current memories and plan. It should be noted,
         however, that actions with side effects, like sending emails or making API calls, cannot be reversed.
         This is like a jank tree of thought because there's no analysis of the quality of different traversals.
+        # TODO: Extract this to some sort of memory manager
         """
         memories = self.memories.memories
         new_memories = []

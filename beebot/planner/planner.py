@@ -30,15 +30,19 @@ class Planner:
         history = self.body.memories.compile_history()
         file_list = document_contents(list_files(self.body))
         functions = functions_summary(self.body.packs.values())
+        prompt_variables = {
+            "task": task,
+            "history": history,
+            "functions": functions,
+            "file_list": file_list,
+        }
         if history:
+            prompt_variables.pop("file_list", None)
             formatted_prompt = (
-                planning_prompt_template()
-                .format(
-                    task=task, history=history, functions=functions, file_list=file_list
-                )
-                .content
+                planning_prompt_template().format(**prompt_variables).content
             )
         else:
+            prompt_variables.pop("history", None)
             formatted_prompt = (
                 initial_prompt_template()
                 .format(task=task, functions=functions, file_list=file_list)
@@ -57,4 +61,8 @@ class Planner:
         logger.info("=== Plan Created ===")
         logger.info(response.text)
 
-        return Plan(plan_text=response.text)
+        return Plan(
+            prompt_variables=prompt_variables,
+            plan_text=response.text,
+            response=response.text,
+        )

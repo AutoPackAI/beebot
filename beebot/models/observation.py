@@ -21,7 +21,3 @@ class Observation:
                 return result
             else:
                 return f"Error: {result}"
-
-    @property
-    def persisted_dict(self):
-        return self.__dict__

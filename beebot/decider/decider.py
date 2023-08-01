@@ -46,15 +46,18 @@ class Decider:
             logger.info(response.text)
         logger.info(json.dumps(response.function_call, indent=4))
 
-        return interpret_llm_response(response)
+        return interpret_llm_response(
+            prompt_variables=prompt_variables, response=response
+        )
 
     def decide_with_retry(self, plan: Plan, retry_count: int = 0) -> Decision:
         if retry_count:
             plan = Plan(
+                prompt_variables=plan.prompt_variables,
                 plan_text=plan.plan_text
                 + (
                     "\n\nWarning: Invalid response received. Please reassess your strategy."
-                )
+                ),
             )
 
         try:
@@ -66,7 +69,9 @@ class Decider:
             return self.decide_with_retry(plan=plan, retry_count=retry_count + 1)
 
 
-def interpret_llm_response(response: LLMResponse) -> Decision:
+def interpret_llm_response(
+    prompt_variables: dict[str, str], response: LLMResponse
+) -> Decision:
     if response.function_call:
         tool_name, tool_args = parse_function_call_args(response.function_call)
 
@@ -74,6 +79,8 @@ def interpret_llm_response(response: LLMResponse) -> Decision:
             reasoning=response.text,
             tool_name=tool_name,
             tool_args=tool_args,
+            prompt_variables=prompt_variables,
+            response=response.text,
         )
         return decision
     else:

@@ -1,4 +1,5 @@
 FORMAT_SECTION = """
+
 Please respond in the following format:
 
 Firstly, provide a comma-separated list of function names. Exclude parentheses and arguments from this list. Secondly, after the special delimiter '###', provide explanations for why each function was chosen and how it contributes to accomplishing the task.
