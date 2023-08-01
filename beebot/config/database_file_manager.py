@@ -150,9 +150,6 @@ class DatabaseFileManager(FileManager):
             abs_path = os.path.abspath(os.path.join(directory, file.replace("/", "_")))
             if not os.path.isdir(abs_path) and file not in IGNORE_FILES:
                 with open(abs_path, "w+") as f:
-                    import pdb
-
-                    pdb.set_trace()
                     self.write_file(file, f.read())
 
     def flush_to_directory(self, directory: str = None):
