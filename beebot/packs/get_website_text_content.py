@@ -9,8 +9,8 @@ from beebot.tool_filters.filter_long_documents import filter_long_documents
 
 PACK_NAME = "get_website_content"
 PACK_DESCRIPTION = (
-    "Retrieves the text content of a specified webpage. It is useful when you want to obtain the textual information "
-    "from a webpage without the need for in-depth analysis."
+    "Extracts the text content from the HTML of a specified webpage. It is useful when you want to obtain the textual"
+    "information from a webpage without the need for in-depth analysis."
 )
 
 

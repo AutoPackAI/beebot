@@ -3,9 +3,6 @@ import os
 from typing import ClassVar
 
 import coloredlogs
-from autopack.filesystem_emulation.filesystem_file_manager import FileSystemManager
-from autopack.filesystem_emulation.ram_file_manager import RAMFileManager
-from autopack.filesystem_emulation.workspace_file_manager import WorkspaceFileManager
 from autopack.pack_config import PackConfig, InstallerStyle
 from openai.util import logger as openai_logger
 from pydantic import BaseSettings  # IDEAL_MODEL = "gpt-4-0613"
@@ -33,13 +30,13 @@ class Config(BaseSettings):
     process_timeout: int = 30
     auto_install_packs: bool = True
     auto_install_dependencies: bool = True
-    file_manager: str = "workspace"
     auto_include_packs: list[str] = [
         "write_file",
         "exit",
         "rewind_actions",
         "get_more_tools",
     ]
+    pack_config: PackConfig = None
 
     _global_config: ClassVar["Config"] = None
 
@@ -59,7 +56,7 @@ class Config(BaseSettings):
         self.configure_autopack()
         self.setup_logging()
 
-    def configure_autopack(self):
+    def configure_autopack(self, is_global: bool = True):
         if self.auto_install_packs and self.auto_install_dependencies:
             installer_style = InstallerStyle.automatic
         elif self.auto_install_packs:
@@ -67,21 +64,16 @@ class Config(BaseSettings):
         else:
             installer_style = InstallerStyle.manual
 
-        if self.file_manager == "filesystem":
-            file_manager_class = FileSystemManager
-        elif self.file_manager == "ram":
-            file_manager_class = RAMFileManager
-        else:
-            file_manager_class = WorkspaceFileManager
-
         pack_config = PackConfig(
             workspace_path=self.workspace_path,
             restrict_code_execution=self.restrict_code_execution,
             installer_style=installer_style,
         )
-        pack_config.init_filesystem_manager(file_manager_class)
 
-        PackConfig.set_global_config(pack_config)
+        self.pack_config = pack_config
+
+        if is_global:
+            PackConfig.set_global_config(pack_config)
 
     def setup_logging(self) -> logging.Logger:
         os.makedirs("logs", exist_ok=True)
@@ -111,10 +103,6 @@ class Config(BaseSettings):
         # OpenAI will log a jsonified version of each request/response to `logger.debug` and we have our own logs
         # which are better formatted
         openai_logger.propagate = False
-
-    @property
-    def persistence_enabled(self):
-        return self.database_url != ""
 
     @classmethod
     def set_global_config(cls, config_obj: "Config" = None) -> "Config":

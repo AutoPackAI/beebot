@@ -45,7 +45,7 @@ class Exit(SystemBasePack):
         function_summary: str = "",
     ) -> str:
         self.body.state.finish()
-        # TODO: Save the output somehow
+        self.body.current_memory_chain.persist_memory_chain()
         if success:
             logger.info("\n=== Task completed ===")
         else:

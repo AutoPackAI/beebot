@@ -1,5 +1,3 @@
-from langchain.prompts import SystemMessagePromptTemplate
-
 INITIAL_TEMPLATE = """As the AI Task Strategist, your role is to strategize and plan the execution of tasks efficiently and effectively. Avoid redundancy, such as unnecessary immediate verification of actions, and leverage your knowledge base to make informed decisions. You only speak English and do not have the capability to write code.
 
 # Functions
@@ -29,7 +27,7 @@ Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow
 
 Please provide, in paragraph format, an initial assessment of the task requirements, followed by a step-by-step summary of your plan going forward, and end with one sentence describing the first action to be taken."""
 
-TEMPLATE = """As the AI Task Strategist, your role is to strategize and plan the execution of tasks efficiently and effectively. Avoid redundancy, such as unnecessary immediate verification of actions, and leverage your knowledge base to make informed decisions. You only speak English and do not have the capability to write code.
+PLANNING_PROMPT_TEMPLATE = """As the AI Task Strategist, your role is to strategize and plan the execution of tasks efficiently and effectively. Avoid redundancy, such as unnecessary immediate verification of actions, and leverage your knowledge base to make informed decisions. You only speak English and do not have the capability to write code.
 
 # Functions
 You have these functions at your disposal:
@@ -59,9 +57,9 @@ Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow
 Please provide, in paragraph format, an analysis of the past history, followed by a step-by-step summary of your plan going forward, and end with one sentence describing the immediate next action to be taken."""
 
 
-def initial_prompt_template() -> SystemMessagePromptTemplate:
-    return SystemMessagePromptTemplate.from_template(INITIAL_TEMPLATE)
+def initial_prompt_template() -> str:
+    return INITIAL_TEMPLATE
 
 
-def planning_prompt_template() -> SystemMessagePromptTemplate:
-    return SystemMessagePromptTemplate.from_template(TEMPLATE)
+def planning_prompt_template() -> str:
+    return PLANNING_PROMPT_TEMPLATE

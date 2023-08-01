@@ -34,10 +34,8 @@ focus.
 
 ### Persistence
 
-If you would like to enable persistence, start a Postgres database (or use your own), with `docker compose up -d`.
-
-Then, set the `DATABASE_URL` environment variable in your .env file. If you're using docker, you can set this
-to `DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postgres`.
+Persistence is _required_. It is recommended that you use Docker for starting a Postgres database. This can be done
+simply by executing `docker compose up -d`.
 
 ## Running
 

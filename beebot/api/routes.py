@@ -8,22 +8,29 @@ from beebot.body import Body
 from beebot.body.body_state_machine import BodyStateMachine
 from beebot.memory import Memory
 from beebot.models.database_models import BodyModel, MemoryModel
-from beebot.utils import artifacts, list_files
 
 logger = logging.getLogger(__name__)
 
 
 def body_response(body: Body) -> JSONResponse:
+    artifacts = [
+        {"name": document.name, "content": document.content}
+        for document in body.file_manager.all_documents()
+    ]
     return JSONResponse(
         {
             "task_id": str(body.model_object.id),
             "input": body.initial_task,
-            "artifacts": artifacts(list_files(body)),
+            "artifacts": artifacts,
         }
     )
 
 
 def memory_response(memory: Memory, body: Body) -> JSONResponse:
+    artifacts = [
+        {"name": document.name, "content": document.content}
+        for document in body.file_manager.all_documents()
+    ]
     memory_output = {
         "plan": memory.plan.__dict__,
         "decision": memory.decision.__dict__,
@@ -35,7 +42,7 @@ def memory_response(memory: Memory, body: Body) -> JSONResponse:
             "step_id": str(memory.model_object.id),
             "task_id": str(body.model_object.id),
             "output": memory_output,
-            "artifacts": artifacts(list_files(body)),
+            "artifacts": artifacts,
             "is_last": body.state.current_state == BodyStateMachine.done,
         }
     )
@@ -92,7 +99,9 @@ async def list_agent_task_steps(request: Request) -> JSONResponse:
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
 
-    memory_ids = [m.model_object.id for m in body.memories.memories]
+    memory_ids = [
+        m.model_object.id for m in body.current_memory_chain.current_memory_chain
+    ]
 
     return JSONResponse(memory_ids)
 

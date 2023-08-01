@@ -29,9 +29,6 @@ def create_app() -> FastAPI:
     os.environ["BEEBOT_HARD_EXIT"] = "False"
     config = Config.global_config()
     config.setup_logging()
-    if not config.persistence_enabled:
-        logger.error("The API Requires persistence to be enabled")
-        exit()
 
     initialize_db(config.database_url)
 

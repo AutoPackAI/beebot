@@ -21,7 +21,7 @@ def test_background_python(task):
     for i in range(0, 15):
         response = body.cycle()
         print(
-            f"----\n{body.memories.compile_history()}\n{response.plan.plan_text}\n{response.decision.tool_name}"
+            f"----\n{body.current_memory_chain.compile_history()}\n{response.plan.plan_text}\n{response.decision.tool_name}"
             f"({response.decision.tool_args})\n{response.observation.response}\n---"
         )
         if body.state.current_state == BodyStateMachine.done:

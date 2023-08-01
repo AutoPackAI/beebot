@@ -53,6 +53,28 @@ class MemoryModel(BaseModel):
     updated_at = DateTimeField()
 
 
+class DocumentModel(BaseModel):
+    class Meta:
+        table_name = "document"
+
+    name = TextField()
+    content = TextField()
+
+    created_at = DateTimeField()
+    updated_at = DateTimeField()
+
+
+class DocumentMemoryModel(BaseModel):
+    class Meta:
+        table_name = "document_memory"
+
+    memory = ForeignKeyField(MemoryModel, backref="document_memories")
+    document = ForeignKeyField(DocumentModel, backref="document_memories")
+
+    created_at = DateTimeField()
+    updated_at = DateTimeField()
+
+
 def apply_migrations(db_url: str):
     """Apply any outstanding migrations"""
     backend = get_backend(db_url)
@@ -64,7 +86,14 @@ def apply_migrations(db_url: str):
 
 def initialize_db(db_url: str) -> Database:
     database = connect(db_url)
-    for model_class in [BaseModel, BodyModel, MemoryChainModel, MemoryModel]:
+    for model_class in [
+        BaseModel,
+        BodyModel,
+        DocumentModel,
+        DocumentMemoryModel,
+        MemoryChainModel,
+        MemoryModel,
+    ]:
         model_class.set_database(database)
 
     apply_migrations(db_url)

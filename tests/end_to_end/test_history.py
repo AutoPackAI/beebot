@@ -1,10 +1,18 @@
-import os
 from random import randint
 
 import pytest
 
+from beebot.body import Body
 from beebot.body.body_state_machine import BodyStateMachine
-from tests.conftest import init_body
+
+
+@pytest.fixture()
+def body(task):
+    body_obj = Body(initial_task=task)
+    body_obj.setup()
+    body_obj.config.setup_logging()
+    body_obj.config.hard_exit = False
+    return body_obj
 
 
 @pytest.fixture()
@@ -22,8 +30,7 @@ def ids() -> list[str]:
 
 
 @pytest.fixture()
-def instructions_files(ids) -> list[str]:
-    os.makedirs("workspace", exist_ok=True)
+def instructions_files(body, ids) -> list[str]:
     instructions = []
     for i, instruction in enumerate(ids):
         instructions.append(
@@ -32,15 +39,12 @@ def instructions_files(ids) -> list[str]:
 
     instructions.append("Write the ids previously mentioned to a file named 'ids.txt'.")
     for i, instruction in enumerate(instructions):
-        with open(f"workspace/instructions_{i + 1}.txt", "w+") as f:
-            f.write(instruction)
+        body.file_manager.write_file(f"instructions_{i + 1}.txt", instruction)
 
     return instructions
 
 
-def test_parse_history(task, instructions_files, ids):
-    body = init_body(task)
-
+def test_parse_history(body, task, instructions_files, ids):
     for i in range(0, 15):
         body.cycle()
         if body.state.current_state == BodyStateMachine.done:
@@ -48,6 +52,7 @@ def test_parse_history(task, instructions_files, ids):
 
         assert body.state.current_state == BodyStateMachine.waiting
 
+    body.file_manager.flush_to_directory()
     with open("workspace/ids.txt", "r") as f:
         file_contents = f.read()
         for expected_id in ids:

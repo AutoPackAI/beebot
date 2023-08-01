@@ -1,11 +1,9 @@
 import json
-import os
 from typing import TYPE_CHECKING
 
 from beebot.memory import Memory
 from beebot.models import Plan, Observation
 from beebot.models.database_models import MemoryChainModel, MemoryModel
-from beebot.utils import list_files
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -18,13 +16,14 @@ class MemoryChain:
     body: "Body"
     model_object: MemoryChainModel = None
     memories: list[Memory]
-    uncompleted_memory: Memory
+    incomplete_memory: Memory
 
     def __init__(self, body: "Body", model_object: MemoryModel = None):
         self.body = body
         self.memories = []
         self.model_object = model_object
-        self.uncompleted_memory = Memory()
+        self.incomplete_memory = None
+        self.create_incomplete_memory()
 
     @classmethod
     def from_model(cls, body: "Body", chain_model: MemoryChainModel):
@@ -35,47 +34,52 @@ class MemoryChain:
 
         return chain
 
+    def create_incomplete_memory(self) -> Memory:
+        new_incomplete_memory = Memory(memory_chain=self)
+        new_incomplete_memory.persist_memory()
+
+        # Create links from previous documents to this memory
+        if self.incomplete_memory:
+            for document in self.incomplete_memory.documents.values():
+                new_incomplete_memory.add_document(document)
+
+        self.incomplete_memory = new_incomplete_memory
+        return self.incomplete_memory
+
     def add_plan(self, plan: Plan):
-        self.uncompleted_memory.plan = plan
+        self.incomplete_memory.plan = plan
+        self.incomplete_memory.persist_memory()
 
     def add_decision(self, decision: str):
-        self.uncompleted_memory.decision = decision
+        self.incomplete_memory.decision = decision
+        self.incomplete_memory.persist_memory()
 
     def add_observation(self, observation: Observation):
-        self.uncompleted_memory.observation = observation
+        self.incomplete_memory.observation = observation
+        self.incomplete_memory.persist_memory()
 
     def finish(self) -> Memory:
-        completed_memory = self.uncompleted_memory
+        completed_memory = self.incomplete_memory
 
         # If the tool messed with memories (e.g. rewind) already we don't want to store it
-        if self.uncompleted_memory.decision is None:
-            self.uncompleted_memory = Memory()
-            return self.uncompleted_memory
+        # TODO: Maybe we do?
+        if self.incomplete_memory.decision is None:
+            self.create_incomplete_memory()
+            return self.incomplete_memory
 
-        self.uncompleted_memory = Memory()
+        self.create_incomplete_memory()
         self.memories.append(completed_memory)
-        self.persist_memory()
+        self.persist_memory_chain()
         return completed_memory
 
-    def persist_memory(self):
-        if not self.body.config.persistence_enabled:
-            return
-
+    def persist_memory_chain(self):
         if not self.model_object:
             chain_model = MemoryChainModel(body=self.body.model_object)
             chain_model.save()
             self.model_object = chain_model
 
         for memory in self.memories:
-            if not memory.model_object:
-                memory_model = MemoryModel(
-                    memory_chain=self.model_object,
-                    plan=memory.plan.__dict__,
-                    decision=memory.decision.__dict__,
-                    observation=memory.observation.__dict__,
-                )
-                memory_model.save()
-                memory.model_object = memory_model
+            memory.persist_memory()
 
     def compile_history(self) -> str:
         if not self.memories:
@@ -121,12 +125,10 @@ class MemoryChain:
 
             memory_table.append(formatted_outcome)
 
-        for file in list_files(self.body):
-            with open(os.path.join("workspace", file), "r+") as f:
-                file_contents = f.read()
-
+        for file in self.body.file_manager.all_documents():
             memory_table.append(
                 f"{len(memory_table) + 1}. You executed the function `read_file` with the arguments "
-                f'{{"filename": "{file}"}}: {json.dumps(file_contents)}.'
+                f'{{"filename": "{file.name}"}}: {json.dumps(file.content)}.'
             )
+
         return "\n".join(memory_table)

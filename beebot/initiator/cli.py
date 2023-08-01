@@ -32,8 +32,7 @@ def main():
 
     config = Config.global_config()
     config.setup_logging()
-    if config.persistence_enabled:
-        initialize_db(config.database_url)
+    initialize_db(config.database_url)
 
     body = Body(initial_task=task, config=config)
     body.setup()

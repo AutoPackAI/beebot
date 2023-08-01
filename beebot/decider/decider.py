@@ -8,7 +8,6 @@ from autopack.utils import functions_summary
 from beebot.body.llm import call_llm, LLMResponse
 from beebot.decider.deciding_prompt import decider_template
 from beebot.models import Plan, Decision
-from beebot.utils import list_files, document_contents
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -33,11 +32,10 @@ class Decider:
         prompt_variables = {
             "plan": plan.plan_text,
             "task": self.body.task,
-            "history": self.body.memories.compile_history(),
+            "history": self.body.current_memory_chain.compile_history(),
             "functions": functions_summary(self.body.packs.values()),
-            "file_list": document_contents(list_files(self.body)),
         }
-        prompt = decider_template().format(**prompt_variables).content
+        prompt = decider_template().format(**prompt_variables)
 
         response = call_llm(self.body, prompt, disregard_cache=disregard_cache)
 

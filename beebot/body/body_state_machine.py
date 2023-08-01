@@ -33,11 +33,12 @@ class BodyStateMachine(StateMachine):
 
     def on_enter_state(self, event, state):
         """
-        Whenever state changes persist the state change (if enabled)
-        This is a lot of law of demeter violations but this is the easiest place to put it
+        Whenever state changes persist the state change
+        This is probably a bad place to put this logic.
         """
-        if self.body.model_object and self.body.config.persistence_enabled:
+        if self.body.model_object:
             self.body.model_object.current_task = self.body.task
             self.body.model_object.state = state.value
             self.body.model_object.packs = self.body.packs.keys()
             self.body.model_object.save()
+            self.body.file_manager.flush_to_directory(self.body.config.workspace_path)
