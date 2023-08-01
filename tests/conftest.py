@@ -14,6 +14,10 @@ from beebot.body import Body
 from beebot.models.database_models import initialize_db
 
 
+def pytest_configure():
+    load_dotenv()
+
+
 @pytest.fixture(autouse=True)
 def go_to_tmpdir(request):
     # Get the fixture dynamically by its name.
@@ -77,7 +81,3 @@ async def body_fixture(task: str, initialize_tests, go_to_tmpdir):
     body_obj.config.hard_exit = False
     return body_obj
 
-
-@pytest.fixture(autouse=True)
-def load_config():
-    load_dotenv()
