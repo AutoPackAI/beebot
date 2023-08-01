@@ -30,19 +30,16 @@ class Decider:
 
     def decide(self, plan: Plan, disregard_cache: bool = False) -> Decision:
         """Take a Plan and send it to the LLM, returning it back to the Body"""
-        template = (
-            decider_template()
-            .format(
-                plan=plan.plan_text,
-                task=self.body.task,
-                history=self.body.memories.compile_history(),
-                functions=functions_summary(self.body.packs.values()),
-                file_list=document_contents(list_files(self.body)),
-            )
-            .content
-        )
+        prompt_variables = {
+            "plan": plan.plan_text,
+            "task": self.body.task,
+            "history": self.body.memories.compile_history(),
+            "functions": functions_summary(self.body.packs.values()),
+            "file_list": document_contents(list_files(self.body)),
+        }
+        prompt = decider_template().format(**prompt_variables).content
 
-        response = call_llm(self.body, template, disregard_cache=disregard_cache)
+        response = call_llm(self.body, prompt, disregard_cache=disregard_cache)
 
         logger.info("=== Decision received from LLM ===")
         if response and response.text:

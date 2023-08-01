@@ -48,7 +48,6 @@ def cleanup_processes():
 def init_body(task: str):
     body_obj = Body(initial_task=task)
     body_obj.setup()
-    body_obj.config.log_level = "WARN"
     body_obj.config.setup_logging()
     body_obj.config.hard_exit = False
     return body_obj

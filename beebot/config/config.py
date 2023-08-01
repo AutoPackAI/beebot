@@ -107,6 +107,7 @@ class Config(BaseSettings):
             fmt=LOG_FORMAT,
             datefmt="%H:%M:%S",
         )
+
         # OpenAI will log a jsonified version of each request/response to `logger.debug` and we have our own logs
         # which are better formatted
         openai_logger.propagate = False

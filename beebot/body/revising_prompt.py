@@ -8,6 +8,10 @@ Next, define the Exit Conditions in a separate paragraph with no title or headin
 
 As a human user has presented you with the following task: {task}
 
+Starting out you have access to these listed files:
+
+{file_list}
+
 Your objective is to translate this task into a Goal Summary and Exit Conditions, providing the AI Assistant with the necessary guidance to proceed effectively."""
 
 

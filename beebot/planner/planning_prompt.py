@@ -48,10 +48,6 @@ Your original task, given by the human, is:
 You have a history of functions that the AI Assistant has already executed for this task. Here is the history, in order, starting with the first function executed:
 {history}
 
-# Files
-You have access only to these listed files:
-{file_list}
-
 # Instructions
 Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow these guidelines:
 

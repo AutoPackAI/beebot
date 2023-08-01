@@ -24,6 +24,7 @@ from beebot.models import Decision, Plan
 from beebot.models.database_models import initialize_db, BodyModel
 from beebot.models.observation import Observation
 from beebot.planner import Planner
+from beebot.utils import list_files, document_contents
 
 logger = logging.getLogger(__name__)
 
@@ -33,7 +34,6 @@ RETRY_LIMIT = 3
 class Body:
     initial_task: str
     task: str
-    current_plan: Plan
     state: BodyStateMachine
     packs: dict[str, "Pack"]
     memories: MemoryChain
@@ -45,13 +45,13 @@ class Body:
     decider: Decider
     config: Config
 
+    current_plan: Plan = None
     database: Database = None
     model_object: BodyModel = None
 
     def __init__(self, initial_task: str = "", config: Config = None):
         self.initial_task = initial_task
         self.task = initial_task
-        self.current_plan = Plan(initial_task)
         self.config = config or Config.global_config()
         self.memories = MemoryChain(self)
         self.state = BodyStateMachine(self)
@@ -165,7 +165,12 @@ class Body:
 
     def revise_task(self):
         """Turn the initial task into a task that is easier for AI to more consistently understand"""
-        prompt = revise_task_prompt().format(task=self.initial_task).content
+        file_list = document_contents(list_files(self))
+        prompt = (
+            revise_task_prompt()
+            .format(task=self.initial_task, file_list=file_list)
+            .content
+        )
         logger.info("=== Task Revision given to LLM ===")
         logger.info(prompt)
 

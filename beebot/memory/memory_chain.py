@@ -106,7 +106,7 @@ class MemoryChain:
                 else memory.observation.error_reason
             )
             formatted_outcome = (
-                f"{i + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
+                f"{len(memory_table) + 1}. You executed the function `{memory.decision.tool_name}` with the arguments "
                 f"{json.dumps(memory.decision.tool_args)}: {outcome}."
             )
             if first_outcome_step := memory_outputs.get(formatted_outcome):
@@ -119,4 +119,12 @@ class MemoryChain:
 
             memory_table.append(formatted_outcome)
 
+        for file in list_files(self.body):
+            with open(os.path.join("workspace", file), "r+") as f:
+                file_contents = f.read()
+
+            memory_table.append(
+                f"{len(memory_table) + 1}. You executed the function `read_file` with the arguments "
+                f'{{"filename": "{file}"}}: {json.dumps(file_contents)}.'
+            )
         return "\n".join(memory_table)
