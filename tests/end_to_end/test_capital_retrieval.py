@@ -8,15 +8,15 @@ from beebot.config import Config
 
 @pytest.fixture()
 def task():
-    return "Get my OS name and version, and my current disk usage. write it to a file called my_computer.txt"
+    return "Create a text file named capital.txt and write the name of the capital of America into it."
 
 
 @pytest.mark.asyncio
-async def test_system_basic_cycle(task, body_fixture):
+async def test_capital_retrieval(task, body_fixture):
     body = await body_fixture
     assert body.state.current_state == BodyStateMachine.starting
 
-    assert "my_computer.txt" in body.task
+    assert "capital.txt" in body.task
     assert isinstance(body.config, Config)
     assert len(body.config.openai_api_key) > 1
     assert len(body.packs) >= 3
@@ -31,7 +31,7 @@ async def test_system_basic_cycle(task, body_fixture):
         assert body.state.current_state == BodyStateMachine.waiting
 
     assert len(body.packs) >= 5
-    with open(os.path.join("workspace", "my_computer.txt"), "r") as f:
+    with open(os.path.join("workspace", "capital.txt"), "r") as f:
         file_contents = f.read()
-    assert "Operating System" in file_contents or "OS" in file_contents
-    assert "GB" in file_contents
+
+    assert "washington" in file_contents.lower()

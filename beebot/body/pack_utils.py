@@ -24,8 +24,10 @@ def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
     all_pack_data = {}
     local_packs = all_local_packs(body)
     remote_packs = get_all_pack_info()
-    for pack in remote_packs:
-        all_pack_data[pack.name] = pack
+
+    if body.config.auto_install_packs:
+        for pack in remote_packs:
+            all_pack_data[pack.name] = get_or_install_pack(body, pack.name)
 
     for pack in local_packs.values():
         all_pack_data[pack.name] = pack
