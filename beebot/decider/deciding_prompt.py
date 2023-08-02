@@ -20,9 +20,8 @@ The analysis of this history and the plan going forward:
 
 Follow these guidelines:
 1. Study your high-level plan, and understand the next step in it.
-2. If you determine that the next planned action seems ineffective or redundant you may override the plan.
-3. Implement the next action by using exactly one of the provided functions.
-4. Focus on maintaining the efficiency, effectiveness, and adaptability of your execution process.
+2. Implement the next action by using exactly one of the provided functions.
+3. Focus on maintaining the efficiency, effectiveness, and adaptability of your execution process.
 
 Proceed with executing the next step from the plan. Use exactly one of the provided functions through the `function_call` parameter of your response."""
 
