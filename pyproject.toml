@@ -33,7 +33,7 @@ uvicorn = { extras = ["standard"], version = "^0.23.1" }
 fastapi = "^0.100.0"
 wikipedia = "^1.4.0"
 autopack-tools = "^0.4.0"
-tortoise-orm = {extras = ["postgres"], version = "^0.19.3"}
+tortoise-orm = { extras = ["postgres"], version = "^0.19.3" }
 asyncpg = "^0.28.0"
 
 [tool.poetry.group.dev.dependencies]

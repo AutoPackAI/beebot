@@ -46,6 +46,10 @@ Your original task, given by the human, is:
 You have a history of functions that the AI Assistant has already executed for this task. Here is the history, in order, starting with the first function executed:
 {history}
 
+# Files
+You have read these files. Please note that the contents of these files have been pre-read and are included directly in the prompt, therefore, you should not need to instruct the AI Assistant to read these files again:
+{file_list}
+
 # Instructions
 Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow these guidelines:
 

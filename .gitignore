@@ -7,6 +7,7 @@ token.json
 .DS_STORE
 workspace/
 postgres-data/
+agbenchmark/reports
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

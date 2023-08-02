@@ -24,14 +24,13 @@ You may only recommend functions from the following list:
 
 When making your recommendations, consider how the functions can work together to achieve the task's goal, how certain functions may be more effective than others, and prioritize those functions that are most likely to contribute to a successful task completion."""
 
-GET_MORE_TOOLS_TEMPLATE = """As the AI Tool Selector, your responsibility is to identify functions (tools) that could be useful for an autonomous AI agent to accomplish a given task. By providing more flexibility in the selection and emphasizing the consideration of alternative functions, we can ensure a wider range of function recommendations that align with the given task.
+GET_MORE_TOOLS_TEMPLATE = """As the AI Tool Selector, your responsibility is to identify functions that could be useful for an autonomous AI agent to accomplish a given task. By providing more flexibility in the selection and emphasizing the consideration of alternative functions, we can ensure a wider range of function recommendations that align with the given task.
 
 Only recommend programming functions if the task explicitly requires programming.
 
-In this scenario, the Autonomous AI has made a request for additional tools to complete a task. Your role is to analyze the functions request and determine which functions could be useful, either directly or indirectly, in combination with other tools.
+In this scenario, the Autonomous AI has made a request for additional functions to complete a task. Your role is to analyze the functions request and determine which functions could be useful, either directly or indirectly, in combination with other functions.
 
-Request for more tools:
-The Autonomous AI has made this request for more tools: {functions_request}
+The Autonomous AI has made this request for more functions: {functions_request}
 
 Original Task:
 The task originally assigned by the human is:
@@ -46,5 +45,5 @@ def initial_selection_template() -> str:
     return INITIAL_SELECTION_TEMPLATE + FORMAT_SECTION
 
 
-def get_more_tools_template() -> str:
+def acquire_new_functions_template() -> str:
     return GET_MORE_TOOLS_TEMPLATE + FORMAT_SECTION

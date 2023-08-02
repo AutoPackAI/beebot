@@ -107,20 +107,6 @@ class MemoryChain:
             # Don't include the rewind_action in the compiled history because we've already got this ^^
             memories_to_compile = memories_to_compile[1:]
 
-        # Prepend the history with the state of all files
-        explicitly_used_files = [
-            memory.decision.tool_args.get("filename")
-            for memory in self.memories
-            if memory.decision.tool_name in ["read_file", "write_file"]
-        ]
-        for file in await self.body.file_manager.all_documents():
-            if file.name in explicitly_used_files:
-                continue
-
-            memory_table.append(
-                history_item(len(memory_table) + 1, file.name, file.content)
-            )
-
         # Compile the actual history
         for i, memory in enumerate(memories_to_compile):
             outcome = (
@@ -153,4 +139,7 @@ class MemoryChain:
 
 
 def history_item(number: int, name: str, content: dict):
-    return f'{number}. You executed the function `read_file` with the arguments {{"filename": "{name}"}}: {json.dumps(content)}.'
+    return (
+        f'{number}. You executed the function `read_file` with the arguments {{"filename": "{name}"}}: '
+        f"{json.dumps(content)}."
+    )

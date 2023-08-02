@@ -34,7 +34,7 @@ class Config(BaseSettings):
         "write_file",
         "exit",
         "rewind_actions",
-        "get_more_tools",
+        "acquire_new_functions",
     ]
     pack_config: PackConfig = None
 

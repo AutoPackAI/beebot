@@ -36,7 +36,6 @@ class Planner:
             "file_list": file_list,
         }
         if history:
-            prompt_variables.pop("file_list", None)
             formatted_prompt = planning_prompt_template().format(**prompt_variables)
         else:
             prompt_variables.pop("history", None)

@@ -9,37 +9,34 @@ from beebot.body.llm import call_llm
 from beebot.body.pack_utils import (
     all_packs,
 )
-from beebot.function_selection.function_selection_prompt import get_more_tools_template
+from beebot.function_selection.function_selection_prompt import (
+    acquire_new_functions_template,
+)
 from beebot.packs.system_base_pack import SystemBasePack
 
-PACK_NAME = "get_more_tools"
 PACK_DESCRIPTION = (
-    "Requests a tool necessary for task fulfillment with the given desired functionality. which is a detailed English "
-    "sentence. Does not install Python packages. Cannot be used to create tools, functions, or files which do not"
-    "already exist."
+    "Request a general use function that may be helpful for task completion. Does not install Python packages. Cannot "
+    "be used to create tools, functions, or files which do not already exist."
 )
 
 logger = logging.getLogger(__name__)
 
 
-class GetPacksArgs(BaseModel):
+class AcquireMoreFunctionsArgs(BaseModel):
     desired_functionality: str = Field(
         ...,
-        description="Specify the desired functionality or purpose of the tool in a detailed sentence.",
+        description="Specify the general functionality or purpose of the function in a detailed sentence.",
     )
 
 
-class GetMoreTools(SystemBasePack):
-    class Meta:
-        name = PACK_NAME
-
-    name = Meta.name
+class AcquireMoreFunctions(SystemBasePack):
+    name = "acquire_new_functions"
     description = PACK_DESCRIPTION
-    args_schema = GetPacksArgs
+    args_schema = AcquireMoreFunctionsArgs
     categories = ["System"]
 
     async def _arun(self, desired_functionality: str) -> list[str]:
-        prompt = get_more_tools_template().format(
+        prompt = acquire_new_functions_template().format(
             task=self.body.task,
             functions=functions_bulleted_list(all_packs(self.body).values()),
             functions_request=desired_functionality,

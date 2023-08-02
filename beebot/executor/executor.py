@@ -34,16 +34,10 @@ class Executor:
             result = await pack.arun(**tool_args)
             return Observation(response=result)
         except ValidationError as e:
-            import pdb
-
-            pdb.set_trace()
             logger.error(
                 f"Error on execution of {decision.tool_name}: {json.dumps(e.errors())}"
             )
             return Observation(response=f"Error: {json.dumps(e.errors())}")
         except Exception as e:
-            import pdb
-
-            pdb.set_trace()
             logger.error(f"Error on execution of {decision.tool_name}: {e}")
             return Observation(response=f"Exception: {e}")

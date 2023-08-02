@@ -66,11 +66,11 @@ class ExecutePythonFile(SystemBasePack):
     categories = ["Programming", "Files"]
     depends_on = ["install_python_package", "write_python_code"]
 
-    def _run(self, file_path: str, python_args: str = "") -> str:
+    async def _arun(self, file_path: str, python_args: str = "") -> str:
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
 
-        self.body.file_manager.flush_to_directory()
+        await self.body.file_manager.flush_to_directory()
         file_path = os.path.join(self.body.config.workspace_path, file_path)
         try:
             abs_path = restrict_path(file_path, self.body.config.workspace_path)

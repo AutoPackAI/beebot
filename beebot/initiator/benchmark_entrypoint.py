@@ -18,7 +18,8 @@ async def run_specific_agent(task: str) -> None:
     body = Body(initial_task=task, config=config)
     await body.setup()
     while output := await body.cycle():
-        print(output.observation.response)
+        if output.observation:
+            print(output.observation.response)
 
 
 if __name__ == "__main__":
