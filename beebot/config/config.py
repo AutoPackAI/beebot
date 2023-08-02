@@ -22,7 +22,7 @@ class Config(BaseSettings):
     openai_api_base: str = None
     gmail_credentials_file: str = "credentials.json"
     llm_model: str = IDEAL_MODEL
-    database_url: str = ""
+    database_url: str = "sqlite://:memory:"
 
     workspace_path: str = "workspace"
     hard_exit: bool = False
