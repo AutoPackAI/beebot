@@ -70,22 +70,23 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: A success message indicating the file was written.
         """
-        if not await self.active_memory():
+        active_memory = await self.active_memory()
+        if not active_memory:
             return ""
 
         document, _created = await DocumentModel.get_or_create(
-            name=file_path, defaults={"content": content}
+            name=file_path, content=content
         )
 
         stale_link = await DocumentMemoryModel.filter(
-            document__name=file_path, memory=(await self.active_memory()).model_object
+            document__name=file_path, memory=active_memory.model_object
         ).first()
 
         if stale_link:
             logger.warning(f"Deleting stale link ID {stale_link.id}")
             await stale_link.delete()
 
-        await (await self.active_memory()).add_document(document)
+        await active_memory.add_document(document)
         return f"Successfully wrote {len(content.encode('utf-8'))} bytes to {file_path}"
 
     async def adelete_file(self, file_path: str) -> str:
@@ -97,15 +98,16 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: A success message indicating the file was deleted. If the file does not exist, returns an error message.
         """
-        if not await self.active_memory():
-            return
+        active_memory = await self.active_memory()
+        if not active_memory:
+            return ""
 
         document = await DocumentModel.get_or_none(name=file_path)
         if not document:
             return f"Error: File not found '{file_path}'"
 
         document_memory = await DocumentMemoryModel.filter(
-            document=document, memory=(await self.active_memory()).model_object
+            document=document, memory=active_memory.model_object
         ).first()
 
         if document_memory:
@@ -126,11 +128,12 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: A list of all files in the directory. If the directory does not exist, returns an error message.
         """
-        if not await self.active_memory():
+        active_memory = await self.active_memory()
+        if not active_memory:
             return ""
 
         document_memories = await DocumentMemoryModel.filter(
-            memory=(await self.active_memory()).model_object
+            memory=active_memory.model_object
         ).prefetch_related("document")
 
         file_paths = [dm.document.name for dm in document_memories]
@@ -146,11 +149,11 @@ class DatabaseFileManager(FileManager):
             return f"Error: No such directory {dir_path}."
 
     async def all_documents(self) -> list[DocumentModel]:
-        if not await self.active_memory():
+        active_memory = await self.active_memory()
+        if not active_memory:
             return []
-        memory = await self.active_memory()
         document_memories = await DocumentMemoryModel.filter(
-            memory=memory.model_object
+            memory=active_memory.model_object
         ).prefetch_related("document")
 
         return [dm.document for dm in document_memories]
