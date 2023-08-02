@@ -24,13 +24,13 @@ ORIGINS = [
 ]
 
 
-def create_app() -> FastAPI:
+async def create_app() -> FastAPI:
     load_dotenv()
     os.environ["BEEBOT_HARD_EXIT"] = "False"
     config = Config.global_config()
     config.setup_logging()
 
-    initialize_db(config.database_url)
+    await initialize_db(config.database_url)
 
     app = FastAPI(
         title="BeeBot Agent Communication Protocol",

@@ -27,8 +27,8 @@ class GetWebsiteTextContent(SystemBasePack):
     args_schema = GetWebsiteTextContentArgs
     categories = ["Web"]
 
-    def _run(self, url: str) -> str:
+    async def _arun(self, url: str) -> str:
         response = requests.get(url)
         soup = BeautifulSoup(response.text, "html.parser")
         stripped_text = re.sub(r"\s+", " ", soup.get_text().strip())
-        return filter_long_documents(self.body, stripped_text)
+        return await filter_long_documents(self.body, stripped_text)

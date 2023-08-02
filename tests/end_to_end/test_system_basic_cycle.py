@@ -4,7 +4,6 @@ import pytest
 
 from beebot.body.body_state_machine import BodyStateMachine
 from beebot.config import Config
-from tests.conftest import init_body
 
 
 @pytest.fixture()
@@ -12,8 +11,9 @@ def simple_task():
     return "Get my OS name and version, and my current disk usage. write it to a file called my_computer.txt"
 
 
-def test_system_basic_cycle(simple_task):
-    body = init_body(simple_task)
+@pytest.mark.asyncio
+async def test_system_basic_cycle(simple_task, body_fixture):
+    body = await body_fixture
     assert body.state.current_state == BodyStateMachine.starting
 
     assert "my_computer.txt" in body.initial_task
@@ -24,7 +24,7 @@ def test_system_basic_cycle(simple_task):
     assert body.state.current_state == BodyStateMachine.starting
 
     for i in range(0, 8):
-        body.cycle()
+        await body.cycle()
         if body.state.current_state == BodyStateMachine.done:
             break
 

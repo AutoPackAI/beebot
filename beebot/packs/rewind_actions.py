@@ -26,9 +26,9 @@ class RewindActions(SystemBasePack):
     args_schema = RewindActionsArgs
     categories = ["System"]
 
-    def _run(
+    async def _arun(
         self,
     ) -> str:
-        self.body.rewind()
+        await self.body.rewind()
 
         return "Rewound successfully"

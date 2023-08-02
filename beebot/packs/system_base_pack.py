@@ -22,5 +22,5 @@ class SystemBasePack(Pack):
     def _run(self, *args, **kwargs):
         raise NotImplementedError
 
-    def _arun(self, *args, **kwargs):
-        raise NotImplementedError
+    async def _arun(self, *args, **kwargs) -> str:
+        return self._run(*args, **kwargs)

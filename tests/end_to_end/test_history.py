@@ -7,15 +7,6 @@ from beebot.body.body_state_machine import BodyStateMachine
 
 
 @pytest.fixture()
-def body(task):
-    body_obj = Body(initial_task=task)
-    body_obj.setup()
-    body_obj.config.setup_logging()
-    body_obj.config.hard_exit = False
-    return body_obj
-
-
-@pytest.fixture()
 def task() -> str:
     return "Follow the instructions in the instructions_1.txt file"
 
@@ -30,7 +21,8 @@ def ids() -> list[str]:
 
 
 @pytest.fixture()
-def instructions_files(body, ids) -> list[str]:
+async def instructions_files_fixture(body_fixture, ids) -> tuple[Body, list[str]]:
+    body = await body_fixture
     instructions = []
     for i, instruction in enumerate(ids):
         instructions.append(
@@ -39,20 +31,22 @@ def instructions_files(body, ids) -> list[str]:
 
     instructions.append("Write the ids previously mentioned to a file named 'ids.txt'.")
     for i, instruction in enumerate(instructions):
-        body.file_manager.write_file(f"instructions_{i + 1}.txt", instruction)
+        await body.file_manager.awrite_file(f"instructions_{i + 1}.txt", instruction)
 
-    return instructions
+    return body, instructions
 
 
-def test_parse_history(body, task, instructions_files, ids):
+@pytest.mark.asyncio
+async def test_parse_history(body_fixture, task, instructions_files_fixture, ids):
+    body, _instructions_files = await instructions_files_fixture
     for i in range(0, 15):
-        body.cycle()
+        await body.cycle()
         if body.state.current_state == BodyStateMachine.done:
             break
 
         assert body.state.current_state == BodyStateMachine.waiting
 
-    body.file_manager.flush_to_directory()
+    await body.file_manager.flush_to_directory()
     with open("workspace/ids.txt", "r") as f:
         file_contents = f.read()
         for expected_id in ids:

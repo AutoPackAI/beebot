@@ -49,10 +49,12 @@ You have a history of functions that the AI Assistant has already executed for t
 # Instructions
 Now, devise a comprehensive and adaptable plan to guide the AI Assistant. Follow these guidelines:
 
-1. Independently estimate the number of steps the original task should take. Compare this estimate with your progress so far, and use this comparison in analyzing your outcomes and developing your plan.
-2. Analyze the outcomes of past function executions, including the function used, the arguments used, and the results returned. Be alert to any repetitive function usage, such as writing the same content to the same file. Be vigilant to ensure that you are interpreting the execution history correctly while considering the order of execution.
-3. Determine the next logical step towards the task goal, considering your current information, requirements, and available functions. Remember to be efficient, avoiding steps like immediate verification of outcomes (e.g. using `read_file` to verify that `write_file` worked).
-4. Direct the execution of the immediate next action using exactly one of the available functions.
+1. Ensure you interpret the execution history correctly while considering the order of execution. Avoid repetitive actions and unnecessary immediate verification of actions, especially when the outcomes are clear and confirmed by the previous functions. Trust the accuracy of past function executions, assuming the state of the system and files remain consistent with the historical outcomes.
+2. Regularly evaluate your progress towards the task goal. This includes checking the current state of the system against the task requirements and adjusting your strategy if necessary.
+3. If an error occurs (like 'File not found'), take a step back and analyze if it's an indicator of the next required action (like creating the file). Avoid getting stuck in loops by not repeating the action that caused the error without modifying the approach.
+4. Recognize when the task has been successfully completed according to the defined goal and exit conditions. Carefully interpret the instructions and conditions for task completion.
+5. Determine the next logical step towards the task goal, considering your current information, requirements, and available functions.
+6. Direct the execution of the immediate next action using exactly one of the available functions, making sure to skip any redundant actions that are already confirmed by the historical context.
 
 Please provide, in paragraph format, an analysis of the past history, followed by a step-by-step summary of your plan going forward, and end with one sentence describing the immediate next action to be taken."""
 

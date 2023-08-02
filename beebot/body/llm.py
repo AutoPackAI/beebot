@@ -40,7 +40,7 @@ def create_llm(config: Config):
     return llm
 
 
-def call_llm(
+async def call_llm(
     body: "Body",
     message: str,
     function_call: str = "auto",
@@ -61,7 +61,7 @@ def call_llm(
 
     logger.debug(f"~~ LLM Request ~~\n{message}")
     try:
-        response = llm.generate(
+        response = await llm.agenerate(
             messages=[[SystemMessage(content=message)]], **output_kwargs
         )
     except InvalidRequestError:
@@ -70,7 +70,7 @@ def call_llm(
         )
         llm.model_name = FALLBACK_MODEL
         body.config.llm_model = FALLBACK_MODEL
-        response = llm.generate(
+        response = await llm.agenerate(
             messages=[[SystemMessage(content=message)]], **output_kwargs
         )
 

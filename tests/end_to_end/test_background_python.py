@@ -3,7 +3,6 @@ import os
 import pytest
 
 from beebot.body.body_state_machine import BodyStateMachine
-from tests.conftest import init_body
 
 
 @pytest.fixture()
@@ -16,11 +15,12 @@ def task() -> str:
     )
 
 
-def test_background_python(task):
-    body = init_body(task)
+@pytest.mark.asyncio
+async def test_background_python(task, body_fixture):
+    body = await body_fixture
 
     for i in range(0, 15):
-        response = body.cycle()
+        response = await body.cycle()
         print(
             f"----\n{body.current_memory_chain.compile_history()}\n{response.plan.plan_text}\n{response.decision.tool_name}"
             f"({response.decision.tool_args})\n{response.observation.response}\n---"

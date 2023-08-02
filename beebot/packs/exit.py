@@ -37,7 +37,10 @@ class Exit(SystemBasePack):
     args_schema = ExitArgs
     categories = ["System"]
 
-    def _run(
+    def _run(self, *args, **kwargs) -> str:
+        raise NotImplementedError
+
+    async def _arun(
         self,
         success: bool,
         categorization: str = "",
@@ -45,7 +48,7 @@ class Exit(SystemBasePack):
         function_summary: str = "",
     ) -> str:
         self.body.state.finish()
-        self.body.current_memory_chain.persist_memory_chain()
+        await self.body.current_memory_chain.persist_memory_chain()
         if success:
             logger.info("\n=== Task completed ===")
         else:

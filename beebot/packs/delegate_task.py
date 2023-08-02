@@ -20,14 +20,14 @@ class DelegateTask(SystemBasePack):
 
     reversible = False
 
-    def _run(self, task: str) -> str:
+    async def _arun(self, task: str) -> str:
         from beebot.body import Body
 
         try:
             subagent = Body(task)
-            subagent.setup()
+            await subagent.setup()
             subagent_output = []
-            while output := subagent.cycle():
+            while output := await subagent.cycle():
                 subagent_output.append(output.observation.response)
 
             return "\n".join(subagent_output)

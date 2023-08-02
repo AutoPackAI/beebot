@@ -1,9 +1,10 @@
 import json
 from typing import TYPE_CHECKING
 
+from beebot.executor.observation import Observation
 from beebot.memory import Memory
-from beebot.models import Plan, Observation
 from beebot.models.database_models import MemoryChainModel, MemoryModel
+from beebot.planner.plan import Plan
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -23,65 +24,66 @@ class MemoryChain:
         self.memories = []
         self.model_object = model_object
         self.incomplete_memory = None
-        self.create_incomplete_memory()
 
     @classmethod
-    def from_model(cls, body: "Body", chain_model: MemoryChainModel):
+    async def from_model(cls, body: "Body", chain_model: MemoryChainModel):
         chain = cls(body, model_object=chain_model)
 
         for memory_model in chain_model.memories:
             chain.memories.append(Memory.from_model(memory_model))
 
+        await chain.create_incomplete_memory()
         return chain
 
-    def create_incomplete_memory(self) -> Memory:
+    async def create_incomplete_memory(self) -> Memory:
+        await self.persist_memory_chain()
         new_incomplete_memory = Memory(memory_chain=self)
-        new_incomplete_memory.persist_memory()
+        await new_incomplete_memory.persist_memory()
 
         # Create links from previous documents to this memory
         if self.incomplete_memory:
-            for document in self.incomplete_memory.documents.values():
-                new_incomplete_memory.add_document(document)
+            for document in (await self.incomplete_memory.documents).values():
+                await new_incomplete_memory.add_document(document)
 
         self.incomplete_memory = new_incomplete_memory
         return self.incomplete_memory
 
-    def add_plan(self, plan: Plan):
+    async def add_plan(self, plan: Plan):
         self.incomplete_memory.plan = plan
-        self.incomplete_memory.persist_memory()
+        await self.incomplete_memory.persist_memory()
 
-    def add_decision(self, decision: str):
+    async def add_decision(self, decision: str):
         self.incomplete_memory.decision = decision
-        self.incomplete_memory.persist_memory()
+        await self.incomplete_memory.persist_memory()
 
-    def add_observation(self, observation: Observation):
+    async def add_observation(self, observation: Observation):
         self.incomplete_memory.observation = observation
-        self.incomplete_memory.persist_memory()
+        await self.incomplete_memory.persist_memory()
 
-    def finish(self) -> Memory:
+    async def finish(self) -> Memory:
         completed_memory = self.incomplete_memory
 
         # If the tool messed with memories (e.g. rewind) already we don't want to store it
         # TODO: Maybe we do?
         if self.incomplete_memory.decision is None:
-            self.create_incomplete_memory()
+            await self.create_incomplete_memory()
             return self.incomplete_memory
 
-        self.create_incomplete_memory()
+        await self.create_incomplete_memory()
         self.memories.append(completed_memory)
-        self.persist_memory_chain()
+        await self.persist_memory_chain()
         return completed_memory
 
-    def persist_memory_chain(self):
+    async def persist_memory_chain(self):
         if not self.model_object:
             chain_model = MemoryChainModel(body=self.body.model_object)
-            chain_model.save()
+            await chain_model.save()
             self.model_object = chain_model
 
         for memory in self.memories:
-            memory.persist_memory()
+            await memory.persist_memory()
 
-    def compile_history(self) -> str:
+    async def compile_history(self) -> str:
         if not self.memories:
             return ""
 
@@ -105,6 +107,21 @@ class MemoryChain:
             # Don't include the rewind_action in the compiled history because we've already got this ^^
             memories_to_compile = memories_to_compile[1:]
 
+        # Prepend the history with the state of all files
+        explicitly_used_files = [
+            memory.decision.tool_args.get("filename")
+            for memory in self.memories
+            if memory.decision.tool_name in ["read_file", "write_file"]
+        ]
+        for file in await self.body.file_manager.all_documents():
+            if file.name in explicitly_used_files:
+                continue
+
+            memory_table.append(
+                history_item(len(memory_table) + 1, file.name, file.content)
+            )
+
+        # Compile the actual history
         for i, memory in enumerate(memories_to_compile):
             outcome = (
                 json.dumps(memory.observation.response)
@@ -125,10 +142,15 @@ class MemoryChain:
 
             memory_table.append(formatted_outcome)
 
-        for file in self.body.file_manager.all_documents():
-            memory_table.append(
-                f"{len(memory_table) + 1}. You executed the function `read_file` with the arguments "
-                f'{{"filename": "{file.name}"}}: {json.dumps(file.content)}.'
-            )
+            # If this was a write_file immediately append a read_file afterwards so that unnecessary verification isn't
+            # performed
+            if memory.decision.tool_name == "write_file":
+                name = memory.decision.tool_args.get("filename")
+                content = memory.decision.tool_args.get("text_content")
+                memory_table.append(history_item(len(memory_table) + 1, name, content))
 
         return "\n".join(memory_table)
+
+
+def history_item(number: int, name: str, content: dict):
+    return f'{number}. You executed the function `read_file` with the arguments {{"filename": "{name}"}}: {json.dumps(content)}.'

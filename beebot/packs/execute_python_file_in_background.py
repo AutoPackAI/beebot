@@ -80,3 +80,6 @@ class ExecutePythonFileInBackground(SystemBasePack):
             f"Process started. It has been assigned PID {process.pid}. Use this when calling "
             f"`get_process_status`."
         )
+
+    async def _arun(self, *args, **kwargs) -> str:
+        return self._run(*args, **kwargs)

@@ -34,8 +34,8 @@ focus.
 
 ### Persistence
 
-Persistence is _required_. It is recommended that you use Docker for starting a Postgres database. This can be done
-simply by executing `docker compose up -d`.
+Persistence is _required_. While SQLite is officially supported and is used in tests, it is highly recommended that
+you use Postgres via docker, simply by executing `docker compose up -d`.
 
 ## Running
 
@@ -92,6 +92,8 @@ curl --request POST \
 ```
 
 ### Websocket Connection
+
+_Note: Notifications are currently undergoing a rework and may not work at the moment_
 
 To receive a stream of changes to all the data models in BeeBot, you can subscribe to the websocket connection at
 the `/notifications` endpoint with the same host/port as the web api, e.g. ws://localhost:8000/notifications. Use your

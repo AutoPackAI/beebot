@@ -51,7 +51,7 @@ def memory_response(memory: Memory, body: Body) -> JSONResponse:
 async def create_agent_task(request: Request) -> JSONResponse:
     request_data = await request.json()
     body = Body(request_data.get("input"))
-    body.setup()
+    await body.setup()
 
     return body_response(body)
 
@@ -59,7 +59,9 @@ async def create_agent_task(request: Request) -> JSONResponse:
 async def execute_agent_task_step(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
     try:
-        body_model = BodyModel.get_by_id(int(task_id))
+        body_model = await BodyModel.get(id=int(task_id)).prefetch_related(
+            "memory_chains__memories__document_memories__document"
+        )
     except ValueError:
         logger.error(f"Body ID {task_id} is invalid")
         raise HTTPException(status_code=404, detail="Invalid Task ID")
@@ -68,8 +70,8 @@ async def execute_agent_task_step(request: Request) -> JSONResponse:
         logger.error(f"Body with ID {task_id} not found")
         raise HTTPException(status_code=404, detail="Task not found")
 
-    body = Body.from_model(body_model)
-    memory = body.cycle()
+    body = await Body.from_model(body_model)
+    memory = await body.cycle()
     if not memory:
         raise HTTPException(status_code=400, detail="Task is complete")
 
@@ -77,24 +79,24 @@ async def execute_agent_task_step(request: Request) -> JSONResponse:
 
 
 async def agent_task_ids(request: Request) -> JSONResponse:
-    bodies = BodyModel.select()
+    bodies = await BodyModel.filter()
     return JSONResponse([str(body.id) for body in bodies])
 
 
 async def get_agent_task(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
-    body_model = BodyModel.get_by_id(int(task_id))
+    body_model = await BodyModel.get(id=int(task_id))
 
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
 
-    return body_response(Body.from_model(body_model))
+    return body_response(await Body.from_model(body_model))
 
 
 async def list_agent_task_steps(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
-    body_model = BodyModel.get_by_id(int(task_id))
-    body = Body.from_model(body_model)
+    body_model = await BodyModel.get(id=int(task_id))
+    body = await Body.from_model(body_model)
 
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
@@ -108,17 +110,17 @@ async def list_agent_task_steps(request: Request) -> JSONResponse:
 
 async def get_agent_task_step(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
-    body_model = BodyModel.get_by_id(int(task_id))
+    body_model = await BodyModel.get(id=int(task_id))
 
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
 
     step_id = request.path_params.get("step_id")
-    memory_model = MemoryModel.get_by_id(int(step_id))
+    memory_model = await MemoryModel.get(id=int(step_id))
 
     if not memory_model:
         raise HTTPException(status_code=400, detail="Step not found")
 
-    body = Body.from_model(body_model)
-    memory = Memory.from_model(memory_model)
+    body = await Body.from_model(body_model)
+    memory = await Memory.from_model(memory_model)
     return memory_response(memory, body)

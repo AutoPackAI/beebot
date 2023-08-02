@@ -24,15 +24,15 @@ class Encyclopedia(SystemBasePack):
     args_schema = EncyclopediaArgs
     categories = ["Information", "Science and Math"]
 
-    def _run(self, query: str) -> str:
+    async def _arun(self, query: str) -> str:
         try:
             # TODO: Maybe a custom prompt?
-            response = call_llm(
+            llm_response = await call_llm(
                 body=self.body,
                 message=query,
                 function_call="none",
-            ).text
+            )
 
-            return response
+            return llm_response.text
         except Exception as e:
             return f"Error: {e}"

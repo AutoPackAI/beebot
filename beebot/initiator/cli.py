@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import argparse
+import asyncio
 
 from dotenv import load_dotenv
 
@@ -20,7 +21,7 @@ def parse_args():
     return parser.parse_args()
 
 
-def main():
+async def main():
     load_dotenv()
     parsed_args = parse_args()
     if parsed_args.task:
@@ -32,15 +33,15 @@ def main():
 
     config = Config.global_config()
     config.setup_logging()
-    initialize_db(config.database_url)
+    await initialize_db(config.database_url)
 
     body = Body(initial_task=task, config=config)
-    body.setup()
-    while output := body.cycle():
+    await body.setup()
+    while output := await body.cycle():
         if output.observation:
             print("=== Cycle Output ===")
             print(output.observation.response)
 
 
 if __name__ == "__main__":
-    main()
+    asyncio.run(main())

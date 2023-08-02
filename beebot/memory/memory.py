@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
+from beebot.decider.decision import Decision
+from beebot.executor.observation import Observation
 from beebot.models.database_models import (
     MemoryModel,
     DocumentModel,
     DocumentMemoryModel,
 )
-from beebot.models.decision import Decision
-from beebot.models.observation import Observation
-from beebot.models.plan import Plan
+from beebot.planner.plan import Plan
 
 if TYPE_CHECKING:
     from beebot.memory.memory_chain import MemoryChain
@@ -24,33 +24,38 @@ class Memory:
     reversible: bool = True
 
     @property
-    def documents(self) -> dict[str, DocumentModel]:
+    async def documents(self) -> dict[str, DocumentModel]:
         documents = {}
         if not self.model_object:
             return documents
 
-        for document_memory in self.model_object.document_memories:
+        document_memories = await DocumentMemoryModel.filter(
+            memory=self.model_object
+        ).prefetch_related("document")
+        for document_memory in document_memories:
             documents[document_memory.document.name] = document_memory.document
 
         return documents
 
-    def add_document(self, document: DocumentModel):
-        DocumentMemoryModel.get_or_create(document=document, memory=self.model_object)
+    async def add_document(self, document: DocumentModel):
+        await DocumentMemoryModel.get_or_create(
+            document=document, memory=self.model_object
+        )
 
-    def persist_memory(self):
+    async def persist_memory(self):
         if not self.model_object:
-            memory_model = MemoryModel(
+            self.model_object = MemoryModel(
                 memory_chain=self.memory_chain.model_object,
             )
-            if self.plan:
-                memory_model.plan = self.plan.__dict__
-            if self.decision:
-                memory_model.decision = self.decision.__dict__
-            if self.observation:
-                memory_model.observation = self.observation.__dict__
 
-            memory_model.save()
-            self.model_object = memory_model
+        if self.plan:
+            self.model_object.plan = self.plan.__dict__
+        if self.decision:
+            self.model_object.decision = self.decision.__dict__
+        if self.observation:
+            self.model_object.observation = self.observation.__dict__
+
+        await self.model_object.save()
 
     @classmethod
     def from_model(cls, memory_model: MemoryModel):

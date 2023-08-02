@@ -18,7 +18,7 @@ if TYPE_CHECKING:
 logger = logging.getLogger(__name__)
 
 
-def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
+async def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
     packs_for_recommendation = [
         pack
         for pack in all_packs(body).values()
@@ -32,7 +32,8 @@ def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackResponse]]:
     logger.info("=== Function request sent to LLM ===")
     logger.info(prompt)
 
-    response = call_llm(body, prompt).text
+    llm_response = await call_llm(body, prompt)
+    response = llm_response.text
     logger.info("=== Functions received from LLM ===")
     logger.info(response)
 

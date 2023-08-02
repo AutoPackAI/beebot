@@ -38,14 +38,15 @@ class GetMoreTools(SystemBasePack):
     args_schema = GetPacksArgs
     categories = ["System"]
 
-    def _run(self, desired_functionality: str) -> list[str]:
+    async def _arun(self, desired_functionality: str) -> list[str]:
         prompt = get_more_tools_template().format(
             task=self.body.task,
             functions=functions_bulleted_list(all_packs(self.body).values()),
             functions_request=desired_functionality,
         )
 
-        response = call_llm(self.body, prompt, include_functions=False).text
+        llm_response = await call_llm(self.body, prompt, include_functions=False)
+        response = llm_response.text
 
         functions = [r.split("(")[0].strip() for r in re.split(r",|\n", response)]
         packs_by_name = {pack.name: pack for pack in get_all_pack_info()}
@@ -62,6 +63,6 @@ class GetMoreTools(SystemBasePack):
                 f"functionality."
             )
 
-        self.body.update_packs(added_packs)
+        await self.body.update_packs(added_packs)
 
         return f"Functions added: {', '.join([p.name for p in added_packs])}"

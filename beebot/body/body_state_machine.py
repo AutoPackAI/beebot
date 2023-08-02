@@ -30,15 +30,3 @@ class BodyStateMachine(StateMachine):
     def __init__(self, body: "Body"):
         self.body = body
         super().__init__()
-
-    def on_enter_state(self, event, state):
-        """
-        Whenever state changes persist the state change
-        This is probably a bad place to put this logic.
-        """
-        if self.body.model_object:
-            self.body.model_object.current_task = self.body.task
-            self.body.model_object.state = state.value
-            self.body.model_object.packs = self.body.packs.keys()
-            self.body.model_object.save()
-            self.body.file_manager.flush_to_directory(self.body.config.workspace_path)

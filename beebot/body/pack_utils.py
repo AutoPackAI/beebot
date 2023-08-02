@@ -56,8 +56,9 @@ def all_local_packs(body: "Body") -> dict[str, Pack]:
 
 
 def llm_wrapper(body: "Body") -> str:
-    def llm(prompt) -> str:
-        return call_llm(body, prompt).text
+    async def llm(prompt) -> str:
+        response = await call_llm(body, prompt)
+        return response.text
 
     return llm
 
