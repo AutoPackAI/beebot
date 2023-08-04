@@ -63,7 +63,7 @@ class ExecutePythonFile(SystemBasePack):
     name = PACK_NAME
     description = PACK_DESCRIPTION
     args_schema = ExecutePythonFileArgs
-    categories = ["Programming", "Files"]
+    categories = ["Programming"]
     depends_on = ["install_python_package", "write_python_code"]
 
     async def _arun(self, file_path: str, python_args: str = "") -> str:

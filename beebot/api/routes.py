@@ -6,8 +6,8 @@ from starlette.responses import JSONResponse
 
 from beebot.body import Body
 from beebot.body.body_state_machine import BodyStateMachine
-from beebot.memory import Memory
-from beebot.models.database_models import BodyModel, MemoryModel
+from beebot.execution import Step
+from beebot.models.database_models import BodyModel, StepModel
 
 logger = logging.getLogger(__name__)
 
@@ -26,22 +26,22 @@ async def body_response(body: Body) -> JSONResponse:
     )
 
 
-async def memory_response(memory: Memory, body: Body) -> JSONResponse:
+async def step_response(step: Step, body: Body) -> JSONResponse:
     artifacts = [
         {"name": document.name, "content": document.content}
         for document in await body.file_manager.all_documents()
     ]
-    memory_output = {
-        "plan": memory.plan.__dict__,
-        "decision": memory.decision.__dict__,
-        "observation": memory.observation.__dict__,
-        "reversible": memory.reversible,
+    step_output = {
+        "plan": step.plan.json(),
+        "decision": step.decision.json(),
+        "observation": step.observation.json(),
+        "reversible": step.reversible,
     }
     return JSONResponse(
         {
-            "step_id": str(memory.model_object.id),
+            "step_id": str(step.model_object.id),
             "task_id": str(body.model_object.id),
-            "output": memory_output,
+            "output": step_output,
             "artifacts": artifacts,
             "is_last": body.state.current_state == BodyStateMachine.done,
         }
@@ -71,11 +71,11 @@ async def execute_agent_task_step(request: Request) -> JSONResponse:
         raise HTTPException(status_code=404, detail="Task not found")
 
     body = await Body.from_model(body_model)
-    memory = await body.cycle()
-    if not memory:
+    step = await body.cycle()
+    if not step:
         raise HTTPException(status_code=400, detail="Task is complete")
 
-    return await memory_response(memory, body)
+    return await step_response(step, body)
 
 
 async def agent_task_ids(request: Request) -> JSONResponse:
@@ -105,11 +105,11 @@ async def list_agent_task_steps(request: Request) -> JSONResponse:
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
 
-    memory_ids = [
-        m.id for m in await body.current_memory_chain.model_object.memories.all()
+    step_ids = [
+        m.id for m in await body.current_execution_path.model_object.steps.all()
     ]
 
-    return JSONResponse(memory_ids)
+    return JSONResponse(step_ids)
 
 
 async def get_agent_task_step(request: Request) -> JSONResponse:
@@ -122,11 +122,11 @@ async def get_agent_task_step(request: Request) -> JSONResponse:
         raise HTTPException(status_code=400, detail="Task not found")
 
     step_id = request.path_params.get("step_id")
-    memory_model = await MemoryModel.get(id=int(step_id))
+    step_model = await StepModel.get(id=int(step_id))
 
-    if not memory_model:
+    if not step_model:
         raise HTTPException(status_code=400, detail="Step not found")
 
     body = await Body.from_model(body_model)
-    memory = await Memory.from_model(memory_model)
-    return await memory_response(memory, body)
+    step = await Step.from_model(step_model)
+    return await step_response(step, body)

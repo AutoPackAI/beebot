@@ -44,8 +44,6 @@ async def test_parse_history(body_fixture, task, instructions_files_fixture, ids
         if body.state.current_state == BodyStateMachine.done:
             break
 
-        assert body.state.current_state == BodyStateMachine.waiting
-
     await body.file_manager.flush_to_directory()
     with open("workspace/ids.txt", "r") as f:
         file_contents = f.read()

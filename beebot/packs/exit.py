@@ -12,19 +12,8 @@ logger = logging.getLogger(__name__)
 
 class ExitArgs(BaseModel):
     success: bool = Field(..., description="Success")
-    categorization: str = Field(
-        description="Assign a broad category to this task, ensuring it's general enough to protect sensitive details "
-        "yet specific enough to group similar tasks.",
-        default="",
-    )
     conclusion: str = Field(
-        description="Reflect on the task execution process. Highlight any challenges faced and potential alternative "
-        "strategies.",
-        default="",
-    )
-    function_summary: str = Field(
-        description="Create a concise review of each function that you used.",
-        default="",
+        description="Reflect on the task execution process.", default=""
     )
 
 
@@ -48,7 +37,7 @@ class Exit(SystemBasePack):
         function_summary: str = "",
     ) -> str:
         self.body.state.finish()
-        await self.body.current_memory_chain.persist_memory_chain()
+        await self.body.current_execution_path.save()
         if success:
             logger.info("\n=== Task completed ===")
         else:

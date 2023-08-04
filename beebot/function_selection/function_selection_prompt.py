@@ -8,11 +8,11 @@ For example, your response may look like this:
 
 function1, function2, function3 ### function1 can accomplish step A of the task because..., function2 and function3 can be used together to..."""
 
-INITIAL_SELECTION_TEMPLATE = """As the AI Tool Selector your responsibility is to identify functions (tools) that could be useful for an autonomous AI assistant to accomplish a given task.
+INITIAL_SELECTION_TEMPLATE = """As the AI Tool Selector your responsibility is to identify functions (tools) that could be useful for an autonomous AI assistant to accomplish a given task. Functions are general-purpose and intended to be used in a wide variety of tasks.
 
 By providing more flexibility in the selection and emphasizing the consideration of alternative functions, we can ensure a wider range of function recommendations that align with the given task.
 
-Only recommend programming functions if the task explicitly requires programming.
+Only recommend programming functions if the task explicitly requires writing code.
 
 Analyze the task and available functions, and determine which functions could be useful. Consider functions that can achieve the goal directly or indirectly, in combination with other tools.
 
@@ -26,9 +26,11 @@ You may only recommend functions from the following list:
 
 When making your recommendations, consider how the functions can work together to achieve the task's goal, how certain functions may be more effective than others, and prioritize those functions that are most likely to contribute to a successful task completion."""
 
-GET_MORE_TOOLS_TEMPLATE = """As the AI Tool Selector, your responsibility is to identify functions that could be useful for an autonomous AI assistant to accomplish a given task. By providing more flexibility in the selection and emphasizing the consideration of alternative functions, we can ensure a wider range of function recommendations that align with the given task.
+GET_MORE_TOOLS_TEMPLATE = """As the AI Tool Selector, your responsibility is to identify functions that could be useful for an autonomous AI assistant to accomplish a given task. Functions are general-purpose and intended to be used in a wide variety of tasks.
 
-Only recommend programming functions if the task explicitly requires programming.
+By providing more flexibility in the selection and emphasizing the consideration of alternative functions, we can ensure a wider range of function recommendations that align with the given task.
+
+Only recommend programming functions if the task explicitly requires writing code.
 
 In this scenario, the Autonomous AI has made a request for additional functions to complete a task. Your role is to analyze the functions request and determine which functions could be useful, either directly or indirectly, in combination with other functions.
 

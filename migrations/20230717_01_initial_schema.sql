@@ -11,19 +11,59 @@ CREATE TABLE body (
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE memory_chain (
+CREATE TABLE execution_path (
   id SERIAL PRIMARY KEY,
   body_id INT REFERENCES body(id),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE memory (
+CREATE TABLE oversight (
   id SERIAL PRIMARY KEY,
-  memory_chain_id INT REFERENCES memory_chain(id),
-  plan JSONB,
-  decision JSONB,
-  observation JSONB,
+  original_plan_text TEXT NOT NULL,
+  modified_plan_text TEXT NOT NULL,
+  modifications JSONB,
+  llm_response TEXT,
+  prompt_variables JSONB,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE decision (
+  id SERIAL PRIMARY KEY,
+  tool_name TEXT NOT NULL,
+  tool_args JSONB,
+  prompt_variables JSONB,
+  llm_response TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE observation (
+  id SERIAL PRIMARY KEY,
+  response TEXT,
+  error_reason TEXT,
+  success BOOLEAN DEFAULT TRUE,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE plan (
+  id SERIAL PRIMARY KEY,
+  plan_text TEXT NOT NULL,
+  prompt_variables JSONB,
+  llm_response TEXT,
+  created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE step (
+  id SERIAL PRIMARY KEY,
+  execution_path_id INT REFERENCES execution_path(id),
+  plan_id INT REFERENCES plan(id),
+  oversight_id INT REFERENCES oversight(id),
+  decision_id INT REFERENCES decision(id),
+  observation_id INT REFERENCES observation(id),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -40,13 +80,10 @@ CREATE INDEX idx_document_name ON document(name);
 
 CREATE UNIQUE INDEX idx_document_name_content ON document(name, content);
 
-CREATE TABLE document_memory (
+CREATE TABLE document_step (
   id SERIAL PRIMARY KEY,
-  memory_id integer NOT NULL references memory(id),
+  step_id integer NOT NULL references step(id),
   document_id integer NOT NULL references document(id),
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
-
-
-

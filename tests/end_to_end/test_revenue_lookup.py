@@ -12,9 +12,9 @@ def task():
 
 
 @pytest.mark.asyncio
-async def test_capital_retrieval(task, body_fixture):
+async def test_revenue_lookup(task, body_fixture):
     body = await body_fixture
-    assert body.state.current_state == BodyStateMachine.starting
+    assert body.state.current_state == BodyStateMachine.oversight
 
     assert "Tesla" in body.task
     assert "2022" in body.task
@@ -22,14 +22,10 @@ async def test_capital_retrieval(task, body_fixture):
     assert len(body.config.openai_api_key) > 1
     assert len(body.packs) >= 3
 
-    assert body.state.current_state == BodyStateMachine.starting
-
     for i in range(0, 8):
         await body.cycle()
         if body.state.current_state == BodyStateMachine.done:
             break
-
-        assert body.state.current_state == BodyStateMachine.waiting
 
     assert len(body.packs) >= 5
     with open(os.path.join("workspace", "output.txt"), "r") as f:

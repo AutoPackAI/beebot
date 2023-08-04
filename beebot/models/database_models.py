@@ -1,3 +1,5 @@
+import json
+
 from tortoise import fields, Tortoise
 from tortoise.fields import JSONField
 from tortoise.models import Model
@@ -9,14 +11,19 @@ class BaseModel(Model):
     created_at = fields.DatetimeField(auto_now_add=True)
     updated_at = fields.DatetimeField(auto_now=True)
 
+    def json(self):
+        json_dict = {k: v for k, v in self.__dict__.items() if not k.startswith("_")}
+        json_dict.pop("created_at")
+        json_dict.pop("updated_at")
+        return json.dumps(json_dict)
+
     class Meta:
         abstract = True
 
 
 class BodyModel(BaseModel):
-    INCLUSIVE_PREFETCH = "memory_chains__memories__document_memories__document"
+    INCLUSIVE_PREFETCH = "execution_paths__steps__document_steps__document"
 
-    id = fields.IntField(pk=True)
     initial_task = fields.TextField()
     current_task = fields.TextField()
     state = fields.TextField(default="setup")
@@ -26,29 +33,72 @@ class BodyModel(BaseModel):
         table = "body"
 
 
-class MemoryChainModel(BaseModel):
-    id = fields.IntField(pk=True)
-    body = fields.ForeignKeyField("models.BodyModel", related_name="memory_chains")
+class ExecutionPathModel(BaseModel):
+    body = fields.ForeignKeyField("models.BodyModel", related_name="execution_paths")
 
     class Meta:
-        table = "memory_chain"
+        table = "execution_path"
 
 
-class MemoryModel(BaseModel):
-    id = fields.IntField(pk=True)
-    memory_chain = fields.ForeignKeyField(
-        "models.MemoryChainModel", related_name="memories"
+class StepModel(BaseModel):
+    execution_path = fields.ForeignKeyField(
+        "models.ExecutionPathModel", related_name="steps"
     )
-    plan = JSONField(default=dict)
-    decision = JSONField(default=dict)
-    observation = JSONField(default=dict)
+    plan = fields.ForeignKeyField("models.Plan", related_name="steps", null=True)
+    decision = fields.ForeignKeyField(
+        "models.Decision", related_name="steps", null=True
+    )
+    observation = fields.ForeignKeyField(
+        "models.Observation", related_name="steps", null=True
+    )
+    oversight = fields.ForeignKeyField(
+        "models.Oversight", related_name="steps", null=True
+    )
 
     class Meta:
-        table = "memory"
+        table = "step"
+
+
+class Oversight(BaseModel):
+    original_plan_text = fields.TextField()
+    modified_plan_text = fields.TextField()
+    modifications = JSONField(default=dict)
+    prompt_variables = JSONField(default=dict)
+    llm_response = fields.TextField(default="")
+
+    class Meta:
+        table = "oversight"
+
+
+class Decision(BaseModel):
+    tool_name = fields.TextField()
+    tool_args = JSONField(default=dict)
+    prompt_variables = JSONField(default=dict)
+    llm_response = fields.TextField(default="")
+
+    class Meta:
+        table = "decision"
+
+
+class Observation(BaseModel):
+    response = fields.TextField(null=True)
+    error_reason = fields.TextField(null=True)
+    success = fields.BooleanField(default=True)
+
+    class Meta:
+        table = "observation"
+
+
+class Plan(BaseModel):
+    plan_text = fields.TextField()
+    prompt_variables = JSONField(default=dict)
+    llm_response = fields.TextField(default="")
+
+    class Meta:
+        table = "plan"
 
 
 class DocumentModel(BaseModel):
-    id = fields.IntField(pk=True)
     name = fields.TextField()
     content = fields.TextField()
 
@@ -56,17 +106,14 @@ class DocumentModel(BaseModel):
         table = "document"
 
 
-class DocumentMemoryModel(BaseModel):
-    id = fields.IntField(pk=True)
-    memory = fields.ForeignKeyField(
-        "models.MemoryModel", related_name="document_memories"
-    )
+class DocumentStep(BaseModel):
+    step = fields.ForeignKeyField("models.StepModel", related_name="document_steps")
     document = fields.ForeignKeyField(
-        "models.DocumentModel", related_name="document_memories"
+        "models.DocumentModel", related_name="document_steps"
     )
 
     class Meta:
-        table = "document_memory"
+        table = "document_step"
 
 
 def apply_migrations(db_url: str):

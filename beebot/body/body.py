@@ -17,15 +17,20 @@ from beebot.body.revising_prompt import revise_task_prompt
 from beebot.config import Config
 from beebot.config.database_file_manager import DatabaseFileManager
 from beebot.decider import Decider
-from beebot.decider.decision import Decision
+from beebot.execution import Step
+from beebot.execution.execution_path import ExecutionPath
 from beebot.executor import Executor
-from beebot.executor.observation import Observation
 from beebot.function_selection.utils import recommend_packs_for_plan
-from beebot.memory import Memory
-from beebot.memory.memory_chain import MemoryChain
-from beebot.models.database_models import BodyModel, initialize_db
+from beebot.models.database_models import (
+    BodyModel,
+    Plan,
+    Decision,
+    Observation,
+    Oversight,
+    initialize_db,
+)
+from beebot.overseer.overseer import Overseer
 from beebot.planner import Planner
-from beebot.planner.plan import Plan
 
 logger = logging.getLogger(__name__)
 
@@ -40,15 +45,15 @@ class Body:
     processes: dict[int, subprocess.Popen]
 
     llm: BaseChatModel
+    overseer: Overseer
     planner: Planner
     executor: Executor
     decider: Decider
     config: Config
 
-    current_plan: Plan = None
     model_object: BodyModel = None
     file_manager: DatabaseFileManager = None
-    current_memory_chain: MemoryChain = None
+    current_execution_path: ExecutionPath = None
 
     def __init__(self, initial_task: str = "", config: Config = None):
         self.initial_task = initial_task
@@ -57,6 +62,7 @@ class Body:
         self.state = BodyStateMachine(self)
 
         self.llm = create_llm(self.config)
+        self.overseer = Overseer(body=self)
         self.planner = Planner(body=self)
         self.decider = Decider(body=self)
         self.executor = Executor(body=self)
@@ -77,15 +83,17 @@ class Body:
             config=body.config.pack_config, body=body
         )
 
-        await body.setup_file_manager()
-
         if body_model.state == BodyStateMachine.setup.value:
             await body.setup()
         else:
             body.state.current_state = BodyStateMachine.states_map[body_model.state]
 
-        for chain_model in await body_model.memory_chains.all():
-            body.current_memory_chain = await MemoryChain.from_model(body, chain_model)
+        for path_model in await body_model.execution_paths.all():
+            body.current_execution_path = await ExecutionPath.from_model(
+                body, path_model
+            )
+
+        await body.setup_file_manager()
 
         await body.update_packs(
             [get_or_install_pack(body, pack) for pack in body_model.packs]
@@ -98,7 +106,7 @@ class Body:
         # TODO: Remove duplication between this method and `from_model`
         await initialize_db(self.config.database_url)
 
-        self.current_memory_chain = MemoryChain(self)
+        self.current_execution_path = ExecutionPath(self)
         self.file_manager = DatabaseFileManager(
             config=self.config.pack_config, body=self
         )
@@ -109,54 +117,58 @@ class Body:
             )
             await self.save()
 
-        await self.current_memory_chain.create_incomplete_memory()
+        await self.current_execution_path.create_new_step()
 
         await self.setup_file_manager()
         await self.file_manager.load_from_directory()
         await self.revise_task()
         await self.update_packs()
 
-        self.state.start()
+        await self.create_initial_oversight()
+        self.state.oversee()
+
         await self.save()
 
-    async def cycle(self) -> Memory:
-        """Step through one plan-decide-execute loop"""
+    async def cycle(self) -> Step:
+        """Step through one decide-execute-plan loop"""
         if self.state.current_state == BodyStateMachine.done:
             return
 
         if self.state.current_state == BodyStateMachine.setup:
             await self.setup()
 
-        await self.plan()
-        await self.execute(decision=await self.decide())
+        oversight = self.current_execution_path.current_step.oversight
 
-        complete_memory = await self.current_memory_chain.finish()
+        self.state.decide()
+        await self.save()
+
+        decision = await self.decide(oversight)
+        await self.execute(decision)
+
+        new_plan = await self.plan()
+        await self.current_execution_path.add_plan(new_plan)
+
+        step = await self.current_execution_path.finish()
+
         await self.save()
 
         baserun.log(
             "CycleComplete",
             payload={
-                "plan": complete_memory.plan.__dict__ if complete_memory.plan else None,
-                "decision": complete_memory.decision.__dict__
-                if complete_memory.decision
-                else None,
-                "observation": complete_memory.observation.__dict__
-                if complete_memory.observation
-                else None,
+                "oversight": step.oversight.__dict__ if step.oversight else None,
+                "plan": step.plan.__dict__ if step.plan else None,
+                "decision": step.decision.__dict__ if step.decision else None,
+                "observation": step.observation.__dict__ if step.observation else None,
             },
         )
 
-        await self.file_manager.flush_to_directory()
-
-        return complete_memory
+        return step
 
     async def execute(self, decision: Decision, retry_count: int = 0) -> Observation:
         """Execute a Decision and keep track of state"""
-        self.state.execute()
-        await self.save()
         try:
             result = await self.executor.execute(decision=decision)
-            await self.current_memory_chain.add_observation(result)
+            await self.current_execution_path.add_observation(result)
             return result
         except ValidationError as e:
             # It's likely the AI just sent bad arguments, try again.
@@ -169,36 +181,36 @@ class Body:
         finally:
             # If the action resulted in status change (e.g. task complete) don't do anything
             if self.state.current_state == self.state.executing:
-                self.state.wait()
+                self.state.plan()
             await self.save()
 
-    async def decide(self, plan: Plan = None) -> Decision:
+    async def decide(self, oversight: Oversight = None) -> Decision:
         """Execute an action and keep track of state"""
-        self.state.decide()
-        await self.save()
-        plan = plan or self.current_plan
-
         try:
-            decision = await self.decider.decide_with_retry(plan=plan)
-            await self.current_memory_chain.add_decision(decision)
+            decision = await self.decider.decide_with_retry(oversight=oversight)
+            await self.current_execution_path.add_decision(decision)
 
             return decision
         finally:
-            self.state.wait()
+            self.state.execute()
             await self.save()
 
-    async def plan(self):
+    async def plan(self) -> Plan:
         """Take the current task and history and develop a plan"""
-        self.state.plan()
-        await self.save()
         try:
             plan = await self.planner.plan()
-            await self.current_memory_chain.add_plan(plan)
-            self.current_plan = plan
+            await self.current_execution_path.add_plan(plan)
             return plan
         finally:
-            self.state.wait()
+            if not self.state.current_state == BodyStateMachine.done:
+                self.state.oversee()
             await self.save()
+
+    async def create_initial_oversight(self) -> Oversight:
+        """Take the current task and history and develop a plan"""
+        oversight = await self.overseer.initial_oversight()
+        await self.current_execution_path.add_oversight(oversight)
+        return oversight
 
     async def revise_task(self):
         """Turn the initial task into a task that is easier for AI to more consistently understand"""
@@ -215,41 +227,22 @@ class Body:
     async def rewind(self):
         """
         Serves as a control mechanism that allows it to revert its state to a previous checkpoint. The function is
-        designed to reverse actions wherever possible and reset the current memories and plan. It should be noted,
+        designed to reverse actions wherever possible and reset the current steps and plan. It should be noted,
         however, that actions with side effects, like sending emails or making API calls, cannot be reversed.
         This is like a jank tree of thought because there's no analysis of the quality of different traversals.
-        # TODO: Extract this to some sort of memory manager
         """
-        memories = self.current_memory_chain.memories
-        new_memories = []
-        for i in reversed(range(len(memories))):
-            if not memories[i].reversible:
-                new_memories = memories[: i + 1]
+        steps = self.current_execution_path.steps
+        branch_at = 0
+        for i in reversed(range(len(steps))):
+            if not steps[i].reversible:
+                branch_at = i
+                break
 
-        logger.info(
-            f"Rewinding from step {len(memories) + 1} to step {len(new_memories) + 1}"
-        )
-        # TODO: Create a new chain
-        self.current_memory_chain.memories = new_memories
-        self.current_memory_chain.old_memories = memories
+        logger.info(f"Rewinding from step {len(steps) + 1} to step {branch_at + 1}")
 
-        await self.current_memory_chain.add_plan(
-            Plan(plan_text="Call the rewind_actions function")
+        self.current_execution_path = (
+            await self.current_execution_path.create_branch_from(branch_at)
         )
-
-        decision = Decision(
-            reasoning="The plan requires that I call the rewind_actions function.",
-            tool_name="rewind_actions",
-            tool_args="",
-        )
-        await self.current_memory_chain.add_decision(decision)
-
-        observation = Observation(
-            success=True,
-            response="You have rewound your state to this point. Please take an unconventional approach this time.",
-        )
-        await self.current_memory_chain.add_observation(observation)
-        await self.current_memory_chain.finish()
 
     async def save(self):
         if not self.model_object:
@@ -259,6 +252,14 @@ class Body:
         self.model_object.state = self.state.current_state.value
         self.model_object.packs = list(self.packs.keys())
         await self.model_object.save()
+        if (
+            self.current_execution_path.steps
+            and await self.current_execution_path.steps[-1].documents
+        ):
+            await self.file_manager.flush_to_directory(self.config.workspace_path)
+
+        await self.current_execution_path.save()
+        await self.file_manager.flush_to_directory(self.config.workspace_path)
 
     async def setup_file_manager(self):
         if not self.file_manager:

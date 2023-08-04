@@ -21,13 +21,11 @@ async def test_background_python(body_fixture, task):
     for i in range(0, 15):
         response = await body.cycle()
         print(
-            f"----\n{body.current_memory_chain.compile_history()}\n{response.plan.plan_text}\n{response.decision.tool_name}"
-            f"({response.decision.tool_args})\n{response.observation.response}\n---"
+            f"----\n{await body.current_execution_path.compile_history()}\n{response.plan.plan_text}\n"
+            f"{response.decision.tool_name}({response.decision.tool_args})\n{response.observation.response}\n---"
         )
         if body.state.current_state == BodyStateMachine.done:
             break
-
-        assert body.state.current_state == BodyStateMachine.waiting
 
     assert os.path.exists("workspace/health.txt")
 

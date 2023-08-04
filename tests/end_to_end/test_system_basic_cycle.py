@@ -14,21 +14,17 @@ def task():
 @pytest.mark.asyncio
 async def test_system_basic_cycle(task, body_fixture):
     body = await body_fixture
-    assert body.state.current_state == BodyStateMachine.starting
+    assert body.state.current_state == BodyStateMachine.oversight
 
     assert "my_computer.txt" in body.task
     assert isinstance(body.config, Config)
     assert len(body.config.openai_api_key) > 1
     assert len(body.packs) >= 3
 
-    assert body.state.current_state == BodyStateMachine.starting
-
     for i in range(0, 8):
         await body.cycle()
         if body.state.current_state == BodyStateMachine.done:
             break
-
-        assert body.state.current_state == BodyStateMachine.waiting
 
     assert len(body.packs) >= 5
     with open(os.path.join("workspace", "my_computer.txt"), "r") as f:

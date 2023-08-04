@@ -2,7 +2,6 @@ __all__ = [
     "AcquireMoreFunctions",
     "CreateDraft",
     "DelegateTask",
-    "Encyclopedia",
     "ExecutePythonFile",
     "ExecutePythonFileInBackground",
     "Exit",
@@ -19,7 +18,6 @@ __all__ = [
 
 from beebot.packs.acquire_more_functions import AcquireMoreFunctions
 from beebot.packs.delegate_task import DelegateTask
-from beebot.packs.encyclopedia import Encyclopedia
 from beebot.packs.execute_python_file import ExecutePythonFile
 from beebot.packs.execute_python_file_in_background import ExecutePythonFileInBackground
 from beebot.packs.exit import Exit

@@ -4,8 +4,8 @@
 
 BeeBot is an Autonomous AI Assistant is designed to perform a range of tasks autonomously, taking high-level
 instructions from human users and transforming them into actions which are then performed. BeeBot's capabilities are
-based on the underlying components: Planner, Decider, Executor, and Body. These components work in unison, each
-fulfilling its part in a state machine-driven process.
+based on the underlying components: Planner, Decider, Executor, and Body. These components work in sequence
+in a state machine, described below.
 
 ## Major Components
 
@@ -18,8 +18,9 @@ execution.
 
 ### Decider
 
-Once a Plan has been generated, the Decider takes over. It assesses the Plan and makes a Decision, again through the
-LLM, about what action the system should take next. The Decision maps to exactly one function call.
+The Decider takes a Plan, which may or may not have been amended by an Oversight. It assesses the Plan and makes a
+Decision, again through the LLM, about what action the system should take next. The Decision maps to exactly one
+function call.
 
 ### Executor
 
@@ -36,41 +37,26 @@ between the other components and also holds the State Machine that governs the o
 ## Operational Workflow (State Machine)
 
 ```
-[ Setup ]
-    |
-    | start
-    v
-[ Starting ]
-    |
-    | plan
-    v
-[ Planning ] <--------+
-    |                 |
-    | wait            |
-    v                 |
-[ Waiting ]           |
-    |                 |
-    | decide          |
-    v                 |
-[ Deciding ]          |
-    |                 | plan (Cycle Loop)
-    | wait            |
-    v                 |
-[ Waiting ]           |
-    |                 |
-    | execute         |
-    v                 |
-[ Executing ]         |
-    |                 |
-    | wait            |
-    v                 |
-[ Waiting ] ----------+
-    |
-    | finish
-    v
-[ Done ]
+ [ Setup ]
+     |
+     | start
+     v
+ [ Oversight ]<------+
+     |               |
+     | decide        | 
+     v               |
+ [ Deciding ]    [Planning]
+     |               |
+     | execute       |
+     v               |
+ [ Executing ]-------+
+     |          plan
+     | finish
+     v
+ [ Done ]
+
 ```
 
-These state transitions are governed by events or conditions such as `start`, `plan`, `decide`, `execute`, `wait`,
+These state transitions are governed by events or conditions such as `start`, `plan`, `decide`, `execute`, `oversee`,
 and `finish`. These dictate how the Assistant moves from one state to the next, and how the Planner, Decider, and
 Executor components interact.

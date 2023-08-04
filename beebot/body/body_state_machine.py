@@ -8,24 +8,17 @@ if TYPE_CHECKING:
 
 class BodyStateMachine(StateMachine):
     setup = State(initial=True)
-    starting = State()
     planning = State()
+    oversight = State()
     deciding = State()
     executing = State()
-    waiting = State()
     done = State(final=True)
 
-    start = setup.to(starting)
-    plan = starting.to(planning) | waiting.to(planning)
-    decide = waiting.to(deciding)
-    execute = waiting.to(executing)
-    wait = (
-        deciding.to(waiting)
-        | planning.to(waiting)
-        | executing.to(waiting)
-        | starting.to(waiting)
-    )
-    finish = waiting.to(done) | executing.to(done)
+    execute = deciding.to(executing)
+    plan = executing.to(planning)
+    oversee = planning.to(oversight) | setup.to(oversight)
+    decide = oversight.to(deciding)
+    finish = executing.to(done)
 
     def __init__(self, body: "Body"):
         self.body = body

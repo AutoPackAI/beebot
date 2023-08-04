@@ -6,7 +6,7 @@ import time
 from pydantic import BaseModel, Field
 
 from beebot.body.pack_utils import init_workspace_poetry
-from beebot.executor.background_process import BackgroundProcess
+from beebot.execution.background_process import BackgroundProcess
 from beebot.packs.system_base_pack import SystemBasePack
 from beebot.utils import restrict_path
 
@@ -48,15 +48,13 @@ class ExecutePythonFileInBackground(SystemBasePack):
         "list_processes",
         "kill_process",
     ]
-    categories = ["Programming", "Files", "Multiprocess"]
+    categories = ["Programming", "Multiprocess"]
 
     def _run(
         self, file_path: str, python_args: str = "", daemonize: bool = False
     ) -> str:
         if self.body.config.restrict_code_execution:
             return "Error: Executing Python code is not allowed"
-
-        self.body.file_manager.flush_to_directory()
 
         file_path = os.path.join(self.body.config.workspace_path, file_path)
         if not os.path.exists(file_path):
@@ -82,4 +80,5 @@ class ExecutePythonFileInBackground(SystemBasePack):
         )
 
     async def _arun(self, *args, **kwargs) -> str:
+        await self.body.file_manager.flush_to_directory()
         return self._run(*args, **kwargs)

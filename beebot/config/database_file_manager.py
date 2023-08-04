@@ -1,12 +1,12 @@
 import logging
 import os
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Union
 
 from autopack.filesystem_emulation.file_manager import FileManager
 from autopack.pack_config import PackConfig
 
-from beebot.memory import Memory
-from beebot.models.database_models import DocumentMemoryModel, DocumentModel
+from beebot.execution import Step
+from beebot.models.database_models import DocumentModel, DocumentStep
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -19,7 +19,7 @@ IGNORE_FILES = ["poetry.lock", "pyproject.toml", "__pycache__"]
 class DatabaseFileManager(FileManager):
     """
     This class emulates a filesystem in Postgres, storing files in a simple `document` table with a many-to-many
-    relationship with `memory`. Recommended unless you specifically need to access the documents in the filesystem.
+    relationship with `execution`. Recommended unless you specifically need to access the documents in the filesystem.
     """
 
     def __init__(
@@ -29,8 +29,12 @@ class DatabaseFileManager(FileManager):
         self.body = body
         self.files = {}
 
-    async def active_memory(self) -> Memory:
-        return self.body.current_memory_chain.memories[-1]
+    @property
+    def current_step(self) -> Union[Step, None]:
+        try:
+            return self.body.current_execution_path.steps[-1]
+        except IndexError:
+            return None
 
     # Can't support sync db access without a lot of headaches
     def read_file(self, *args, **kwargs):
@@ -70,23 +74,22 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: A success message indicating the file was written.
         """
-        active_memory = await self.active_memory()
-        if not active_memory:
+        if not self.current_step:
             return ""
 
         document, _created = await DocumentModel.get_or_create(
             name=file_path, content=content
         )
 
-        stale_link = await DocumentMemoryModel.filter(
-            document__name=file_path, memory=active_memory.model_object
+        stale_link = await DocumentStep.filter(
+            document__name=file_path, step=self.current_step.model_object
         ).first()
 
         if stale_link:
             logger.warning(f"Deleting stale link ID {stale_link.id}")
             await stale_link.delete()
 
-        await active_memory.add_document(document)
+        await self.current_step.add_document(document)
         return f"Successfully wrote {len(content.encode('utf-8'))} bytes to {file_path}"
 
     async def adelete_file(self, file_path: str) -> str:
@@ -98,19 +101,18 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: A success message indicating the file was deleted. If the file does not exist, returns an error message.
         """
-        active_memory = await self.active_memory()
-        if not active_memory:
+        if not self.current_step:
             return ""
 
         document = await DocumentModel.get_or_none(name=file_path)
         if not document:
             return f"Error: File not found '{file_path}'"
 
-        document_memory = await DocumentMemoryModel.filter(
-            document=document, memory=active_memory.model_object
+        document_step = await DocumentStep.filter(
+            document=document, step=self.current_step.model_object
         ).first()
 
-        if document_memory:
+        if document_step:
             await document.delete()
         else:
             logger.warning(
@@ -128,15 +130,14 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: A list of all files in the directory. If the directory does not exist, returns an error message.
         """
-        active_memory = await self.active_memory()
-        if not active_memory:
+        if not self.current_step:
             return ""
 
-        document_memories = await DocumentMemoryModel.filter(
-            memory=active_memory.model_object
+        document_steps = await DocumentStep.filter(
+            step=self.current_step.model_object
         ).prefetch_related("document")
 
-        file_paths = [dm.document.name for dm in document_memories]
+        file_paths = [dm.document.name for dm in document_steps]
 
         files_in_dir = [
             file_path
@@ -149,14 +150,13 @@ class DatabaseFileManager(FileManager):
             return f"Error: No such directory {dir_path}."
 
     async def all_documents(self) -> list[DocumentModel]:
-        active_memory = await self.active_memory()
-        if not active_memory:
+        if not self.current_step:
             return []
-        document_memories = await DocumentMemoryModel.filter(
-            memory=active_memory.model_object
+        document_steps = await DocumentStep.filter(
+            step=self.current_step.model_object
         ).prefetch_related("document")
 
-        return [dm.document for dm in document_memories]
+        return [dm.document for dm in document_steps]
 
     async def load_from_directory(self, directory: str = None):
         if not directory:
@@ -169,7 +169,7 @@ class DatabaseFileManager(FileManager):
                     await self.awrite_file(file, f.read())
 
     async def flush_to_directory(self, directory: str = None):
-        if not await self.active_memory():
+        if not self.current_step:
             return
 
         if not directory:

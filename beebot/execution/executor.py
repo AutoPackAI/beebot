@@ -4,8 +4,7 @@ from typing import TYPE_CHECKING
 
 from pydantic import ValidationError
 
-from beebot.decider.decision import Decision
-from beebot.executor.observation import Observation
+from beebot.models.database_models import Decision, Observation
 
 if TYPE_CHECKING:
     from beebot.body import Body
@@ -42,4 +41,9 @@ class Executor:
             raise
         except BaseException as e:
             logger.error(f"Error on execution of {decision.tool_name}: {e}")
-            return Observation(response=f"Exception: {e}")
+            return Observation(
+                response=f"Exception: {e}",
+                success=False,
+                # TODO: Improve error_reason
+                error_reason=str(e),
+            )
