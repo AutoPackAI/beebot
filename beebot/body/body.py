@@ -1,3 +1,4 @@
+import baserun
 import logging
 import os.path
 import subprocess
@@ -121,6 +122,13 @@ class Body:
 
         complete_memory = await self.current_memory_chain.finish()
         await self.save()
+
+        baserun.log("CycleComplete", payload={
+            "plan": complete_memory.plan.__dict__ if complete_memory.plan else None,
+            "decision": complete_memory.decision.__dict__ if complete_memory.decision else None,
+            "observation": complete_memory.observation.__dict__ if complete_memory.observation else None,
+        })
+
         return complete_memory
 
     async def execute(self, decision: Decision, retry_count: int = 0) -> Observation:
