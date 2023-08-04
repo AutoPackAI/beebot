@@ -57,7 +57,7 @@ def db_url() -> str:
     return os.environ.get("TORTOISE_TEST_DB", "sqlite://:memory:")
 
 
-@pytest.fixture(scope="session", autouse=True)
+@pytest.fixture(autouse=True)
 async def initialize_tests(request: FixtureRequest):
     await initialize_db(db_url())
 
@@ -80,4 +80,3 @@ async def body_fixture(task: str, initialize_tests, go_to_tmpdir):
     body_obj.config.setup_logging()
     body_obj.config.hard_exit = False
     return body_obj
-
