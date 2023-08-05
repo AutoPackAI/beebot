@@ -12,10 +12,11 @@ from beebot.models.database_models import BodyModel, MemoryModel
 logger = logging.getLogger(__name__)
 
 
-def body_response(body: Body) -> JSONResponse:
+async def body_response(body: Body) -> JSONResponse:
+    documents = await body.file_manager.all_documents()
     artifacts = [
         {"name": document.name, "content": document.content}
-        for document in body.file_manager.all_documents()
+        for document in documents
     ]
     return JSONResponse(
         {
@@ -49,6 +50,8 @@ def memory_response(memory: Memory, body: Body) -> JSONResponse:
 
 
 async def create_agent_task(request: Request) -> JSONResponse:
+    import pydevd_pycharm
+    pydevd_pycharm.settrace('localhost', port=9739, stdoutToServer=True, stderrToServer=True)
     request_data = await request.json()
     body = Body(request_data.get("input"))
     await body.setup()
