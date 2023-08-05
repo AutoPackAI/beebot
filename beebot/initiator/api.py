@@ -1,5 +1,7 @@
+import asyncio
 import logging
 import os
+from fastapi import Depends
 
 from dotenv import load_dotenv
 from fastapi import FastAPI
@@ -23,36 +25,19 @@ ORIGINS = [
     "http://localhost:3000",
 ]
 
-
-async def create_app() -> FastAPI:
+async def startup_event():
     load_dotenv()
     os.environ["BEEBOT_HARD_EXIT"] = "False"
     config = Config.global_config()
     config.setup_logging()
-
     await initialize_db(config.database_url)
 
-    app = FastAPI(
-        title="BeeBot Agent Communication Protocol",
-        description="",
-        version="v1",
-    )
-    app.add_websocket_route("/notifications", websocket_endpoint)
-    app.add_route("/agent/tasks", create_agent_task, methods=["POST"])
-    app.add_route(
-        "/agent/tasks/{task_id}/steps", execute_agent_task_step, methods=["POST"]
-    )
-    app.add_route("/agent/tasks", agent_task_ids)
-    app.add_route("/agent/tasks/{task_id}", get_agent_task)
-    app.add_route("/agent/tasks/{task_id}/steps", list_agent_task_steps)
-    app.add_route("/agent/tasks/{task_id}/steps/{step_id}", get_agent_task_step)
+app = FastAPI(
+    title="BeeBot Agent Communication Protocol",
+    description="",
+    version="v1",
+)
 
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=ORIGINS,
-        allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
-    )
-
-    return app
+app.add_event_handler("startup", startup_event)
+app.add_websocket_route("/notifications", websocket_endpoint)
+app.add_route("/agent/tasks", create_agent_task, methods=["POST"])
