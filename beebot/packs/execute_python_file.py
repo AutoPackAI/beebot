@@ -100,5 +100,7 @@ class ExecutePythonFile(SystemBasePack):
 
             return "Execution complete."
 
-        except Exception as e:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             return f"Error: {e}"

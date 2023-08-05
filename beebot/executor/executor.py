@@ -38,6 +38,8 @@ class Executor:
                 f"Error on execution of {decision.tool_name}: {json.dumps(e.errors())}"
             )
             return Observation(response=f"Error: {json.dumps(e.errors())}")
-        except Exception as e:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             logger.error(f"Error on execution of {decision.tool_name}: {e}")
             return Observation(response=f"Exception: {e}")

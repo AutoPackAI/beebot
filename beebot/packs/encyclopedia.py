@@ -34,5 +34,7 @@ class Encyclopedia(SystemBasePack):
             )
 
             return llm_response.text
-        except Exception as e:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             return f"Error: {e}"

@@ -32,5 +32,7 @@ class DelegateTask(SystemBasePack):
 
             return "\n".join(subagent_output)
 
-        except Exception as e:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             return f"Error: {e}"

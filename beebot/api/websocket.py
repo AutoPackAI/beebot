@@ -46,6 +46,8 @@ async def websocket_endpoint(websocket: WebSocket):
 
             await websocket.send_json(notify)
 
-        except Exception as e:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             logger.error(f"Unknown error occurred in websocket connection: {e}")
         await asyncio.sleep(0.1)

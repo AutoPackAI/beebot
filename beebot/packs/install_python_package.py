@@ -44,6 +44,7 @@ class InstallPythonPackage(SystemBasePack):
                 return f"Error: {process.stdout}. {process.stderr}."
 
             return f"{package_name} is installed."
-
-        except Exception as e:
+        except (SystemExit, KeyboardInterrupt):
+            raise
+        except BaseException as e:
             return f"Error: {e}"
