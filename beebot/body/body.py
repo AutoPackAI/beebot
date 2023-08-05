@@ -259,7 +259,7 @@ class Body:
         await self.model_object.save()
         if (
             self.current_memory_chain.memories
-            and self.current_memory_chain.memories[-1].documents
+            and await self.current_memory_chain.memories[-1].documents
         ):
             await self.file_manager.flush_to_directory(self.config.workspace_path)
 
