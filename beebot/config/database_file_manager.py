@@ -30,7 +30,7 @@ class DatabaseFileManager(FileManager):
         self.files = {}
 
     async def active_memory(self) -> Memory:
-        return self.body.current_memory_chain.incomplete_memory
+        return self.body.current_memory_chain.memories[-1]
 
     # Can't support sync db access without a lot of headaches
     def read_file(self, *args, **kwargs):

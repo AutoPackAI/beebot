@@ -59,15 +59,17 @@ class Memory:
 
     @classmethod
     def from_model(cls, memory_model: MemoryModel):
-        plan = Plan(**memory_model.plan)
-        decision = Decision(**memory_model.decision)
-        observation = Observation(**memory_model.observation)
-        memory = cls(
-            model_object=memory_model,
-            reversible=False,
-            plan=plan,
-            decision=decision,
-            observation=observation,
-        )
+        kwargs = {
+            "model_object": memory_model,
+            "reversible": False,
+        }
+
+        if memory_model.plan:
+            kwargs["plan"] = Plan(**memory_model.plan)
+        if memory_model.decision:
+            kwargs["decision"] = Decision(**memory_model.decision)
+        if memory_model.observation:
+            kwargs["observation"] = Observation(**memory_model.observation)
+        memory = cls(**kwargs)
 
         return memory

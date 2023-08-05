@@ -1,4 +1,5 @@
 import json
+import logging
 from typing import TYPE_CHECKING
 
 from beebot.executor.observation import Observation
@@ -9,6 +10,8 @@ from beebot.planner.plan import Plan
 if TYPE_CHECKING:
     from beebot.body import Body
 
+logger = logging.getLogger(__name__)
+
 
 class MemoryChain:
     """Generic memory storage model. Note that this is only internal memory of actions performed and should not be
@@ -17,22 +20,22 @@ class MemoryChain:
     body: "Body"
     model_object: MemoryChainModel = None
     memories: list[Memory]
-    incomplete_memory: Memory
 
     def __init__(self, body: "Body", model_object: MemoryModel = None):
         self.body = body
         self.memories = []
         self.model_object = model_object
-        self.incomplete_memory = None
 
     @classmethod
     async def from_model(cls, body: "Body", chain_model: MemoryChainModel):
         chain = cls(body, model_object=chain_model)
 
-        for memory_model in chain_model.memories:
+        for memory_model in await chain_model.memories.all():
             chain.memories.append(Memory.from_model(memory_model))
 
-        await chain.create_incomplete_memory()
+        if chain.memories[-1].plan:
+            await chain.create_incomplete_memory()
+
         return chain
 
     async def create_incomplete_memory(self) -> Memory:
@@ -41,37 +44,32 @@ class MemoryChain:
         await new_incomplete_memory.persist_memory()
 
         # Create links from previous documents to this memory
-        if self.incomplete_memory:
-            for document in (await self.incomplete_memory.documents).values():
+        if len(self.memories):
+            previous_documents = await self.memories[-1].documents
+            for document in previous_documents.values():
                 await new_incomplete_memory.add_document(document)
 
-        self.incomplete_memory = new_incomplete_memory
-        return self.incomplete_memory
+        self.memories.append(new_incomplete_memory)
+        return new_incomplete_memory
 
     async def add_plan(self, plan: Plan):
-        self.incomplete_memory.plan = plan
-        await self.incomplete_memory.persist_memory()
+        self.memories[-1].plan = plan
+        await self.memories[-1].persist_memory()
 
     async def add_decision(self, decision: str):
-        self.incomplete_memory.decision = decision
-        await self.incomplete_memory.persist_memory()
+        self.memories[-1].decision = decision
+        await self.memories[-1].persist_memory()
 
     async def add_observation(self, observation: Observation):
-        self.incomplete_memory.observation = observation
-        await self.incomplete_memory.persist_memory()
+        self.memories[-1].observation = observation
+        await self.memories[-1].persist_memory()
 
     async def finish(self) -> Memory:
-        completed_memory = self.incomplete_memory
-
-        # If the tool messed with memories (e.g. rewind) already we don't want to store it
-        # TODO: Maybe we do?
-        if self.incomplete_memory.decision is None:
-            await self.create_incomplete_memory()
-            return self.incomplete_memory
+        completed_memory = self.memories[-1]
 
         await self.create_incomplete_memory()
-        self.memories.append(completed_memory)
         await self.persist_memory_chain()
+
         return completed_memory
 
     async def persist_memory_chain(self):
@@ -92,7 +90,10 @@ class MemoryChain:
         memory_outputs = {}
 
         # If the first memory is to rewind it meant that we started over, add some text to indicate that
-        if self.memories[0].decision.tool_name == "rewind_actions":
+        if (
+            self.memories[0].decision
+            and self.memories[0].decision.tool_name == "rewind_actions"
+        ):
             if len(self.memories) == 1:
                 memory_table.append(
                     "The AI Assistant has attempted this task before, but it wasn't successful. Your actions have been "
@@ -109,6 +110,12 @@ class MemoryChain:
 
         # Compile the actual history
         for i, memory in enumerate(memories_to_compile):
+            if not memory.observation:
+                logger.warning(
+                    f"Memory {memory.model_object.id} does not have observation, skipping"
+                )
+                continue
+
             outcome = (
                 json.dumps(memory.observation.response)
                 if memory.observation.success

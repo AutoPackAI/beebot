@@ -1,9 +1,9 @@
-import baserun
 import logging
 import os.path
 import subprocess
 from typing import Optional, Union
 
+import baserun
 from autopack.errors import AutoPackError
 from autopack.pack import Pack
 from autopack.pack_response import PackResponse
@@ -23,7 +23,7 @@ from beebot.executor.observation import Observation
 from beebot.function_selection.utils import recommend_packs_for_plan
 from beebot.memory import Memory
 from beebot.memory.memory_chain import MemoryChain
-from beebot.models.database_models import BodyModel
+from beebot.models.database_models import BodyModel, initialize_db
 from beebot.planner import Planner
 from beebot.planner.plan import Plan
 
@@ -71,14 +71,21 @@ class Body:
         body = cls(initial_task=body_model.initial_task)
         body.task = body_model.current_task
         body.model_object = body_model
+        await body.update_packs()
+
+        body.file_manager = DatabaseFileManager(
+            config=body.config.pack_config, body=body
+        )
+
+        await body.setup_file_manager()
 
         if body_model.state == BodyStateMachine.setup.value:
             await body.setup()
         else:
             body.state.current_state = BodyStateMachine.states_map[body_model.state]
 
-        for chain_model in await body_model.memory_chains:
-            body.current_memory_chain = MemoryChain.from_model(body, chain_model)
+        for chain_model in await body_model.memory_chains.all():
+            body.current_memory_chain = await MemoryChain.from_model(body, chain_model)
 
         await body.update_packs(
             [get_or_install_pack(body, pack) for pack in body_model.packs]
@@ -88,6 +95,9 @@ class Body:
     async def setup(self):
         """These are here instead of init because they involve network requests. The order is very specific because
         of when the database and file manager are instantiated / set up"""
+        # TODO: Remove duplication between this method and `from_model`
+        await initialize_db(self.config.database_url)
+
         self.current_memory_chain = MemoryChain(self)
         self.file_manager = DatabaseFileManager(
             config=self.config.pack_config, body=self
@@ -123,11 +133,18 @@ class Body:
         complete_memory = await self.current_memory_chain.finish()
         await self.save()
 
-        baserun.log("CycleComplete", payload={
-            "plan": complete_memory.plan.__dict__ if complete_memory.plan else None,
-            "decision": complete_memory.decision.__dict__ if complete_memory.decision else None,
-            "observation": complete_memory.observation.__dict__ if complete_memory.observation else None,
-        })
+        baserun.log(
+            "CycleComplete",
+            payload={
+                "plan": complete_memory.plan.__dict__ if complete_memory.plan else None,
+                "decision": complete_memory.decision.__dict__
+                if complete_memory.decision
+                else None,
+                "observation": complete_memory.observation.__dict__
+                if complete_memory.observation
+                else None,
+            },
+        )
 
         return complete_memory
 
@@ -240,7 +257,11 @@ class Body:
         self.model_object.state = self.state.current_state.value
         self.model_object.packs = list(self.packs.keys())
         await self.model_object.save()
-        await self.file_manager.flush_to_directory(self.config.workspace_path)
+        if (
+            self.current_memory_chain.memories
+            and self.current_memory_chain.memories[-1].documents
+        ):
+            await self.file_manager.flush_to_directory(self.config.workspace_path)
 
     async def setup_file_manager(self):
         if not self.file_manager:

@@ -15,7 +15,6 @@ from beebot.api.routes import (
 )
 from beebot.api.websocket import websocket_endpoint
 from beebot.config import Config
-from beebot.models.database_models import initialize_db
 
 logger = logging.getLogger(__name__)
 
@@ -24,13 +23,11 @@ ORIGINS = [
 ]
 
 
-async def create_app() -> FastAPI:
+def create_app() -> FastAPI:
     load_dotenv()
     os.environ["BEEBOT_HARD_EXIT"] = "False"
     config = Config.global_config()
     config.setup_logging()
-
-    await initialize_db(config.database_url)
 
     app = FastAPI(
         title="BeeBot Agent Communication Protocol",

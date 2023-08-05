@@ -12,10 +12,10 @@ from beebot.models.database_models import BodyModel, MemoryModel
 logger = logging.getLogger(__name__)
 
 
-def body_response(body: Body) -> JSONResponse:
+async def body_response(body: Body) -> JSONResponse:
     artifacts = [
         {"name": document.name, "content": document.content}
-        for document in body.file_manager.all_documents()
+        for document in await body.file_manager.all_documents()
     ]
     return JSONResponse(
         {
@@ -26,10 +26,10 @@ def body_response(body: Body) -> JSONResponse:
     )
 
 
-def memory_response(memory: Memory, body: Body) -> JSONResponse:
+async def memory_response(memory: Memory, body: Body) -> JSONResponse:
     artifacts = [
         {"name": document.name, "content": document.content}
-        for document in body.file_manager.all_documents()
+        for document in await body.file_manager.all_documents()
     ]
     memory_output = {
         "plan": memory.plan.__dict__,
@@ -53,14 +53,14 @@ async def create_agent_task(request: Request) -> JSONResponse:
     body = Body(request_data.get("input"))
     await body.setup()
 
-    return body_response(body)
+    return await body_response(body)
 
 
 async def execute_agent_task_step(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
     try:
         body_model = await BodyModel.get(id=int(task_id)).prefetch_related(
-            "memory_chains__memories__document_memories__document"
+            BodyModel.INCLUSIVE_PREFETCH
         )
     except ValueError:
         logger.error(f"Body ID {task_id} is invalid")
@@ -75,7 +75,7 @@ async def execute_agent_task_step(request: Request) -> JSONResponse:
     if not memory:
         raise HTTPException(status_code=400, detail="Task is complete")
 
-    return memory_response(memory, body)
+    return await memory_response(memory, body)
 
 
 async def agent_task_ids(request: Request) -> JSONResponse:
@@ -85,24 +85,28 @@ async def agent_task_ids(request: Request) -> JSONResponse:
 
 async def get_agent_task(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
-    body_model = await BodyModel.get(id=int(task_id))
+    body_model = await BodyModel.get(id=int(task_id)).prefetch_related(
+        BodyModel.INCLUSIVE_PREFETCH
+    )
 
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
 
-    return body_response(await Body.from_model(body_model))
+    return await body_response(await Body.from_model(body_model))
 
 
 async def list_agent_task_steps(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
-    body_model = await BodyModel.get(id=int(task_id))
+    body_model = await BodyModel.get(id=int(task_id)).prefetch_related(
+        BodyModel.INCLUSIVE_PREFETCH
+    )
     body = await Body.from_model(body_model)
 
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
 
     memory_ids = [
-        m.model_object.id for m in body.current_memory_chain.current_memory_chain
+        m.id for m in await body.current_memory_chain.model_object.memories.all()
     ]
 
     return JSONResponse(memory_ids)
@@ -110,7 +114,9 @@ async def list_agent_task_steps(request: Request) -> JSONResponse:
 
 async def get_agent_task_step(request: Request) -> JSONResponse:
     task_id = request.path_params.get("task_id")
-    body_model = await BodyModel.get(id=int(task_id))
+    body_model = await BodyModel.get(id=int(task_id)).prefetch_related(
+        BodyModel.INCLUSIVE_PREFETCH
+    )
 
     if not body_model:
         raise HTTPException(status_code=400, detail="Task not found")
@@ -123,4 +129,4 @@ async def get_agent_task_step(request: Request) -> JSONResponse:
 
     body = await Body.from_model(body_model)
     memory = await Memory.from_model(memory_model)
-    return memory_response(memory, body)
+    return await memory_response(memory, body)

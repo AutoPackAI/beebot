@@ -79,6 +79,10 @@ def apply_migrations(db_url: str):
 
 
 async def initialize_db(db_url: str):
+    # Don't re-initialize an already initialized database
+    if Tortoise.describe_models():
+        return
+
     await Tortoise.init(
         db_url=db_url,
         modules={"models": ["beebot.models.database_models"]},
