@@ -111,7 +111,7 @@ class MemoryChain:
         # Compile the actual history
         for i, memory in enumerate(memories_to_compile):
             if not memory.observation:
-                logger.warning(
+                logger.debug(
                     f"Memory {memory.model_object.id} does not have observation, skipping"
                 )
                 continue

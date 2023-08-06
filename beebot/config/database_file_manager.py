@@ -165,7 +165,7 @@ class DatabaseFileManager(FileManager):
         for file in os.listdir(directory):
             abs_path = os.path.abspath(os.path.join(directory, file.replace("/", "_")))
             if not os.path.isdir(abs_path) and file not in IGNORE_FILES:
-                with open(abs_path, "w+") as f:
+                with open(abs_path, "r") as f:
                     await self.awrite_file(file, f.read())
 
     async def flush_to_directory(self, directory: str = None):
@@ -175,7 +175,8 @@ class DatabaseFileManager(FileManager):
         if not directory:
             directory = self.body.config.workspace_path
 
-        for document in await self.all_documents():
+        all_documents = await self.all_documents()
+        for document in all_documents:
             with open(
                 os.path.join(directory, document.name.replace("/", "_")), "w+"
             ) as f:

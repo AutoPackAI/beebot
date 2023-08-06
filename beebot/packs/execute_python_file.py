@@ -92,6 +92,8 @@ class ExecutePythonFile(SystemBasePack):
             os_subprocess = process.process
             output, error = os_subprocess.communicate()
 
+            await self.body.file_manager.load_from_directory()
+
             if os_subprocess.returncode:
                 return f"Execution failed with exit code {os_subprocess.returncode}. Output: {output}. {error}"
 

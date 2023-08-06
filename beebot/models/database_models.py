@@ -72,6 +72,7 @@ class DocumentMemoryModel(BaseModel):
 def apply_migrations(db_url: str):
     """Apply any outstanding migrations"""
     backend = get_backend(db_url)
+    backend.init_database()
     migrations = read_migrations("migrations")
 
     with backend.lock():

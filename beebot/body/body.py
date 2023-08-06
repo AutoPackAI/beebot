@@ -146,6 +146,8 @@ class Body:
             },
         )
 
+        await self.file_manager.flush_to_directory()
+
         return complete_memory
 
     async def execute(self, decision: Decision, retry_count: int = 0) -> Observation:
@@ -257,11 +259,6 @@ class Body:
         self.model_object.state = self.state.current_state.value
         self.model_object.packs = list(self.packs.keys())
         await self.model_object.save()
-        if (
-            self.current_memory_chain.memories
-            and await self.current_memory_chain.memories[-1].documents
-        ):
-            await self.file_manager.flush_to_directory(self.config.workspace_path)
 
     async def setup_file_manager(self):
         if not self.file_manager:
