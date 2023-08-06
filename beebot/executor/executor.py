@@ -23,9 +23,6 @@ class Executor:
         """Get pack from tool name. call it"""
         pack = self.body.packs.get(decision.tool_name)
         if not pack:
-            import pdb
-
-            pdb.set_trace()
             return Observation(
                 success=False,
                 error_reason=f"Invalid tool name received: {decision.tool_name}. It may be invalid or may not be "

@@ -32,6 +32,7 @@ class Config(BaseSettings):
     auto_install_dependencies: bool = True
     auto_include_packs: list[str] = [
         "write_file",
+        "read_file",
         "exit",
         "rewind_actions",
         "acquire_new_functions",
