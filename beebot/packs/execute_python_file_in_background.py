@@ -48,7 +48,7 @@ class ExecutePythonFileInBackground(SystemBasePack):
         "list_processes",
         "kill_process",
     ]
-    categories = ["Programming", "Multiprocess"]
+    categories = ["Programming"]
 
     def _run(
         self, file_path: str, python_args: str = "", daemonize: bool = False
