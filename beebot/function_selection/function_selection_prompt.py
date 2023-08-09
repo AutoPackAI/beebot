@@ -2,11 +2,13 @@ FORMAT_SECTION = """
 
 Please respond in the following format:
 
-Firstly, provide a comma-separated list of function names. Exclude parentheses and arguments from this list. Secondly, after the special delimiter '###', provide explanations for why each function was chosen and how it contributes to accomplishing the task.
+Firstly, provide a comma-separated list of function names. Exclude parentheses and arguments from this list. Secondly, after listing all functions, put the special delimiter '###', then provide explanations for why each function was chosen and how it contributes to accomplishing the task.
 
 For example, your response may look like this:
 
-function1, function2, function3 ### function1 can accomplish step A of the task because..., function2 and function3 can be used together to..."""
+function1, function2, function3
+###
+function1 can accomplish step A of the task because..., function2 and function3 can be used together to..."""
 
 INITIAL_SELECTION_TEMPLATE = """As the AI Tool Selector your responsibility is to identify functions (tools) that could be useful for an autonomous AI assistant to accomplish a given task. Functions are general-purpose and intended to be used in a wide variety of tasks.
 
@@ -19,6 +21,10 @@ Analyze the task and available functions, and determine which functions could be
 # Task
 Your original task, given by the human, is:
 {task}
+
+Existing functions:
+The AI Assistant already has access to these existing functions:
+{existing_functions}
 
 # Functions
 You may only recommend functions from the following list:
@@ -39,6 +45,10 @@ The Autonomous AI has made this request for more functions: {functions_request}
 Original Task:
 The task originally assigned by the human is:
 {task}
+
+Existing functions:
+The AI Assistant already has access to these existing functions:
+{existing_functions}
 
 Available functions:
 You may only recommend functions from the following list:

@@ -36,9 +36,11 @@ class AcquireMoreFunctions(SystemBasePack):
     categories = ["System"]
 
     async def _arun(self, desired_functionality: str) -> list[str]:
+        existing_functions = ", ".join(self.body.packs.keys())
         prompt = acquire_new_functions_template().format(
             task=self.body.task,
             functions=functions_bulleted_list(all_packs(self.body).values()),
+            existing_functions=existing_functions,
             functions_request=desired_functionality,
         )
 

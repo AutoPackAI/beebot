@@ -26,8 +26,9 @@ async def recommend_packs_for_plan(body: "Body") -> list[Union[Pack, PackRespons
     ]
     functions_list = functions_bulleted_list(packs_for_recommendation)
 
+    existing_functions = ", ".join(body.packs.keys())
     prompt = initial_selection_template().format(
-        task=body.task, functions=functions_list
+        task=body.task, functions=functions_list, existing_functions=existing_functions
     )
     logger.info("=== Function request sent to LLM ===")
     logger.info(prompt)
