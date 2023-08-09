@@ -1,3 +1,5 @@
 {
-  "workspace": "workspace"
+  "workspace": "workspace",
+  "api_mode": true,
+  "host": "http://localhost:8000"
 }
