@@ -42,7 +42,7 @@ ruff = "^0.0.276"
 pytest = "^7.4.0"
 colorama = "^0.4.6"
 pytest-asyncio = "^0.21.1"
-baserun = "^0.2"
+baserun = "^0.3.1"
 
 [build-system]
 requires = ["poetry-core"]
