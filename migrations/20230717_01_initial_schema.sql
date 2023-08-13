@@ -3,17 +3,21 @@
 
 CREATE TABLE body (
   id SERIAL PRIMARY KEY,
-  initial_task TEXT NOT NULL,
-  current_task TEXT NOT NULL,
-  state TEXT NOT NULL DEFAULT 'setup',
-  packs JSONB NOT NULL,
+  task TEXT NOT NULL,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE execution_path (
+CREATE TABLE task_execution (
   id SERIAL PRIMARY KEY,
   body_id INT REFERENCES body(id),
+  agent TEXT NOT NULL,
+  state TEXT NOT NULL DEFAULT 'waiting',
+  instructions TEXT NOT NULL,
+  complete BOOLEAN NOT NULL DEFAULT FALSE,
+  inputs JSONB,
+  outputs JSONB,
+  variables JSONB,
   created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
@@ -59,7 +63,7 @@ CREATE TABLE plan (
 
 CREATE TABLE step (
   id SERIAL PRIMARY KEY,
-  execution_path_id INT REFERENCES execution_path(id),
+  task_execution_id INT REFERENCES task_execution(id),
   plan_id INT REFERENCES plan(id),
   oversight_id INT REFERENCES oversight(id),
   decision_id INT REFERENCES decision(id),

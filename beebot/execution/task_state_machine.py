@@ -3,11 +3,11 @@ from typing import TYPE_CHECKING
 from statemachine import StateMachine, State
 
 if TYPE_CHECKING:
-    from beebot.body import Body
+    from beebot.execution.task_execution import TaskExecution
 
 
-class BodyStateMachine(StateMachine):
-    setup = State(initial=True)
+class TaskStateMachine(StateMachine):
+    waiting = State(initial=True)
     planning = State()
     oversight = State()
     deciding = State()
@@ -16,10 +16,10 @@ class BodyStateMachine(StateMachine):
 
     execute = deciding.to(executing)
     plan = executing.to(planning)
-    oversee = planning.to(oversight) | setup.to(oversight)
+    oversee = planning.to(oversight) | waiting.to(oversight)
     decide = oversight.to(deciding)
     finish = executing.to(done)
 
-    def __init__(self, body: "Body"):
-        self.body = body
+    def __init__(self, task_execution: "TaskExecution"):
+        self.task_execution = task_execution
         super().__init__()

@@ -1,51 +1,39 @@
 import logging
 from typing import TYPE_CHECKING
 
-from autopack.utils import functions_summary
 from langchain.chat_models.base import BaseChatModel
 
 from beebot.body.llm import call_llm
 from beebot.models.database_models import Plan
-from beebot.planner.planning_prompt import (
-    planning_prompt_template,
-)
 
 if TYPE_CHECKING:
-    from beebot.body import Body
+    from beebot.execution.task_execution import TaskExecution
 
 logger = logging.getLogger(__name__)
 
 
 class Planner:
-    body: "Body"
     llm: BaseChatModel
 
-    def __init__(self, body: "Body"):
-        self.body = body
+    task_execution: "TaskExecution"
+
+    def __init__(self, task_execution: "TaskExecution"):
+        self.task_execution = task_execution
 
     async def plan(self) -> Plan:
-        task = self.body.task
-        history = await self.body.current_execution_path.compile_history()
-        file_list = await self.body.file_manager.document_contents()
-        functions = functions_summary(self.body.packs.values())
-        prompt_variables = {
-            "task": task,
-            "history": history,
-            "functions": functions,
-            "file_list": file_list,
-        }
-        formatted_prompt = planning_prompt_template().format(**prompt_variables)
+        prompt, prompt_variables = await self.task_execution.agent.planning_prompt()
 
-        logger.info("=== Plan Request ===")
-        logger.info(formatted_prompt)
+        logger.info("\n=== Plan Request ===")
+        logger.info(prompt)
 
         response = await call_llm(
-            self.body,
-            message=formatted_prompt,
+            self.task_execution.body,
+            message=prompt,
             function_call="none",
+            include_functions=True,
         )
 
-        logger.info("=== Plan Created ===")
+        logger.info("\n=== Plan Created ===")
         logger.info(response.text)
 
         plan = Plan(

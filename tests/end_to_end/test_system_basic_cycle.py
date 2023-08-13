@@ -2,7 +2,6 @@ import os
 
 import pytest
 
-from beebot.body.body_state_machine import BodyStateMachine
 from beebot.config import Config
 
 
@@ -14,19 +13,16 @@ def task():
 @pytest.mark.asyncio
 async def test_system_basic_cycle(task, body_fixture):
     body = await body_fixture
-    assert body.state.current_state == BodyStateMachine.oversight
 
     assert "my_computer.txt" in body.task
     assert isinstance(body.config, Config)
     assert len(body.config.openai_api_key) > 1
-    assert len(body.packs) >= 3
 
     for i in range(0, 8):
         await body.cycle()
-        if body.state.current_state == BodyStateMachine.done:
+        if body.is_done:
             break
 
-    assert len(body.packs) >= 5
     with open(os.path.join("workspace", "my_computer.txt"), "r") as f:
         file_contents = f.read()
     assert "Operating System" in file_contents or "OS" in file_contents

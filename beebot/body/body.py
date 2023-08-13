@@ -1,104 +1,90 @@
 import logging
 import os.path
 import subprocess
-from typing import Optional, Union
+from typing import Union
 
 import baserun
-from autopack.errors import AutoPackError
-from autopack.pack import Pack
-from autopack.pack_response import PackResponse
 from langchain.chat_models.base import BaseChatModel
-from pydantic import ValidationError
 
-from beebot.body.body_state_machine import BodyStateMachine
-from beebot.body.llm import call_llm, create_llm
-from beebot.body.pack_utils import get_or_install_pack
-from beebot.body.revising_prompt import revise_task_prompt
+from beebot.body.llm import create_llm
 from beebot.config import Config
 from beebot.config.database_file_manager import DatabaseFileManager
-from beebot.decider import Decider
+from beebot.decomposer.decomposer import Decomposer
 from beebot.execution import Step
-from beebot.execution.execution_path import ExecutionPath
-from beebot.executor import Executor
-from beebot.function_selection.utils import recommend_packs_for_plan
+from beebot.execution.task_execution import TaskExecution
 from beebot.models.database_models import (
     BodyModel,
-    Plan,
-    Decision,
-    Observation,
-    Oversight,
     initialize_db,
 )
-from beebot.overseer.overseer import Overseer
-from beebot.planner import Planner
 
 logger = logging.getLogger(__name__)
 
-RETRY_LIMIT = 3
-
 
 class Body:
-    initial_task: str
     task: str
-    state: BodyStateMachine
-    packs: dict[str, "Pack"]
     processes: dict[int, subprocess.Popen]
+    # Variables set / exported by subtasks
+    global_variables: dict[str, str]
 
-    llm: BaseChatModel
-    overseer: Overseer
-    planner: Planner
-    executor: Executor
-    decider: Decider
+    task_executions = list[TaskExecution]
+
+    decomposer_llm: BaseChatModel
+    planner_llm: BaseChatModel
+    decider_llm: BaseChatModel
+
+    decomposer: Decomposer
     config: Config
 
     model_object: BodyModel = None
     file_manager: DatabaseFileManager = None
-    current_execution_path: ExecutionPath = None
 
-    def __init__(self, initial_task: str = "", config: Config = None):
-        self.initial_task = initial_task
-        self.task = initial_task
+    def __init__(self, task: str = "", config: Config = None):
+        self.task = task
         self.config = config or Config.global_config()
-        self.state = BodyStateMachine(self)
 
-        self.llm = create_llm(self.config)
-        self.overseer = Overseer(body=self)
-        self.planner = Planner(body=self)
-        self.decider = Decider(body=self)
-        self.executor = Executor(body=self)
-        self.packs = {}
+        self.decomposer_llm = create_llm(self.config, self.config.decomposer_model)
+        self.planner_llm = create_llm(self.config, self.config.planner_model)
+        self.decider_llm = create_llm(self.config, self.config.decider_model)
+        self.decomposer = Decomposer(body=self)
+        self.task_executions = []
         self.processes = {}
+        self.global_variables = {}
 
         if not os.path.exists(self.config.workspace_path):
             os.makedirs(self.config.workspace_path, exist_ok=True)
 
     @classmethod
     async def from_model(cls, body_model: BodyModel):
-        body = cls(initial_task=body_model.initial_task)
-        body.task = body_model.current_task
+        body = cls(task=body_model.task)
         body.model_object = body_model
-        await body.update_packs()
 
         body.file_manager = DatabaseFileManager(
             config=body.config.pack_config, body=body
         )
 
-        if body_model.state == BodyStateMachine.setup.value:
-            await body.setup()
-        else:
-            body.state.current_state = BodyStateMachine.states_map[body_model.state]
-
-        for path_model in await body_model.execution_paths.all():
-            body.current_execution_path = await ExecutionPath.from_model(
-                body, path_model
+        for execution_model in await body_model.task_executions.all():
+            body.task_executions.append(
+                await TaskExecution.from_model(body, execution_model)
             )
 
         await body.setup_file_manager()
 
-        await body.update_packs(
-            [get_or_install_pack(body, pack) for pack in body_model.packs]
-        )
         return body
+
+    @property
+    def current_task_execution(self) -> Union[TaskExecution, None]:
+        try:
+            return next(
+                execution
+                for execution in self.task_executions
+                if not execution.complete
+            )
+        except StopIteration:
+            return None
+
+    @property
+    def is_done(self):
+        return self.current_task_execution is None
 
     async def setup(self):
         """These are here instead of init because they involve network requests. The order is very specific because
@@ -106,49 +92,46 @@ class Body:
         # TODO: Remove duplication between this method and `from_model`
         await initialize_db(self.config.database_url)
 
-        self.current_execution_path = ExecutionPath(self)
         self.file_manager = DatabaseFileManager(
             config=self.config.pack_config, body=self
         )
 
+        await self.decompose_task()
+
         if not self.model_object:
-            self.model_object = BodyModel(
-                initial_task=self.initial_task, current_task=self.task
-            )
+            self.model_object = BodyModel(task=self.task)
             await self.save()
 
-        await self.current_execution_path.create_new_step()
+        await self.current_task_execution.create_new_step()
 
         await self.setup_file_manager()
         await self.file_manager.load_from_directory()
-        await self.revise_task()
-        await self.update_packs()
-
-        await self.create_initial_oversight()
-        self.state.oversee()
 
         await self.save()
 
     async def cycle(self) -> Step:
         """Step through one decide-execute-plan loop"""
-        if self.state.current_state == BodyStateMachine.done:
+        if self.is_done:
             return
 
-        if self.state.current_state == BodyStateMachine.setup:
-            await self.setup()
+        task_execution = self.current_task_execution
+        step = await task_execution.cycle()
 
-        oversight = self.current_execution_path.current_step.oversight
+        # If this subtask is complete, prime the next subtask
+        if task_execution.complete:
+            next_execution = self.current_task_execution
+            # We're done
+            if not next_execution:
+                return None
 
-        self.state.decide()
-        await self.save()
+            if not next_execution.current_step:
+                await next_execution.create_new_step()
 
-        decision = await self.decide(oversight)
-        await self.execute(decision)
-
-        new_plan = await self.plan()
-        await self.current_execution_path.add_plan(new_plan)
-
-        step = await self.current_execution_path.finish()
+            if next_execution:
+                documents = await task_execution.current_step.documents
+                for name, document in documents.items():
+                    if name in next_execution.inputs:
+                        await next_execution.current_step.add_document(document)
 
         await self.save()
 
@@ -164,101 +147,29 @@ class Body:
 
         return step
 
-    async def execute(self, decision: Decision, retry_count: int = 0) -> Observation:
-        """Execute a Decision and keep track of state"""
-        try:
-            result = await self.executor.execute(decision=decision)
-            await self.current_execution_path.add_observation(result)
-            return result
-        except ValidationError as e:
-            # It's likely the AI just sent bad arguments, try again.
-            logger.warning(
-                f"Invalid arguments received: {e}. {decision.tool_name}({decision.tool_args}"
-            )
-            if retry_count >= RETRY_LIMIT:
-                return
-            return await self.execute(decision, retry_count + 1)
-        finally:
-            # If the action resulted in status change (e.g. task complete) don't do anything
-            if self.state.current_state == self.state.executing:
-                self.state.plan()
-            await self.save()
-
-    async def decide(self, oversight: Oversight = None) -> Decision:
-        """Execute an action and keep track of state"""
-        try:
-            decision = await self.decider.decide_with_retry(oversight=oversight)
-            await self.current_execution_path.add_decision(decision)
-
-            return decision
-        finally:
-            self.state.execute()
-            await self.save()
-
-    async def plan(self) -> Plan:
-        """Take the current task and history and develop a plan"""
-        try:
-            plan = await self.planner.plan()
-            await self.current_execution_path.add_plan(plan)
-            return plan
-        finally:
-            if not self.state.current_state == BodyStateMachine.done:
-                self.state.oversee()
-            await self.save()
-
-    async def create_initial_oversight(self) -> Oversight:
-        """Take the current task and history and develop a plan"""
-        oversight = await self.overseer.initial_oversight()
-        await self.current_execution_path.add_oversight(oversight)
-        return oversight
-
-    async def revise_task(self):
+    async def decompose_task(self):
         """Turn the initial task into a task that is easier for AI to more consistently understand"""
-        prompt = revise_task_prompt().format(task=self.initial_task).content
-        logger.info("=== Task Revision given to LLM ===")
-        logger.info(prompt)
-
-        llm_response = await call_llm(self, prompt, include_functions=False)
-        self.task = llm_response.text
-
-        logger.info("=== Task Revised by LLM ===")
-        logger.info(self.task)
-
-    async def rewind(self):
-        """
-        Serves as a control mechanism that allows it to revert its state to a previous checkpoint. The function is
-        designed to reverse actions wherever possible and reset the current steps and plan. It should be noted,
-        however, that actions with side effects, like sending emails or making API calls, cannot be reversed.
-        This is like a jank tree of thought because there's no analysis of the quality of different traversals.
-        """
-        steps = self.current_execution_path.steps
-        branch_at = 0
-        for i in reversed(range(len(steps))):
-            if not steps[i].reversible:
-                branch_at = i
-                break
-
-        logger.info(f"Rewinding from step {len(steps) + 1} to step {branch_at + 1}")
-
-        self.current_execution_path = (
-            await self.current_execution_path.create_branch_from(branch_at)
-        )
+        subtasks = await self.decomposer.decompose()
+        for subtask in subtasks:
+            execution = TaskExecution(
+                body=self,
+                agent_name=subtask.agent,
+                inputs=subtask.inputs,
+                outputs=subtask.outputs,
+                instructions=subtask.instructions,
+                complete=subtask.complete,
+            )
+            await execution.get_packs()
+            self.task_executions.append(execution)
 
     async def save(self):
         if not self.model_object:
             await self.setup()
 
-        self.model_object.current_task = self.task
-        self.model_object.state = self.state.current_state.value
-        self.model_object.packs = list(self.packs.keys())
+        self.model_object.task = self.task
         await self.model_object.save()
-        if (
-            self.current_execution_path.steps
-            and await self.current_execution_path.steps[-1].documents
-        ):
-            await self.file_manager.flush_to_directory(self.config.workspace_path)
 
-        await self.current_execution_path.save()
+        await self.current_task_execution.save()
         await self.file_manager.flush_to_directory(self.config.workspace_path)
 
     async def setup_file_manager(self):
@@ -269,40 +180,3 @@ class Body:
         await self.file_manager.load_from_directory()
 
         self.config.pack_config.filesystem_manager = self.file_manager
-
-    async def update_packs(
-        self, new_packs: Optional[list[Union[Pack, PackResponse]]] = None
-    ) -> list[Pack]:
-        if not new_packs:
-            new_packs = await recommend_packs_for_plan(self)
-
-        pack_names = [pack.name for pack in new_packs]
-        pack_names += self.config.auto_include_packs
-        for pack_name in pack_names:
-            if pack_name in self.packs:
-                continue
-
-            try:
-                installed_pack = get_or_install_pack(self, pack_name)
-                if not installed_pack:
-                    logger.warning(f"Pack {pack_name} could not be installed")
-
-                self.packs[pack_name] = installed_pack
-
-                if installed_pack.depends_on:
-                    for dep_name in installed_pack.depends_on:
-                        if dep_name in self.packs:
-                            continue
-
-                        installed_dep = get_or_install_pack(self, dep_name)
-                        if not installed_dep:
-                            logger.warning(
-                                f"Pack {dep_name}, a dependency of {pack_name} could not be installed"
-                            )
-                            continue
-
-                        self.packs[dep_name] = installed_dep
-
-            except AutoPackError as e:
-                # This is usually because we got a response with a made-up function.
-                logger.warning(f"Pack {pack_name} could not be initialized: {e}")

@@ -1,7 +1,7 @@
 __all__ = [
     "BodyModel",
     "DocumentModel",
-    "ExecutionPathModel",
+    "TaskExecutionModel",
     "StepModel",
     "Oversight",
     "Plan",
@@ -13,7 +13,7 @@ __all__ = [
 from .database_models import (
     BodyModel,
     DocumentModel,
-    ExecutionPathModel,
+    TaskExecutionModel,
     StepModel,
     Oversight,
     Plan,

@@ -7,9 +7,8 @@ import openai
 from autopack.utils import format_packs_to_openai_functions
 from langchain.chat_models import ChatOpenAI
 from langchain.schema import SystemMessage
-from openai import InvalidRequestError
 
-from beebot.config.config import FALLBACK_MODEL, Config
+from beebot.config.config import Config
 
 logger = logging.getLogger(__name__)
 
@@ -23,7 +22,7 @@ class LLMResponse:
     function_call: dict[str, Any]
 
 
-def create_llm(config: Config):
+def create_llm(config: Config, model_name: str):
     headers = {}
     if config.openai_api_base:
         openai.api_base = config.openai_api_base
@@ -33,7 +32,7 @@ def create_llm(config: Config):
         headers["Helicone-Cache-Enabled"] = "true"
 
     llm = ChatOpenAI(
-        model_name=config.llm_model,
+        model_name=model_name,
         # temperature=0,
         model_kwargs={"headers": headers, "top_p": 0.1},
     )
@@ -46,13 +45,14 @@ async def call_llm(
     function_call: str = "auto",
     include_functions: bool = True,
     disregard_cache: bool = False,
+    llm=None,
 ) -> LLMResponse:
-    llm = body.llm
+    llm = llm or body.planner_llm
     output_kwargs = {}
 
-    if include_functions and body.packs:
+    if include_functions and body.current_task_execution.packs:
         output_kwargs["functions"] = format_packs_to_openai_functions(
-            body.packs.values()
+            body.current_task_execution.packs.values()
         )
         output_kwargs["function_call"] = function_call
 
@@ -60,19 +60,9 @@ async def call_llm(
         output_kwargs["headers"] = {"Helicone-Cache-Enabled": "false"}
 
     logger.debug(f"~~ LLM Request ~~\n{message}")
-    try:
-        response = await llm.agenerate(
-            messages=[[SystemMessage(content=message)]], **output_kwargs
-        )
-    except InvalidRequestError:
-        logger.warning(
-            f"Model {llm.model_name} is not available. Falling back to {FALLBACK_MODEL}"
-        )
-        llm.model_name = FALLBACK_MODEL
-        body.config.llm_model = FALLBACK_MODEL
-        response = await llm.agenerate(
-            messages=[[SystemMessage(content=message)]], **output_kwargs
-        )
+    response = await llm.agenerate(
+        messages=[[SystemMessage(content=message)]], **output_kwargs
+    )
 
     # TODO: This should be a nicer error message if we get an unexpected number of generations
     generation = response.generations[0][0]

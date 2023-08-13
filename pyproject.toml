@@ -24,7 +24,6 @@ google-auth-oauthlib = "^1.0.0"
 google-api-python-client = "^2.93.0"
 wolframalpha = "^5.0.0"
 yoyo-migrations = "^8.2.0"
-peewee = "^3.16.2"
 psycopg2-binary = { extras = ["ext"], version = "^2.9.6" }
 beautifulsoup4 = "^4.12.2"
 psutil = "^5.9.5"
@@ -35,6 +34,7 @@ wikipedia = "^1.4.0"
 autopack-tools = "^0.4.0"
 tortoise-orm = { extras = ["postgres"], version = "^0.19.3" }
 asyncpg = "^0.28.0"
+pytest-asyncio = "^0.21.1"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.3.0"
@@ -43,6 +43,7 @@ pytest = "^7.4.0"
 colorama = "^0.4.6"
 pytest-asyncio = "^0.21.1"
 baserun = "^0.3.1"
+agbenchmark = "^0.0.7"
 
 [build-system]
 requires = ["poetry-core"]

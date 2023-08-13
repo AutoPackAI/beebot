@@ -7,20 +7,18 @@ from pydantic import ValidationError
 from beebot.models.database_models import Decision, Observation
 
 if TYPE_CHECKING:
-    from beebot.body import Body
+    from beebot.execution.task_execution import TaskExecution
 
 logger = logging.getLogger(__name__)
 
 
 class Executor:
-    body: "Body"
-
-    def __init__(self, body: "Body"):
-        self.body = body
+    def __init__(self, task_execution: "TaskExecution"):
+        self.task_execution = task_execution
 
     async def execute(self, decision: Decision) -> Observation:
         """Get pack from tool name. call it"""
-        pack = self.body.packs.get(decision.tool_name)
+        pack = self.task_execution.packs.get(decision.tool_name)
         if not pack:
             return Observation(
                 success=False,
@@ -31,6 +29,8 @@ class Executor:
         tool_args = decision.tool_args or {}
         try:
             result = await pack.arun(**tool_args)
+            logger.info("\n=== Execution observation ===")
+            logger.info(result)
             return Observation(response=result)
         except ValidationError as e:
             logger.error(

@@ -11,7 +11,7 @@ logger = logging.getLogger(__name__)
 
 
 class ExitArgs(BaseModel):
-    success: bool = Field(..., description="Success")
+    success: bool = Field(description="Success", default=True)
     conclusion: str = Field(
         description="Reflect on the task execution process.", default=""
     )
@@ -29,29 +29,16 @@ class Exit(SystemBasePack):
     def _run(self, *args, **kwargs) -> str:
         raise NotImplementedError
 
-    async def _arun(
-        self,
-        success: bool,
-        categorization: str = "",
-        conclusion: str = "",
-        function_summary: str = "",
-    ) -> str:
-        self.body.state.finish()
-        await self.body.current_execution_path.save()
+    async def _arun(self, success: bool = True, conclusion: str = "") -> str:
+        task_execution = self.body.current_task_execution
+        task_execution.state.finish()
+        task_execution.complete = True
+        await task_execution.save()
         if success:
             logger.info("\n=== Task completed ===")
         else:
             logger.info("\n=== Task failed ===")
 
-        logger.info(f"- Categorization: {categorization}")
-        logger.info(f"- Conclusion: {conclusion}")
-        logger.info(f"- Function Summary: {function_summary}")
-
-        for pid, process in self.body.processes.items():
-            logger.info(f"\n=== Killing subprocess {pid} ===")
-            process.kill()
-
-        if self.body.config.hard_exit:
-            exit()
+        logger.info(conclusion)
 
         return "Exited"

@@ -1,7 +1,7 @@
 import json
 
 from tortoise import fields, Tortoise
-from tortoise.fields import JSONField
+from tortoise.fields import JSONField, BooleanField
 from tortoise.models import Model
 from yoyo import get_backend, read_migrations
 
@@ -22,27 +22,31 @@ class BaseModel(Model):
 
 
 class BodyModel(BaseModel):
-    INCLUSIVE_PREFETCH = "execution_paths__steps__document_steps__document"
+    INCLUSIVE_PREFETCH = "task_executions__steps__document_steps__document"
 
-    initial_task = fields.TextField()
-    current_task = fields.TextField()
-    state = fields.TextField(default="setup")
-    packs = JSONField(default=list)
+    task = fields.TextField()
 
     class Meta:
         table = "body"
 
 
-class ExecutionPathModel(BaseModel):
-    body = fields.ForeignKeyField("models.BodyModel", related_name="execution_paths")
+class TaskExecutionModel(BaseModel):
+    body = fields.ForeignKeyField("models.BodyModel", related_name="task_executions")
+    agent = fields.TextField()
+    state = fields.TextField(default="waiting")
+    instructions = fields.TextField()
+    inputs = JSONField(default=list)
+    outputs = JSONField(default=list)
+    complete = BooleanField(default=False)
+    variables = JSONField(default=dict)
 
     class Meta:
-        table = "execution_path"
+        table = "task_execution"
 
 
 class StepModel(BaseModel):
-    execution_path = fields.ForeignKeyField(
-        "models.ExecutionPathModel", related_name="steps"
+    task_execution = fields.ForeignKeyField(
+        "models.TaskExecutionModel", related_name="steps"
     )
     plan = fields.ForeignKeyField("models.Plan", related_name="steps", null=True)
     decision = fields.ForeignKeyField(

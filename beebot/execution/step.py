@@ -12,12 +12,12 @@ from beebot.models.database_models import (
 )
 
 if TYPE_CHECKING:
-    from beebot.execution.execution_path import ExecutionPath
+    from beebot.execution.task_execution import TaskExecution
 
 
 @dataclass
 class Step:
-    execution_path: "ExecutionPath" = None
+    task_execution: "TaskExecution" = None
     model_object: StepModel = None
     oversight: Oversight = None
     decision: Decision = None
@@ -45,7 +45,7 @@ class Step:
     async def save(self):
         if not self.model_object:
             self.model_object = StepModel(
-                execution_path=self.execution_path.model_object,
+                task_execution=self.task_execution.model_object,
                 oversight=self.oversight,
                 decision=self.decision,
                 observation=self.observation,

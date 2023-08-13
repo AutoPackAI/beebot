@@ -1,45 +1,39 @@
 import logging
 from typing import TYPE_CHECKING
 
-from autopack.utils import functions_summary
-
 from beebot.body.llm import call_llm
 from beebot.models import Oversight
-from beebot.planner.planning_prompt import initial_prompt_template
 
 if TYPE_CHECKING:
-    from beebot.body import Body
+    from beebot.execution.task_execution import TaskExecution
 
 logger = logging.getLogger(__name__)
 
 
 class Overseer:
-    body: "Body"
+    """This doesn't really do anything right now, but in the future this will be where the human has a chance to modify
+    plans from the previous step before executing this step"""
 
-    def __init__(self, body: "Body"):
-        self.body = body
+    task_execution: "TaskExecution"
+
+    def __init__(self, task_execution: "TaskExecution"):
+        self.task_execution = task_execution
 
     async def initial_oversight(self) -> Oversight:
-        task = self.body.task
-        file_list = await self.body.file_manager.document_contents()
-        functions = functions_summary(self.body.packs.values())
-        prompt_variables = {
-            "task": task,
-            "functions": functions,
-            "file_list": file_list,
-        }
-        formatted_prompt = initial_prompt_template().format(**prompt_variables)
-
-        logger.info("=== Initial Plan Request ===")
-        logger.info(formatted_prompt)
+        logger.info("\n=== Initial Plan Request ===")
+        (
+            prompt,
+            prompt_variables,
+        ) = await self.task_execution.agent.planning_prompt()
+        logger.info(prompt)
 
         response = await call_llm(
-            self.body,
-            message=formatted_prompt,
+            self.task_execution.body,
+            message=prompt,
             function_call="none",
         )
 
-        logger.info("=== Initial Plan Created ===")
+        logger.info("\n=== Initial Plan Created ===")
         logger.info(response.text)
 
         oversight = Oversight(

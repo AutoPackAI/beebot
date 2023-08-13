@@ -5,7 +5,6 @@ from starlette.requests import Request
 from starlette.responses import JSONResponse
 
 from beebot.body import Body
-from beebot.body.body_state_machine import BodyStateMachine
 from beebot.execution import Step
 from beebot.models.database_models import BodyModel, StepModel
 
@@ -20,7 +19,7 @@ async def body_response(body: Body) -> JSONResponse:
     return JSONResponse(
         {
             "task_id": str(body.model_object.id),
-            "input": body.initial_task,
+            "input": body.task,
             "artifacts": artifacts,
         }
     )
@@ -43,7 +42,7 @@ async def step_response(step: Step, body: Body) -> JSONResponse:
             "task_id": str(body.model_object.id),
             "output": step_output,
             "artifacts": artifacts,
-            "is_last": body.state.current_state == BodyStateMachine.done,
+            "is_last": body.is_done,
         }
     )
 
@@ -106,7 +105,7 @@ async def list_agent_task_steps(request: Request) -> JSONResponse:
         raise HTTPException(status_code=400, detail="Task not found")
 
     step_ids = [
-        m.id for m in await body.current_execution_path.model_object.steps.all()
+        m.id for m in await body.current_task_execution.model_object.steps.all()
     ]
 
     return JSONResponse(step_ids)
