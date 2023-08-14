@@ -272,13 +272,13 @@ urllib3 = ">=1.26.16,<2.0.0"
 
 [[package]]
 name = "baserun"
-version = "0.2"
+version = "0.3.1"
 description = "Tools for testing, debugging, and evaluating LLM features."
 optional = false
 python-versions = ">=3.7.1"
 files = [
-    {file = "baserun-0.2-py3-none-any.whl", hash = "sha256:00093e9de197ee064eb436593805c9d397253abb6848325c801a366ee414a8ba"},
-    {file = "baserun-0.2.tar.gz", hash = "sha256:7791a453b0011a915f53e30454165d12f9b00a33cd38027ad95475ddde8e3576"},
+    {file = "baserun-0.3.1-py3-none-any.whl", hash = "sha256:85250cb6fd5b1db9b30929a6b4945d562bf3ba5191474f91419017e7707a2196"},
+    {file = "baserun-0.3.1.tar.gz", hash = "sha256:b4f0bc083ec0af47ef2a92d2a69603f6bd2b42acb513b0fc22ff69295d57243a"},
 ]
 
 [package.dependencies]
@@ -2600,4 +2600,4 @@ testing = ["big-O", "jaraco.functools", "jaraco.itertools", "more-itertools", "p
 [metadata]
 lock-version = "2.0"
 python-versions = ">=3.10,<3.12"
-content-hash = "711dc5517bb24f4b3fc7f2786b641ad153e88007ad577a3bd83d793fad1c8ab7"
+content-hash = "1bdaf639eeed4588df8c4bf70a901f2c290cb7721e7f202e4c9298e3f7b6983e"
