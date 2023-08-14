@@ -1,0 +1,96 @@
+You will require WSL2
+I am usig Kali in this example.
+
+Download the Linux kernel update package
+
+The Linux kernel update package installs the most recent version of the WSL 2 Linux kernel for running WSL inside the Windows operating system image. (To run WSL from the Microsoft Store, with more frequently pushed updates, use wsl.exe --install or wsl.exe --update.).
+
+    Download the latest package:
+        WSL2 Linux kernel update package for x64 machines
+https://learn.microsoft.com/en-us/windows/wsl/install-manual#step-4---download-the-linux-kernel-update-package
+
+updates, use wsl.exe --install or wsl.exe --update 
+
+wsl --set-default-version 2
+Download from Desktop Microsoft App Store
+Windows Subsystem for Linux
+
+Download from Desktop Microsoft App Store
+Kali Linux #Or any Linux Distro of your choosing
+
+    NOTE: If there is an existing Kali WSL 1, upgrade it by running: wsl --set-version kali-linux 2
+
+Docker – Settings – Resources – WSL Intergration – Check WSL Distro
+
+**Update Kali**:
+apt-get update
+apt-get dist-upgrade
+sudo apt full-upgrade -y
+
+Useful Kali tools:
+https://www.kali.org/docs/general-use/metapackages/
+
+Launch Kali in terminal: kali
+
+curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | sudo gpg --dearmor -o /usr/share/keyrings/yarn-archive-keyring.gpg
+
+echo "deb [signed-by=/usr/share/keyrings/yarn-archive-keyring.gpg] https://dl.yarnpkg.com/debian/ stable main" | sudo tee /etc/apt/sources.list.d/yarn.list > /dev/null
+
+sudo apt update
+
+sudo apt install git
+sudo apt update
+sudo apt install python3-pip
+sudo apt update
+
+
+
+beebot
+git clone https://github.com/AutoPackAI/beebot.git
+copy .env and save as env.env (all files) – add api key - save
+sudo pip3 install poetry
+poetry shell
+poetry add playwright
+poetry run playwright install NOTE: Will download fallback “builds” on Windows
+./setup.sh
+
+edit cli.py – beebot/beebot/initiator/cli.py
+
+def main():
+    load_dotenv()
+    parsed_args = parse_args()
+    if parsed_args.task:
+        task = parsed_args.task
+    else:
+        print("What would you like me to do?")
+        print("> ", end="")
+        task = input()
+
+    config = Config.global_config()
+    config.setup_logging()
+
+    # Use asyncio.run to run the asynchronous logic
+    asyncio.run(run_async_logic(config, task))
+
+
+async def run_async_logic(config, task):
+    await initialize_db(config.database_url)
+    body = Body(initial_task=task, config=config)
+    await body.setup()
+    while output := await body.cycle():
+        if output.observation:
+            print("=== Cycle Output ===")
+            print(output.observation.response)
+
+poetry run beebot
+
+
+
+
+
+
+
+
+
+
+
