@@ -3,7 +3,6 @@ from random import randint
 import pytest
 
 from beebot.body import Body
-from beebot.body.body_state_machine import BodyStateMachine
 
 
 @pytest.fixture()
@@ -41,10 +40,9 @@ async def test_parse_history(body_fixture, task, instructions_files_fixture, ids
     body, _instructions_files = await instructions_files_fixture
     for i in range(0, 15):
         await body.cycle()
-        if body.state.current_state == BodyStateMachine.done:
+        if body.is_done:
             break
 
-    await body.file_manager.flush_to_directory()
     with open("workspace/ids.txt", "r") as f:
         file_contents = f.read()
         for expected_id in ids:

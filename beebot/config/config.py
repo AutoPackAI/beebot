@@ -3,12 +3,13 @@ import os
 from typing import ClassVar
 
 import coloredlogs
-from autopack.pack_config import PackConfig, InstallerStyle
+from autopack.pack_config import PackConfig
 from openai.util import logger as openai_logger
 from pydantic import BaseSettings  # IDEAL_MODEL = "gpt-4-0613"
 
-FALLBACK_MODEL = "gpt-3.5-turbo-16k-0613"
-IDEAL_MODEL = FALLBACK_MODEL
+DEFAULT_DECOMPOSER_MODEL = "gpt-4"
+DEFAULT_PLANNER_MODEL = "gpt-3.5-turbo-16k-0613"
+DEFAULT_DECIDER_MODEL = "gpt-3.5-turbo-16k-0613"
 LOG_FORMAT = (
     "%(levelname)s %(asctime)s.%(msecs)03d %(filename)s:%(lineno)d- %(message)s"
 )
@@ -21,22 +22,15 @@ class Config(BaseSettings):
     helicone_key: str = None
     openai_api_base: str = None
     gmail_credentials_file: str = "credentials.json"
-    llm_model: str = IDEAL_MODEL
+    decomposer_model: str = DEFAULT_DECOMPOSER_MODEL
+    planner_model: str = DEFAULT_PLANNER_MODEL
+    decider_model: str = DEFAULT_DECIDER_MODEL
     database_url: str = "sqlite://:memory:"
 
     workspace_path: str = "workspace"
     hard_exit: bool = False
     restrict_code_execution: bool = False
     process_timeout: int = 30
-    auto_install_packs: bool = True
-    auto_install_dependencies: bool = True
-    auto_include_packs: list[str] = [
-        "write_file",
-        "read_file",
-        "exit",
-        "rewind_actions",
-        "acquire_new_functions",
-    ]
     pack_config: PackConfig = None
 
     _global_config: ClassVar["Config"] = None
@@ -58,17 +52,9 @@ class Config(BaseSettings):
         self.setup_logging()
 
     def configure_autopack(self, is_global: bool = True):
-        if self.auto_install_packs and self.auto_install_dependencies:
-            installer_style = InstallerStyle.automatic
-        elif self.auto_install_packs:
-            installer_style = InstallerStyle.semiautomatic
-        else:
-            installer_style = InstallerStyle.manual
-
         pack_config = PackConfig(
             workspace_path=self.workspace_path,
             restrict_code_execution=self.restrict_code_execution,
-            installer_style=installer_style,
         )
 
         self.pack_config = pack_config

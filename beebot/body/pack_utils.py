@@ -1,12 +1,8 @@
-import inspect
 import logging
 import subprocess
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING
 
-from autopack.get_pack import get_all_installed_packs, get_all_pack_info
-from autopack.installation import install_pack
 from autopack.pack import Pack
-from autopack.pack_response import PackResponse
 
 from beebot.body.llm import call_llm
 
@@ -19,61 +15,14 @@ logger = logging.getLogger(__name__)
 SUPPRESSED_PACKS = ["list_files", "delete_file"]
 
 
-def all_packs(body: "Body") -> dict[str, Union[Pack, PackResponse]]:
-    """Merge locally-installed and system packs into one list"""
-    all_pack_data = {}
-    local_packs = all_local_packs(body)
-    remote_packs = get_all_pack_info()
-
-    if body.config.auto_install_packs:
-        for pack in remote_packs:
-            all_pack_data[pack.name] = get_or_install_pack(body, pack.name)
-
-    for pack in local_packs.values():
-        all_pack_data[pack.name] = pack
-
-    return {k: v for k, v in all_pack_data.items() if k not in SUPPRESSED_PACKS}
-
-
-def all_local_packs(body: "Body") -> dict[str, Pack]:
-    from beebot.packs.system_base_pack import SystemBasePack
-    from beebot import packs
-
-    return_packs = {}
-    for name, klass in inspect.getmembers(packs):
-        if (
-            inspect.isclass(klass)
-            and hasattr(klass, "__bases__")
-            and SystemBasePack in klass.__bases__
-        ):
-            pack = klass(body=body)
-            return_packs[pack.name] = pack
-
-    wrapper = llm_wrapper(body)
-
-    for pack in get_all_installed_packs():
-        return_packs[pack.name] = pack(llm=wrapper)
-
-    return return_packs
-
-
 def llm_wrapper(body: "Body") -> str:
     async def llm(prompt) -> str:
-        response = await call_llm(body, prompt)
+        response = await call_llm(
+            body, prompt, include_functions=False, function_call="none"
+        )
         return response.text
 
     return llm
-
-
-def get_or_install_pack(body: "Body", pack_name) -> Pack:
-    available_packs = {pack.name: pack for pack in get_all_pack_info()}
-    installed_pack = all_local_packs(body).get(pack_name)
-
-    if not installed_pack:
-        pack_info = available_packs.get(pack_name)
-        installed_pack = install_pack(pack_info.pack_id)(llm=body.llm)
-
-    return installed_pack
 
 
 def init_workspace_poetry(workspace_path: str):
@@ -85,3 +34,22 @@ def init_workspace_poetry(workspace_path: str):
         stdout=subprocess.PIPE,
         stderr=subprocess.PIPE,
     )
+
+
+def functions_detail_list(packs: list["Pack"]) -> str:
+    pack_details = []
+    for pack in packs:
+        pack_args = []
+        for arg_data in pack.args.values():
+            arg_type = arg_data.get("type")
+            if arg_type == "string":
+                arg_type = "str"
+            if arg_type == "boolean":
+                arg_type = "bool"
+            if arg_type == "number":
+                arg_type = "int"
+            pack_args.append(f"{arg_data.get('name')}: {arg_type}")
+
+        pack_details.append(f"{pack.name}({', '.join(pack_args)})")
+
+    return "\n".join(pack_details)

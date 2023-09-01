@@ -75,7 +75,7 @@ async def initialize_tests(request: FixtureRequest):
 @pytest.fixture()
 async def body_fixture(task: str, initialize_tests, go_to_tmpdir):
     await initialize_tests
-    body_obj = Body(initial_task=task)
+    body_obj = Body(task=task)
     await body_obj.setup()
     body_obj.config.setup_logging()
     body_obj.config.hard_exit = False

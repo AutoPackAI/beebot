@@ -3,6 +3,6 @@
 pip install poetry
 poetry install
 poetry run playwright install
-docker compose run -d
+docker compose up -d
 
 echo "BeeBot is now set up"

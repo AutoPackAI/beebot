@@ -2,8 +2,6 @@ import os
 
 import pytest
 
-from beebot.body.body_state_machine import BodyStateMachine
-
 
 @pytest.fixture()
 def task() -> str:
@@ -21,12 +19,19 @@ async def test_background_python(task, body_fixture):
 
     for i in range(0, 15):
         response = await body.cycle()
+        if body.is_done:
+            break
+
+        if not response.plan:
+            continue
+
+        plan_text = (
+            "Complete" if response.task_execution.complete else response.plan.plan_text
+        )
         print(
-            f"----\n{await body.current_execution_path.compile_history()}\n{response.plan.plan_text}\n{response.decision.tool_name}"
+            f"----\n{await body.current_task_execution.compile_history()}\n{plan_text}\n{response.decision.tool_name}"
             f"({response.decision.tool_args})\n{response.observation.response}\n---"
         )
-        if body.state.current_state == BodyStateMachine.done:
-            break
 
     assert os.path.exists("workspace/sleepy.py")
     assert os.path.exists("workspace/sleepy.txt")

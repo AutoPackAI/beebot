@@ -35,11 +35,11 @@ async def main():
     config.setup_logging()
     await initialize_db(config.database_url)
 
-    body = Body(initial_task=task, config=config)
+    body = Body(task=task, config=config)
     await body.setup()
     while output := await body.cycle():
         if output.observation:
-            print("=== Cycle Output ===")
+            print("\n=== Cycle Output ===")
             print(output.observation.response)
 
 

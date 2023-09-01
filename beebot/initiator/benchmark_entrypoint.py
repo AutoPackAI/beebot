@@ -15,7 +15,7 @@ async def run_specific_agent(task: str) -> None:
     config.setup_logging()
     await initialize_db(config.database_url)
 
-    body = Body(initial_task=task, config=config)
+    body = Body(task=task, config=config)
     await body.setup()
     while output := await body.cycle():
         if output.observation:
@@ -26,5 +26,5 @@ if __name__ == "__main__":
     if len(sys.argv) != 2:
         print("Usage: python script.py <task>")
         sys.exit(1)
-    task = sys.argv[-1]
-    asyncio.run(run_specific_agent(task))
+    task_arg = sys.argv[-1]
+    asyncio.run(run_specific_agent(task_arg))

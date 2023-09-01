@@ -31,8 +31,11 @@ class DatabaseFileManager(FileManager):
 
     @property
     def current_step(self) -> Union[Step, None]:
+        task = self.body.current_task_execution or self.body.task_executions[-1]
+        if not task:
+            return None
         try:
-            return self.body.current_execution_path.steps[-1]
+            return task.steps[-1]
         except IndexError:
             return None
 
@@ -58,10 +61,14 @@ class DatabaseFileManager(FileManager):
         Returns:
             str: The content of the file. If the file does not exist, returns an error message.
         """
-        document = await DocumentModel.get_or_none(name=file_path)
+        documents = await self.current_step.documents
+        document = documents.get(file_path)
         if document:
             return document.content
         else:
+            nonlocal_file = await DocumentModel.get_or_none(name=file_path)
+            if nonlocal_file:
+                return nonlocal_file.content
             return "Error: File not found"
 
     async def awrite_file(self, file_path: str, content: str) -> str:
@@ -181,13 +188,3 @@ class DatabaseFileManager(FileManager):
                 os.path.join(directory, document.name.replace("/", "_")), "w+"
             ) as f:
                 f.write(document.content)
-
-    async def document_contents(self) -> str:
-        documents = []
-        for document in await self.all_documents():
-            file_details = f"## Contents of file {document.name}"
-            documents.append(f"\n{file_details}\n{document.content}")
-
-        if documents:
-            return "\n".join(documents)
-        return "There are no files available."

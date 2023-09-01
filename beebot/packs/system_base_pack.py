@@ -17,7 +17,7 @@ class SystemBasePack(Pack):
         if args_schema := kwargs.get("args_schema"):
             run_args = run_args_from_args_schema(args_schema)
 
-        super().__init__(llm=llm, run_args=run_args, **kwargs)
+        super().__init__(llm=llm, allm=llm, run_args=run_args, **kwargs)
 
     def _run(self, *args, **kwargs):
         raise NotImplementedError
