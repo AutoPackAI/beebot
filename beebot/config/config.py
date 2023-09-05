@@ -6,8 +6,10 @@ import coloredlogs
 from autopack.pack_config import PackConfig
 from openai.util import logger as openai_logger
 from pydantic import BaseSettings  # IDEAL_MODEL = "gpt-4-0613"
+import openai
 
 DEFAULT_DECOMPOSER_MODEL = "gpt-4"
+FALLBACK_DECOMPOSER_MODEL = "gpt-3.5-turbo-16k-0613"
 DEFAULT_PLANNER_MODEL = "gpt-3.5-turbo-16k-0613"
 DEFAULT_DECIDER_MODEL = "gpt-3.5-turbo-16k-0613"
 LOG_FORMAT = (
@@ -50,6 +52,13 @@ class Config(BaseSettings):
         super().__init__(**kwargs)
         self.configure_autopack()
         self.setup_logging()
+        self.configure_decomposer_model()
+
+    def configure_decomposer_model(self):
+        if self.decomposer_model == DEFAULT_DECOMPOSER_MODEL:
+            model_ids = [model["id"] for model in openai.Model.list()["data"]]
+            if self.decomposer_model not in model_ids:
+                self.decomposer_model = FALLBACK_DECOMPOSER_MODEL
 
     def configure_autopack(self, is_global: bool = True):
         pack_config = PackConfig(
