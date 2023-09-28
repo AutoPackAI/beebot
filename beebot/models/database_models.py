@@ -1,4 +1,5 @@
 import json
+from pathlib import Path
 
 from tortoise import fields, Tortoise
 from tortoise.fields import JSONField, BooleanField
@@ -124,7 +125,11 @@ def apply_migrations(db_url: str):
     """Apply any outstanding migrations"""
     backend = get_backend(db_url)
     backend.init_database()
-    migrations = read_migrations("migrations")
+    migrations_dir = "migrations"
+    if not Path(migrations_dir).exists():
+        raise FileNotFoundError(f"\"{migrations_dir}\" directory not found. "
+                                "Make sure to set working directory to the root of the project")
+    migrations = read_migrations(migrations_dir)
 
     with backend.lock():
         backend.apply_migrations(backend.to_apply(migrations))
