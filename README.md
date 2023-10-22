@@ -7,6 +7,16 @@ autonomously.
 <img src="https://eriklp.com/mascot.png" alt="BeeBot Mascot"  align="center" />
 </p>
 
+## Status
+
+Development of BeeBot is currently on hold. I've decided that LLMs as they are now (late 2023) aren't up to the task of generalized autonomous AI. I will revive the project if either:
+
+- LLMs get significantly better at structured thinking, reliable outcomes, and obeying instructions
+- I can develop or fine tune a custom model which is trained specifically for Autonomous AI
+- I figure out a particular subset of tasks that BeeBot is acceptably good at that I can focus on. (Hint: It's not coding)
+
+Check back here, hopefully this will get re-started.
+
 ## Features
 
 - Tool selection via [AutoPack](https://autopack.ai) and the ability to acquire more tools during task execution
